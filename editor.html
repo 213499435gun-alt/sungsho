@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>快拍编辑器 · Story Editor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#1a1a1f;color:#e8e8ec;min-height:100vh;padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+.sub{font-size:13px;color:#8a8a95;margin-bottom:20px}
+.layout{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.sidebar{width:260px;flex-shrink:0}
+.sidebar h2{font-size:14px;color:#8a8a95;margin-bottom:10px;font-weight:500}
+.story-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.story-thumb{display:flex;align-items:center;gap:10px;padding:8px;background:#26262e;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:.15s}
+.story-thumb:hover{background:#2e2e38}
+.story-thumb.active{border-color:#e84e8a;background:#2e2e38}
+.story-thumb .num{width:24px;height:24px;border-radius:50%;background:#3a3a46;display:grid;place-items:center;font-size:12px;flex-shrink:0}
+.story-thumb .mini{width:40px;height:40px;border-radius:6px;background:#3a3a46 center/cover;flex-shrink:0}
+.story-thumb .info{flex:1;min-width:0}
+.story-thumb .info b{font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.story-thumb .info small{font-size:10px;color:#8a8a95}
+.story-thumb .del{background:none;color:#8a8a95;font-size:16px;padding:4px;border-radius:6px}
+.story-thumb .del:hover{color:#ff5c7a;background:#3a3a46}
+.btn{background:#3a3a46;color:#e8e8ec;border:0;padding:10px 16px;border-radius:10px;font-size:13px;cursor:pointer;transition:.15s;font-family:inherit}
+.btn:hover{background:#4a4a58}
+.btn.primary{background:#e84e8a;color:#fff}
+.btn.primary:hover{background:#f05c96}
+.btn.block{width:100%;margin-bottom:8px}
+.editor-area{flex:1;min-width:340px;display:flex;flex-direction:column;align-items:center}
+.canvas-wrap{position:relative;width:340px;height:600px;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 10px 40px #0008}
+.canvas-wrap .drop-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#666;font-size:14px;text-align:center;padding:20px;pointer-events:none}
+.canvas-wrap .drop-hint .big{font-size:40px;margin-bottom:12px}
+.canvas-wrap.dragover{outline:3px dashed #e84e8a;outline-offset:-3px}
+.canvas-bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.text-box{position:absolute;transform:translate(-50%,-50%);cursor:move;padding:4px 8px;border:1px dashed transparent;border-radius:6px;white-space:pre-wrap;text-align:center;max-width:90%;user-select:none;line-height:1.3}
+.text-box:hover{border-color:#ffffff60}
+.text-box.selected{border-color:#e84e8a;background:#e84e8a15}
+.text-box .handle{position:absolute;right:-6px;bottom:-6px;width:14px;height:14px;background:#e84e8a;border-radius:50%;cursor:nwse-resize;display:none}
+.text-box.selected .handle{display:block}
+.panel{width:280px;flex-shrink:0;background:#26262e;border-radius:14px;padding:16px}
+.panel h3{font-size:13px;color:#8a8a95;margin-bottom:10px;font-weight:500}
+.panel label{display:block;font-size:12px;color:#b0b0bc;margin:12px 0 6px}
+.panel input[type=text],.panel textarea,.panel input[type=number]{width:100%;background:#1a1a1f;border:1px solid #3a3a46;color:#e8e8ec;padding:9px 11px;border-radius:8px;font-size:13px;font-family:inherit}
+.panel textarea{resize:vertical;min-height:70px}
+.panel input[type=color]{width:100%;height:36px;background:none;border:1px solid #3a3a46;border-radius:8px;cursor:pointer}
+.panel input[type=range]{width:100%;accent-color:#e84e8a}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.empty-panel{color:#666;font-size:12px;text-align:center;padding:30px 10px;line-height:1.8}
+.output{margin-top:24px;background:#26262e;border-radius:14px;padding:16px}
+.output h3{font-size:13px;color:#8a8a95;margin-bottom:10px}
+.output textarea{width:100%;min-height:120px;background:#1a1a1f;border:1px solid #3a3a46;color:#9ae6b4;padding:12px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px;resize:vertical}
+.output .actions{display:flex;gap:8px;margin-top:10px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#e84e8a;color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+/* 总览：小方块相册 */
+.overview{background:#26262e;border-radius:14px;padding:16px;margin-bottom:20px}
+.overview h3{font-size:13px;color:#8a8a95;margin-bottom:4px;font-weight:500;display:flex;justify-content:space-between;align-items:center}
+.overview h3 .count{font-size:11px;color:#6a6a75}
+.overview .ov-tip{font-size:11px;color:#6a6a75;margin-bottom:12px}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+.ov-card{position:relative;border-radius:8px;overflow:hidden;background:#1a1a1f;border:2px solid transparent;cursor:grab;transition:border-color .15s,transform .15s,opacity .15s;aspect-ratio:1}
+.ov-card:hover{border-color:#4a4a58}
+.ov-card.active{border-color:#e84e8a}
+.ov-card.dragging{opacity:.4;cursor:grabbing}
+.ov-card.drag-over{border-color:#e84e8a;transform:scale(1.05)}
+.ov-card .ov-img{position:absolute;inset:0;background:#3a3a46 center/cover;pointer-events:none}
+.ov-card .ov-empty{position:absolute;inset:0;display:grid;place-items:center;color:#555;font-size:22px;pointer-events:none}
+.ov-card .ov-badge{position:absolute;top:4px;left:4px;background:#000a;color:#fff;font-size:10px;padding:1px 6px;border-radius:20px;backdrop-filter:blur(4px);pointer-events:none}
+.ov-card .ov-del{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:6px;background:#000b;color:#fff;font-size:11px;display:grid;place-items:center;padding:0;opacity:0;transition:.15s}
+.ov-card:hover .ov-del{opacity:1}
+.ov-card .ov-del:hover{background:#e84e8a}
+.ov-empty-state{color:#666;font-size:12px;text-align:center;padding:24px 10px;line-height:1.8}
+</style>
+</head>
+<body>
+<h1>📸 快拍编辑器</h1>
+<p class="sub">拖照片进画布 → 加文字框 → 拖动调整位置 → 保存后把数据发给我</p>
+
+<div class="overview">
+  <h3>📚 我的快拍总览 <span class="count" id="ovCount"></span></h3>
+  <div class="ov-tip">拖动方块可调整它们在预览页里的播放顺序</div>
+  <div class="ov-grid" id="ovGrid"></div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <h2>快拍列表</h2>
+    <div class="story-list" id="storyList"></div>
+    <button class="btn block" id="addStory">＋ 添加一页</button>
+    <button class="btn block" id="addText">＋ 给当前页加文字</button>
+    <div id="pageSettings" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #3a3a46">
+      <label style="display:block;font-size:12px;color:#b0b0bc;margin-bottom:6px">当前页日期（如 220805）</label>
+      <input type="text" id="pageDate" placeholder="220805" maxlength="10" style="width:100%;background:#1a1a1f;border:1px solid #3a3a46;color:#e8e8ec;padding:9px 11px;border-radius:8px;font-size:13px;font-family:inherit">
+    </div>
+  </div>
+  <div class="editor-area">
+    <div class="canvas-wrap" id="canvas">
+      <div class="canvas-bg" id="canvasBg"></div>
+      <div class="drop-hint" id="dropHint">
+        <div class="big">🖼️</div>
+        <div>把照片拖到这里<br>或点击下方按钮选择</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn" id="pickPhoto">选择照片</button>
+      <input type="file" id="fileInput" accept="image/*" style="display:none">
+    </div>
+  </div>
+  <div class="panel" id="panel">
+    <div class="empty-panel" id="emptyPanel">选中一个文字框<br>来编辑它的样式</div>
+    <div id="textProps" style="display:none">
+      <h3>文字设置</h3>
+      <label>文字内容</label>
+      <textarea id="propText" placeholder="输入文字…"></textarea>
+      <label>字号 <span id="sizeVal">24</span>px</label>
+      <input type="range" id="propSize" min="12" max="72" value="24">
+      <label>颜色</label>
+      <input type="color" id="propColor" value="#ffffff">
+      <label>背景</label>
+      <div class="row">
+        <button class="btn" id="propBgNone" style="font-size:11px">无</button>
+        <button class="btn" id="propBgDark" style="font-size:11px">黑底</button>
+        <button class="btn" id="propBgLight" style="font-size:11px">白底</button>
+      </div>
+      <label>停留时长（秒）</label>
+      <input type="number" id="propDuration" min="1" max="30" value="5">
+      <div style="margin-top:14px">
+        <button class="btn block" id="deleteText" style="color:#ff5c7a">删除这个文字框</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="output">
+  <h3>保存数据（复制这段发给我）</h3>
+  <textarea id="outputData" readonly placeholder="编辑完成后点「生成数据」"></textarea>
+  <div class="actions">
+    <button class="btn primary" id="generate">生成数据</button>
+    <button class="btn" id="copyBtn">复制</button>
+    <button class="btn primary" id="downloadBtn" style="background:#2e9e5b">⬇ 下载图片</button>
+  </div>
+  <div id="outputInfo" style="font-size:11px;color:#8a8a95;margin-top:8px;line-height:1.6"></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+let stories = [];
+let currentIndex = -1;
+let selectedText = null;
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+// ===== 本地持久化（刷新不丢）=====
+const STORAGE_KEY = 'story-editor-data';
+function saveLocal() {
+  try {
+    // 只存元数据 + 文件名，不存 base64（太大），预览图另存
+    const meta = stories.map(s => ({
+      fileName: s.fileName || '',
+      duration: s.duration,
+      date: s.date || '',
+      texts: s.texts
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(meta));
+  } catch (e) { /* 忽略 */ }
+}
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const meta = JSON.parse(raw);
+    if (!Array.isArray(meta)) return;
+    stories = meta.map(m => ({
+      src: m.fileName ? ('stories/' + m.fileName) : '',
+      fileName: m.fileName || '',
+      duration: m.duration || 5,
+      date: m.date || '',
+      texts: Array.isArray(m.texts) ? m.texts : []
+    }));
+  } catch (e) { /* 忽略 */ }
+}
+
+function renderList() {
+  const list = $('#storyList');
+  if (stories.length === 0) {
+    list.innerHTML = '<div style="color:#666;font-size:12px;padding:10px">还没有快拍，点下面添加</div>';
+    return;
+  }
+  list.innerHTML = stories.map((s, i) => `
+    <div class="story-thumb ${i===currentIndex?'active':''}" data-idx="${i}">
+      <span class="num">${i+1}</span>
+      <div class="mini" style="background-image:url('${s.src||''}')"></div>
+      <div class="info">
+        <b>${s.texts.length ? s.texts[0].content.slice(0,12) : '（无文字）'}</b>
+        <small>${s.duration}s · ${s.texts.length} 个文字</small>
+      </div>
+      <button class="del" data-del="${i}" title="删除">✕</button>
+    </div>
+  `).join('');
+  $$('.story-thumb').forEach(el => {
+    el.onclick = e => {
+      if (e.target.dataset.del !== undefined) return;
+      selectStory(+el.dataset.idx);
+    };
+  });
+  $$('[data-del]').forEach(b => {
+    b.onclick = e => {
+      e.stopPropagation();
+      const idx = +b.dataset.del;
+      stories.splice(idx, 1);
+      if (currentIndex >= stories.length) currentIndex = stories.length - 1;
+      saveLocal(); renderList(); renderCanvas();
+    };
+  });
+  renderOverview();
+}
+
+// ===== 总览：小方块相册，可点击编辑、拖动排序、删除 =====
+let dragFrom = -1;
+function renderOverview() {
+  const grid = $('#ovGrid');
+  const count = $('#ovCount');
+  count.textContent = stories.length ? ('共 ' + stories.length + ' 页') : '';
+  if (stories.length === 0) {
+    grid.innerHTML = '<div class="ov-empty-state" style="grid-column:1/-1">还没有快拍<br>拖照片进画布，或点「＋ 添加一页」</div>';
+    return;
+  }
+  grid.innerHTML = stories.map((s, i) => `
+    <div class="ov-card ${i===currentIndex?'active':''}" data-ov="${i}" draggable="true">
+      ${s.src ? `<div class="ov-img" style="background-image:url('${s.src}')"></div>` : '<div class="ov-empty">🖼️</div>'}
+      <span class="ov-badge">${i+1}</span>
+      <button class="ov-del" data-ovdel="${i}" title="删除">✕</button>
+    </div>`).join('');
+
+  $$('[data-ov]').forEach(el => {
+    const idx = +el.dataset.ov;
+    // 点击 → 选中编辑
+    el.onclick = e => {
+      if (e.target.closest('.ov-del')) return;
+      selectStory(idx);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    // 拖拽排序
+    el.addEventListener('dragstart', e => {
+      dragFrom = idx;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(idx));
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      $$('.ov-card').forEach(c => c.classList.remove('drag-over'));
+    });
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (dragFrom !== idx) el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      if (dragFrom < 0 || dragFrom === idx) return;
+      reorderStory(dragFrom, idx);
+      dragFrom = -1;
+    });
+  });
+
+  $$('[data-ovdel]').forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const idx = +b.dataset.ovdel;
+    if (!confirm('删除第 ' + (idx+1) + ' 页？')) return;
+    stories.splice(idx, 1);
+    if (currentIndex >= stories.length) currentIndex = stories.length - 1;
+    saveLocal(); renderList(); renderCanvas();
+  });
+}
+
+// 把 from 位置的快拍移动到 to 位置
+function reorderStory(from, to) {
+  const [item] = stories.splice(from, 1);
+  stories.splice(to, 0, item);
+  // 保持当前选中项跟着走
+  if (currentIndex === from) currentIndex = to;
+  else if (from < currentIndex && to >= currentIndex) currentIndex--;
+  else if (from > currentIndex && to <= currentIndex) currentIndex++;
+  saveLocal(); renderList(); renderCanvas();
+}
+
+function selectStory(i) {
+  currentIndex = i;
+  selectedText = null;
+  renderList();
+  renderCanvas();
+  updatePanel();
+  // 显示页面设置（日期）
+  const ps = $('#pageSettings');
+  if (currentIndex >= 0 && stories[currentIndex]) {
+    ps.style.display = 'block';
+    $('#pageDate').value = stories[currentIndex].date || '';
+  } else {
+    ps.style.display = 'none';
+  }
+}
+
+function renderCanvas() {
+  const bg = $('#canvasBg');
+  const hint = $('#dropHint');
+  const canvas = $('#canvas');
+  $$('.text-box').forEach(el => el.remove());
+  if (currentIndex < 0 || !stories[currentIndex]) {
+    bg.style.backgroundImage = '';
+    hint.style.display = 'flex';
+    return;
+  }
+  const s = stories[currentIndex];
+  if (s.src) {
+    bg.style.backgroundImage = `url('${s.src}')`;
+    hint.style.display = 'none';
+  } else {
+    bg.style.backgroundImage = '';
+    hint.style.display = 'flex';
+  }
+  s.texts.forEach((t, ti) => {
+    const box = document.createElement('div');
+    box.className = 'text-box' + (t === selectedText ? ' selected' : '');
+    box.style.left = t.x + '%';
+    box.style.top = t.y + '%';
+    box.style.fontSize = t.size + 'px';
+    box.style.color = t.color;
+    if (t.bg === 'dark') box.style.background = 'rgba(0,0,0,.55)';
+    else if (t.bg === 'light') { box.style.background = 'rgba(255,255,255,.85)'; box.style.color = '#111'; }
+    box.textContent = t.content || '双击编辑';
+    box.dataset.ti = ti;
+    const handle = document.createElement('div');
+    handle.className = 'handle';
+    box.appendChild(handle);
+    makeDraggable(box, t, handle);
+    box.onclick = e => {
+      e.stopPropagation();
+      selectedText = t;
+      renderCanvas();
+      updatePanel();
+    };
+    canvas.appendChild(box);
+  });
+}
+
+function makeDraggable(box, t, handle) {
+  let dragging = false, resizing = false;
+  let startX, startY, startLeft, startTop, startSize;
+  box.addEventListener('mousedown', e => {
+    if (e.target === handle) {
+      resizing = true;
+      startX = e.clientX; startY = e.clientY;
+      startSize = t.size;
+      e.preventDefault();
+      return;
+    }
+    dragging = true;
+    selectedText = t;
+    box.classList.add('selected');
+    startX = e.clientX; startY = e.clientY;
+    startLeft = t.x; startTop = t.y;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (dragging) {
+      const rect = box.parentElement.getBoundingClientRect();
+      const dx = (e.clientX - startX) / rect.width * 100;
+      const dy = (e.clientY - startY) / rect.height * 100;
+      t.x = Math.max(5, Math.min(95, startLeft + dx));
+      t.y = Math.max(5, Math.min(95, startTop + dy));
+      box.style.left = t.x + '%';
+      box.style.top = t.y + '%';
+    }
+    if (resizing) {
+      const dy = e.clientY - startY;
+      t.size = Math.max(12, Math.min(72, startSize + dy * 0.3));
+      box.style.fontSize = t.size + 'px';
+      $('#propSize').value = Math.round(t.size);
+      $('#sizeVal').textContent = Math.round(t.size);
+    }
+  });
+  document.addEventListener('mouseup', () => {
+    if (dragging || resizing) {
+      dragging = false; resizing = false;
+      renderList();
+    }
+  });
+}
+
+function updatePanel() {
+  const empty = $('#emptyPanel');
+  const props = $('#textProps');
+  if (!selectedText) {
+    empty.style.display = 'block';
+    props.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  props.style.display = 'block';
+  $('#propText').value = selectedText.content || '';
+  $('#propSize').value = selectedText.size;
+  $('#sizeVal').textContent = selectedText.size;
+  $('#propColor').value = selectedText.color || '#ffffff';
+  $('#propDuration').value = stories[currentIndex].duration || 5;
+}
+
+$('#propText').oninput = e => { if (!selectedText) return; selectedText.content = e.target.value; renderCanvas(); };
+$('#propSize').oninput = e => { if (!selectedText) return; selectedText.size = +e.target.value; $('#sizeVal').textContent = e.target.value; renderCanvas(); };
+$('#propColor').oninput = e => { if (!selectedText) return; selectedText.color = e.target.value; renderCanvas(); };
+$('#propBgNone').onclick = () => { if(selectedText){selectedText.bg='none';renderCanvas();} };
+$('#propBgDark').onclick = () => { if(selectedText){selectedText.bg='dark';renderCanvas();} };
+$('#propBgLight').onclick = () => { if(selectedText){selectedText.bg='light';renderCanvas();} };
+$('#propDuration').oninput = e => { if (currentIndex < 0) return; stories[currentIndex].duration = +e.target.value; saveLocal(); renderList(); };
+$('#pageDate').oninput = e => {
+  if (currentIndex < 0) return;
+  stories[currentIndex].date = e.target.value;
+  saveLocal(); renderList();
+};
+$('#deleteText').onclick = () => {
+  if (!selectedText || currentIndex < 0) return;
+  const s = stories[currentIndex];
+  s.texts = s.texts.filter(t => t !== selectedText);
+  selectedText = null;
+  renderCanvas(); renderList(); updatePanel();
+};
+
+$('#addStory').onclick = () => { stories.push({ src: '', duration: 5, texts: [] }); selectStory(stories.length - 1); };
+$('#addText').onclick = () => {
+  if (currentIndex < 0) { toast('先添加或选中一页'); return; }
+  const t = { content: '双击编辑文字', x: 50, y: 50, size: 24, color: '#ffffff', bg: 'none' };
+  stories[currentIndex].texts.push(t);
+  selectedText = t;
+  renderCanvas(); renderList(); updatePanel();
+};
+
+$('#pickPhoto').onclick = () => $('#fileInput').click();
+$('#fileInput').onchange = e => { const f = e.target.files[0]; if (f) loadPhoto(f); e.target.value = ''; };
+
+const canvas = $('#canvas');
+canvas.addEventListener('dragover', e => { e.preventDefault(); canvas.classList.add('dragover'); });
+canvas.addEventListener('dragleave', () => canvas.classList.remove('dragover'));
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  canvas.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) loadPhoto(f);
+});
+
+function loadPhoto(file) {
+  if (currentIndex < 0) { stories.push({ src: '', duration: 5, texts: [] }); currentIndex = stories.length - 1; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const s = stories[currentIndex];
+    s.src = ev.target.result;          // 预览用（base64，仅内存）
+    s.fileName = file.name;            // 记录原始文件名，导出时用
+    saveLocal(); renderCanvas(); renderList();
+    toast('照片已加载');
+  };
+  reader.readAsDataURL(file);
+}
+
+// 生成精简数据：src 只写文件名（不含 base64），方便直接贴到聊天框
+function buildData() {
+  return stories.map((s, i) => ({
+    type: s.src ? 'image' : 'blank',
+    src: s.fileName ? ('stories/' + s.fileName) : '',
+    duration: s.duration,
+    date: s.date || '',
+    texts: s.texts.map(t => ({ content: t.content, x: Math.round(t.x), y: Math.round(t.y), size: t.size, color: t.color, bg: t.bg }))
+  }));
+}
+
+$('#generate').onclick = () => {
+  if (stories.length === 0) { toast('还没有快拍'); return; }
+  const json = JSON.stringify(buildData());
+  $('#outputData').value = json;
+  const info = $('#outputInfo');
+  const missing = stories.filter(s => s.src && !s.fileName).length;
+  info.innerHTML = '✅ 共 ' + stories.length + ' 页，数据长度 ' + json.length + ' 字符（不含图片，可直接贴给我）'
+    + (missing ? '<br>⚠️ 有 ' + missing + ' 张图片缺少文件名，请重新拖入照片' : '');
+  toast('数据已生成（不含图片），复制发给我');
+};
+
+$('#copyBtn').onclick = () => {
+  const ta = $('#outputData');
+  if (!ta.value) { toast('先点生成数据'); return; }
+  ta.select();
+  document.execCommand('copy');
+  toast('已复制到剪贴板');
+};
+
+// 下载图片：把每页照片单独存成文件（放进 stories/ 文件夹即可）
+$('#downloadBtn').onclick = () => {
+  const imgs = stories.filter(s => s.src);
+  if (imgs.length === 0) { toast('还没有照片'); return; }
+  imgs.forEach((s, i) => {
+    const a = document.createElement('a');
+    a.href = s.src;
+    a.download = s.fileName || ('story_' + (i + 1) + '.jpg');
+    a.click();
+  });
+  toast('已下载 ' + imgs.length + ' 张图片到下载文件夹');
+};
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+loadLocal();
+if (stories.length) currentIndex = 0;
+renderList();
+renderCanvas();
+updatePanel();
+</script>
+</body>
+</html>

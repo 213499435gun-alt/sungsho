@@ -47,6 +47,12 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .story-tap{position:absolute;top:0;bottom:0;width:50%;z-index:2}
 .story-tap-left{left:0}
 .story-tap-right{right:0}
+
+.story-text{position:absolute;transform:translate(-50%,-50%);padding:4px 8px;border-radius:6px;white-space:pre-wrap;text-align:center;max-width:90%;line-height:1.3;z-index:2;pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+/* 装饰性评论框（不可交互） */
+.story-reply{position:absolute;left:12px;right:12px;bottom:16px;z-index:3;display:flex;align-items:center;gap:10px;pointer-events:none}
+.story-reply .reply-box{flex:1;height:44px;border-radius:22px;border:1px solid #ffffff55;background:#ffffff10;backdrop-filter:blur(8px);display:flex;align-items:center;padding:0 18px;color:#ffffffb0;font-size:13px}
+.story-reply .reply-icon{width:44px;height:44px;display:grid;place-items:center;color:#fff;font-size:22px}
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="hint" style="color:#ffffffa0">体验密码 123456</div><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
@@ -91,7 +97,12 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
   <div class="story-content" id="storyContent"></div>
   <div class="story-tap story-tap-left" id="storyPrev" aria-label="上一页"></div>
   <div class="story-tap story-tap-right" id="storyNext" aria-label="下一页"></div>
-</div>
+  <div class="story-reply" aria-hidden="true">
+    <div class="reply-box">发送消息…</div>
+    <div class="reply-icon">♡</div>
+    <div class="reply-icon">➤</div>
+  </div>
+  </div>
 <div class="photo-view hidden" id="viewer"><button class="back" id="closePhoto">‹ 照片</button><img id="largePhoto" alt="放大的风景"><div class="photo-nav"><button id="photoPrev" aria-label="上一张">‹</button><button id="photoNext" aria-label="下一张">›</button></div></div><button class="homebar hidden" aria-label="返回主屏幕" id="homebar"></button><div class="toast hidden" id="toast" role="status"></div></div></div></main>
 <script>
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);let unlocked=true,pin='',page='home';function show(id){$$('.view').forEach(e=>e.classList.toggle('hidden',e.id!==id));page=id;$('#homebar').classList.toggle('hidden',!unlocked);$('.status').style.color=['photos','notes','settings','clock','instagram','kakao'].includes(id)?'#263c39':'white'}function home(){if(unlocked){$('#viewer').classList.add('hidden');show('home')}}function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:6},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;if(n==='del')pin=pin.slice(0,-1);else if(pin.length<6)pin+=n;drawDots();if(pin.length===6){checking=true;setTimeout(()=>{if(pin==='123456'){unlocked=true;show('home')}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=()=>{show('pass');$('#passTitle').textContent='输入密码'};$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);const apps=[['photos','🌼','相册','photos-icon'],['music','♫','音乐','music-icon'],['notes','≡','备忘录','notes-icon'],['settings','⚙','设置','settings-icon'],['clock','◷','时钟','clock-icon'],['instagram','◎','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+a[1]+'</span>'+a[2]+'</button>').join('');$$('[data-app]').forEach(b=>b.onclick=()=>{if(unlocked){show(b.dataset.app);if(b.dataset.app==='music')showPlaylist()}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});let touchY;$('#lock').addEventListener('touchstart',e=>touchY=e.touches[0].clientY,{passive:true});$('#lock').addEventListener('touchend',e=>{if(touchY-e.changedTouches[0].clientY>40)$('#unlock').click()},{passive:true});
@@ -235,9 +246,9 @@ const contacts=[{name:'Jiwon',icon:'J',text:'今天一起去喝咖啡吗？'},{n
 // 每个快拍：{type:'blank'|'image', src:'图片路径', text:'文字', duration:秒}
 // 现在先放空白占位页，之后你把内容整理好给我，我替换这里
 const myStories=[
-  {type:'blank', text:'快拍 1\n（内容待添加）', duration:5},
-  {type:'blank', text:'快拍 2\n（内容待添加）', duration:5},
-  {type:'blank', text:'快拍 3\n（内容待添加）', duration:5}
+  {type:'image', src:'stories/2046.jpg', duration:5, date:'21.09.13', texts:[]},
+  {type:'image', src:'stories/IMG_5609.JPG', duration:5, date:'22.08.05', texts:[{content:'응~', x:76, y:76, size:24, color:'#ffffff', bg:'dark'}]},
+  {type:'image', src:'stories/2033.jpg', duration:5, date:'22.08.21', texts:[]}
 ];
 
 let storyIndex=0, storyTimer=null;
@@ -270,10 +281,20 @@ function renderStory(){
   // 设置当前段动画时长
   const activeSeg=$('#storyProgress .seg.active');
   if(activeSeg)activeSeg.style.setProperty('--dur',(s.duration||5)+'s');
+  // 显示日期
+  $('#storyTime').textContent = s.date || '';
   // 内容
   const content=$('#storyContent');
   if(s.type==='image'&&s.src){
-    content.innerHTML='<img src="'+s.src+'" alt="快拍">';
+    let html='<img src="'+s.src+'" alt="快拍">';
+    // 渲染文字框
+    (s.texts||[]).forEach(t=>{
+      let bg='';
+      if(t.bg==='dark')bg='background:rgba(0,0,0,.55);';
+      else if(t.bg==='light')bg='background:rgba(255,255,255,.85);color:#111;';
+      html+='<div class="story-text" style="left:'+t.x+'%;top:'+t.y+'%;font-size:'+t.size+'px;color:'+t.color+';'+bg+'">'+(t.content||'').replace(/\n/g,'<br>')+'</div>';
+    });
+    content.innerHTML=html;
   }else{
     content.innerHTML='<div class="story-blank">'+((s.text||'').replace(/\n/g,'<br>'))+'</div>';
   }
