@@ -3,20 +3,98 @@
 
 body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;background:radial-gradient(ellipse at 50% 45%,#353346,#171820 70%)}.phone{width:360px;height:760px;border-radius:34px;padding:7px;background:#16171c;box-shadow:0 30px 90px #0008,0 0 0 1px #777982,inset 0 0 0 3px #35363d}.screen{border-radius:28px;background:#53506f}.island{top:11px;width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 3px #ffffff12}.island:after{width:4px;height:4px;right:4px;top:4px;background:#192235}.wallpaper{background:radial-gradient(ellipse at 80% 15%,#e3d8f7 0,transparent 45%),radial-gradient(ellipse at 10% 90%,#4a4370 0,transparent 60%),linear-gradient(155deg,#a69cca,#7366a1 50%,#b1a8cf)}.wallpaper:after{width:470px;height:590px;left:20px;top:80px;transform:rotate(30deg);border:0;background:linear-gradient(100deg,#ffffff04,#e4dcff65 45%,#5c4e8b44);box-shadow:inset 18px 8px 25px #ffffff30;border-radius:48%}.status{padding:16px 21px 0;height:43px;font-size:12px}.home{inset:43px 0 30px;padding:24px 19px}.widget{height:153px;border-radius:27px;background:#f7f3ff24;margin:8px 0 36px;padding:23px}.widget .big{font-size:47px}.apps{gap:25px 9px}.icon{width:56px;height:56px;border-radius:19px;box-shadow:none}.app-icon{font-size:10px}.photos-icon{background:#fa6785;color:white}.music-icon{background:#9a5be3}.notes-icon{background:#ff9560;color:white}.settings-icon{background:#888fa6;color:#fff}.clock-icon{background:#f7f7ff;color:#343350}.dock{background:transparent;bottom:13px;padding:10px 0;left:19px;right:19px}.homebar{width:80px;height:4px;bottom:9px;background:#fff9}.app{padding:55px 20px 34px;background:#f6f6f6}.app h2{font-weight:500;margin:28px 0}.app .back{color:#27272c}.ig-icon{background:radial-gradient(circle at 30% 100%,#ffd76a,#ff346a 50%,#a137c5 80%);color:#fff;font-size:48px;line-height:1}.kakao-icon{background:#fee500;color:#392027;font-weight:800;font-size:13px}.social-head{display:flex;align-items:center;justify-content:space-between;margin:22px 0;font-size:26px;font-weight:650}.stories{display:flex;gap:15px;overflow:auto;padding:3px 0 18px}.story{background:none;padding:0;font-size:10px;color:#333}.avatar{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#d6c8e6;color:#56465f;font-size:21px;margin-bottom:6px}.story .avatar{outline:2px solid #e84e8a;outline-offset:3px;border:3px solid white}.post{margin:10px -20px 22px;background:white}.post-head{padding:12px 15px;display:flex;align-items:center;gap:10px;font-size:12px}.post-head .avatar{width:30px;height:30px;margin:0;font-size:15px}.post img{width:100%;height:260px;object-fit:cover;display:block}.post-actions{padding:10px 14px;display:flex;gap:16px}.post-actions button{background:none;font-size:25px;padding:0}.post p{font-size:12px;margin:0;padding:0 15px 12px;line-height:1.7}.liked{color:#eb3861}.chat-list button{background:none;display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:15px 0;color:#222}.chat-list .avatar{margin:0;border-radius:18px;background:#e3d9ec}.chat-info{flex:1}.chat-info b{font-size:14px}.chat-info small{display:block;color:#777;font-size:12px;margin-top:5px}.chat-list time{font-size:10px;color:#999}.conversation{position:absolute;inset:43px 0 25px;display:flex;flex-direction:column;background:#bdd0dd}.chat-header{padding:18px;display:flex;gap:20px;align-items:center;font-size:15px}.chat-header button{font-size:25px;background:none}.messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}.bubble{padding:11px 13px;border-radius:4px 14px 14px;background:white;color:#333;max-width:82%;align-self:flex-start;font-size:13px;line-height:1.6;overflow-wrap:anywhere}.bubble.mine{background:#fee500;align-self:flex-end;border-radius:14px 4px 14px 14px}.composer{display:flex;gap:8px;padding:10px;background:#fff}.composer input{width:0;flex:1;border:1px solid #ddd;border-radius:20px;padding:10px}.composer button{background:#fee500;border-radius:12px;padding:8px 13px}.social-note{font-size:10px;color:#999}.phone .lock-side{top:180px;height:70px}
 @media(max-width:600px){.stage{padding:0;background:#171820}.phone{width:min(100vw,420px);height:100svh;max-height:900px;border-radius:0;padding:0;box-shadow:none}.screen{border-radius:0}.home{padding-top:30px}.widget{margin-bottom:40px}.lock-side{display:none}}@media(min-width:601px) and (max-height:820px){.phone{height:calc(100svh - 32px);min-height:620px}.stage{padding:16px}.widget{height:125px;margin-bottom:22px}.home{padding-top:12px}.apps{gap:18px 9px}}
+
+/* ===== 音乐歌单页 ===== */
+.playlist-header{display:flex;align-items:center;gap:16px;margin:20px 0 24px;text-align:left}
+.playlist-cover{width:110px;height:110px;border-radius:12px;background:linear-gradient(135deg,#5a4a7a,#2a1f3d);flex-shrink:0;background-size:cover;background-position:center;box-shadow:0 8px 20px #0004}
+.playlist-info{flex:1;min-width:0}
+.playlist-label{font-size:10px;letter-spacing:2px;color:#9aa8a4;margin-bottom:6px}
+.playlist-title{font-size:24px;margin:0 0 6px;font-weight:600}
+.playlist-meta{font-size:12px;color:#9aa8a4}
+.song-list{text-align:left;margin:0 -18px}
+.song-item{width:100%;display:flex;align-items:center;gap:12px;padding:10px 18px;background:none;color:#e8efec;text-align:left;border-bottom:1px solid #ffffff0d;transition:background .15s}
+.song-item:active{background:#ffffff12}
+.song-item.active{background:#ffffff10}
+.song-thumb{width:48px;height:48px;border-radius:8px;background:linear-gradient(135deg,#5a4a7a,#2a1f3d);flex-shrink:0;background-size:cover;background-position:center;box-shadow:0 3px 8px #0003}
+.song-text{flex:1;min-width:0}
+.song-name{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-artist{font-size:12px;color:#9aa8a4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.song-item.active .song-name{color:#fff}
+.song-item.active .song-artist{color:#c9d6d1}
+.song-dur{font-size:11px;color:#7d8a86;flex-shrink:0}
+/* 播放详情页封面图 */
+.cover{overflow:hidden;padding:0;position:relative}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.cover span,.cover b{display:none}
+
+/* ===== Instagram 快拍查看器 ===== */
+.story-viewer{position:absolute;inset:0;background:#000;z-index:60;display:flex;flex-direction:column;overflow:hidden}
+.story-progress{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:3px;z-index:3}
+.story-progress .seg{flex:1;height:2.5px;background:#ffffff40;border-radius:2px;overflow:hidden}
+.story-progress .seg .fill{height:100%;width:0;background:#fff;border-radius:2px}
+.story-progress .seg.done .fill{width:100%}
+.story-progress .seg.active .fill{animation:storyFill var(--dur,5s) linear forwards}
+@keyframes storyFill{from{width:0}to{width:100%}}
+.story-topbar{position:absolute;top:20px;left:12px;right:12px;display:flex;align-items:center;gap:10px;z-index:3}
+.story-user{display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;flex:1;min-width:0}
+.story-avatar{width:32px;height:32px;border-radius:50%;background:#d6c8e6;color:#56465f;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+.story-user b{font-weight:600}
+.story-time{color:#ffffffb0;font-size:11px}
+.story-close{background:none;color:#fff;font-size:20px;padding:4px 8px;z-index:4}
+.story-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;text-align:center;padding:60px 24px}
+.story-content img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.story-content .story-blank{color:#ffffff60;font-size:13px;line-height:1.8}
+.story-tap{position:absolute;top:0;bottom:0;width:50%;z-index:2}
+.story-tap-left{left:0}
+.story-tap-right{right:0}
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="hint" style="color:#ffffffa0">体验密码 123456</div><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
 <section id="home" class="view home"><div class="widget"><div><small>星期与天气</small><div class="big">23°</div><small>晴朗 · 适合出去走走</small></div><div style="font-size:43px">☀</div></div><div class="apps" id="apps"></div><div class="dock"><button class="app-icon" data-app="photos"><span class="icon photos-icon">🌼</span>相册</button><button class="app-icon" data-app="music"><span class="icon music-icon">♫</span>音乐</button><button class="app-icon" data-app="notes"><span class="icon notes-icon">≡</span>备忘录</button></div></section>
 <section id="photos" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><h2>照片</h2><div class="album-label"><b>我的小世界</b><label for="file" style="color:#3981be;cursor:pointer">＋ 添加照片</label><input type="file" id="file" accept="image/*" multiple></div><div class="grid" id="gallery"></div></section>
-<section id="music" class="view app music hidden"><button class="back" data-home>‹ 主屏幕</button><div style="font-size:10px;letter-spacing:3px;margin-top:12px">口 袋 电 台</div><div class="cover"><span>POCKET SESSIONS / VOL. 01</span><b id="coverTitle">慢慢，出发</b></div><h2 id="songTitle">晨间漫游</h2><p id="artist">Pocket Universe · 原创电子小调</p><input id="seek" type="range" min="0" max="30" value="0" aria-label="播放进度"><div class="times"><span id="elapsed">0:00</span><span>0:30</span></div><div class="controls"><button id="prev" aria-label="上一首">⏮</button><button id="play" class="play" aria-label="播放">▶</button><button id="next" aria-label="下一首">⏭</button></div><div class="tracks" id="tracks"></div></section>
+<section id="music" class="view app music hidden">
+  <!-- 歌单列表页 -->
+  <div id="playlistPage">
+    <button class="back" data-home>‹ 主屏幕</button>
+    <div class="playlist-header">
+      <div class="playlist-cover" id="playlistCover"></div>
+      <div class="playlist-info">
+        <div class="playlist-label">播放列表</div>
+        <h2 class="playlist-title">我的歌单</h2>
+        <div class="playlist-meta" id="playlistMeta">1 首歌曲</div>
+      </div>
+    </div>
+    <div class="song-list" id="songList"></div>
+  </div>
+  <!-- 播放详情页 -->
+  <div id="playerPage" class="hidden">
+    <button class="back" id="backToPlaylist">‹ 歌单</button>
+    <div class="cover" id="coverBox"><img id="coverImg" alt="专辑封面"></div>
+    <h2 id="songTitle">OSAKA</h2>
+    <p id="artist">ELO, ZICO</p>
+    <input id="seek" type="range" min="0" max="30" value="0" aria-label="播放进度">
+    <div class="times"><span id="elapsed">0:00</span><span id="totalTime">0:30</span></div>
+    <div class="controls"><button id="prev" aria-label="上一首">⏮</button><button id="play" class="play" aria-label="播放">▶</button><button id="next" aria-label="下一首">⏭</button></div>
+  </div>
+</section>
 <section id="notes" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><h2>备忘录</h2><textarea id="note" class="note" aria-label="备忘录" placeholder="今天有什么值得记住的事？"></textarea><div id="saved" class="hint" aria-live="polite">等待你的第一条灵感</div></section>
 <section id="settings" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><h2>设置</h2><div class="row"><span>深色桌面背景</span><button id="theme">切换</button></div><div class="row"><span>锁屏密码</span><b>123456</b></div><div class="row"><span>回到锁屏</span><button id="relock">锁定</button></div><div class="row"><span>声音音量</span><input type="range" id="volume" min="0" max="1" step=".01" value=".4" aria-label="音量" style="width:100px"></div></section>
 <section id="clock" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><h2>时钟</h2><div id="stopwatch" style="font-size:53px;text-align:center;margin:90px 0 35px;font-variant-numeric:tabular-nums">00:00.0</div><div class="row"><button id="resetTimer">复位</button><button id="startTimer">开始</button></div></section>
 
 <section id="instagram" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><div class="social-head"><span style="font-family:Georgia,serif;font-style:italic">Instagram</span><span>♡</span></div><div class="stories" id="stories"></div><div id="feed"></div><div class="social-note">模拟动态</div></section>
-<section id="kakao" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><div class="social-head"><span>聊天</span><span style="font-size:17px">KakaoTalk</span></div><div class="chat-list" id="chatList"></div><div class="social-note">模拟聊天 · 消息仅保存在当前浏览器</div><div class="conversation hidden" id="conversation"><div class="chat-header"><button id="closeChat" aria-label="返回聊天列表">‹</button><b id="chatName"></b></div><div class="messages" id="messages"></div><form class="composer" id="composer"><input id="chatInput" aria-label="消息" placeholder="输入消息…" autocomplete="off" maxlength="1000"><button>发送</button></form></div></section><div class="photo-view hidden" id="viewer"><button class="back" id="closePhoto">‹ 照片</button><img id="largePhoto" alt="放大的风景"><div class="photo-nav"><button id="photoPrev" aria-label="上一张">‹</button><button id="photoNext" aria-label="下一张">›</button></div></div><button class="homebar hidden" aria-label="返回主屏幕" id="homebar"></button><div class="toast hidden" id="toast" role="status"></div></div></div></main>
+<section id="kakao" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><div class="social-head"><span>聊天</span><span style="font-size:17px">KakaoTalk</span></div><div class="chat-list" id="chatList"></div><div class="social-note">模拟聊天 · 消息仅保存在当前浏览器</div><div class="conversation hidden" id="conversation"><div class="chat-header"><button id="closeChat" aria-label="返回聊天列表">‹</button><b id="chatName"></b></div><div class="messages" id="messages"></div><form class="composer" id="composer"><input id="chatInput" aria-label="消息" placeholder="输入消息…" autocomplete="off" maxlength="1000"><button>发送</button></form></div></section><div class="story-viewer hidden" id="storyViewer">
+  <div class="story-progress" id="storyProgress"></div>
+  <div class="story-topbar">
+    <div class="story-user"><span class="story-avatar" id="storyAvatar">＋</span><b id="storyName">我的动态</b><span class="story-time" id="storyTime">刚刚</span></div>
+    <button class="story-close" id="storyClose" aria-label="关闭">✕</button>
+  </div>
+  <div class="story-content" id="storyContent"></div>
+  <div class="story-tap story-tap-left" id="storyPrev" aria-label="上一页"></div>
+  <div class="story-tap story-tap-right" id="storyNext" aria-label="下一页"></div>
+</div>
+<div class="photo-view hidden" id="viewer"><button class="back" id="closePhoto">‹ 照片</button><img id="largePhoto" alt="放大的风景"><div class="photo-nav"><button id="photoPrev" aria-label="上一张">‹</button><button id="photoNext" aria-label="下一张">›</button></div></div><button class="homebar hidden" aria-label="返回主屏幕" id="homebar"></button><div class="toast hidden" id="toast" role="status"></div></div></div></main>
 <script>
-const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);let unlocked=true,pin='',page='home';function show(id){$$('.view').forEach(e=>e.classList.toggle('hidden',e.id!==id));page=id;$('#homebar').classList.toggle('hidden',!unlocked);$('.status').style.color=['photos','notes','settings','clock','instagram','kakao'].includes(id)?'#263c39':'white'}function home(){if(unlocked){$('#viewer').classList.add('hidden');show('home')}}function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:6},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;if(n==='del')pin=pin.slice(0,-1);else if(pin.length<6)pin+=n;drawDots();if(pin.length===6){checking=true;setTimeout(()=>{if(pin==='123456'){unlocked=true;show('home')}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=()=>{show('pass');$('#passTitle').textContent='输入密码'};$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);const apps=[['photos','🌼','相册','photos-icon'],['music','♫','音乐','music-icon'],['notes','≡','备忘录','notes-icon'],['settings','⚙','设置','settings-icon'],['clock','◷','时钟','clock-icon'],['instagram','◎','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+a[1]+'</span>'+a[2]+'</button>').join('');$$('[data-app]').forEach(b=>b.onclick=()=>{if(unlocked)show(b.dataset.app)});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});let touchY;$('#lock').addEventListener('touchstart',e=>touchY=e.touches[0].clientY,{passive:true});$('#lock').addEventListener('touchend',e=>{if(touchY-e.changedTouches[0].clientY>40)$('#unlock').click()},{passive:true});
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);let unlocked=true,pin='',page='home';function show(id){$$('.view').forEach(e=>e.classList.toggle('hidden',e.id!==id));page=id;$('#homebar').classList.toggle('hidden',!unlocked);$('.status').style.color=['photos','notes','settings','clock','instagram','kakao'].includes(id)?'#263c39':'white'}function home(){if(unlocked){$('#viewer').classList.add('hidden');show('home')}}function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:6},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;if(n==='del')pin=pin.slice(0,-1);else if(pin.length<6)pin+=n;drawDots();if(pin.length===6){checking=true;setTimeout(()=>{if(pin==='123456'){unlocked=true;show('home')}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=()=>{show('pass');$('#passTitle').textContent='输入密码'};$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);const apps=[['photos','🌼','相册','photos-icon'],['music','♫','音乐','music-icon'],['notes','≡','备忘录','notes-icon'],['settings','⚙','设置','settings-icon'],['clock','◷','时钟','clock-icon'],['instagram','◎','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+a[1]+'</span>'+a[2]+'</button>').join('');$$('[data-app]').forEach(b=>b.onclick=()=>{if(unlocked){show(b.dataset.app);if(b.dataset.app==='music')showPlaylist()}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});let touchY;$('#lock').addEventListener('touchstart',e=>touchY=e.touches[0].clientY,{passive:true});$('#lock').addEventListener('touchend',e=>{if(touchY-e.changedTouches[0].clientY>40)$('#unlock').click()},{passive:true});
 // 内置照片：放在 photos_web/ 文件夹里的真实照片，所有人打开都能看到
 const builtinPhotos=[
   {file:'IMG_4594.jpg',name:'照片 01'},
@@ -43,20 +121,193 @@ const builtinPhotos=[
 ];
 let photos=builtinPhotos.map(p=>({src:'photos_web/'+p.file,name:p.name}));function renderPhotos(){$('#gallery').innerHTML=photos.map((p,i)=>'<button class="photo" data-photo="'+i+'"><img src="'+p.src+'" alt="'+p.name+'"></button>').join('');$$('[data-photo]').forEach(b=>b.onclick=()=>viewPhoto(+b.dataset.photo))}let photoIndex=0;function viewPhoto(i){photoIndex=(i+photos.length)%photos.length;$('#largePhoto').src=photos[photoIndex].src;$('#largePhoto').alt=photos[photoIndex].name;$('#viewer').classList.remove('hidden')}renderPhotos();$('#closePhoto').onclick=()=>$('#viewer').classList.add('hidden');$('#photoPrev').onclick=()=>viewPhoto(photoIndex-1);$('#photoNext').onclick=()=>viewPhoto(photoIndex+1);$('#file').onchange=e=>{[...e.target.files].filter(f=>f.type.startsWith('image/')).forEach(f=>photos.push({src:URL.createObjectURL(f),name:'添加的照片'}));renderPhotos();e.target.value=''};
 function read(k,f){try{return localStorage.getItem(k)||f}catch{return f}}function save(k,v){try{localStorage.setItem(k,v);return true}catch{return false}}$('#note').value=read('pocket-note','周末的小计划\n\n去看看没见过的风景。\n听一首喜欢的歌。\n把平常的日子，过得有趣一点。');$('#note').oninput=()=>$('#saved').textContent=save('pocket-note',$('#note').value)?'已自动保存到此浏览器':'浏览器暂不支持保存，请自行复制内容';$('#theme').onclick=()=>document.body.classList.toggle('night');
-const songs=['晨间漫游','海边来信','星光慢拍'];let song=0,audio;function makeAudio(index){let rate=16000,len=30*rate,buf=new ArrayBuffer(44+len*2),v=new DataView(buf);function str(o,s){[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)))}str(0,'RIFF');v.setUint32(4,36+len*2,true);str(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);str(36,'data');v.setUint32(40,len*2,true);let scales=[[261.63,329.63,392,523.25,440,392,329.63,293.66],[293.66,369.99,440,587.33,493.88,440,369.99,329.63],[220,261.63,329.63,440,392,329.63,261.63,246.94]],scale=scales[index];for(let i=0;i<len;i++){let t=i/rate,beat=Math.floor(t/.375),phase=t% .375,f=scale[beat%8],env=Math.exp(-phase*8),fade=Math.min(t,1,30-t),s=(Math.sin(2*Math.PI*f*t)*.35+Math.sin(2*Math.PI*f*2*t)*.08)*env; s+=.10*Math.sin(2*Math.PI*scale[Math.floor(t/3)%4]/2*t)*Math.min(1,(t%3)*3);v.setInt16(44+i*2,Math.max(-1,Math.min(1,s*fade)) *26000,true)}return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}))}const urls={};function setSong(i,autoplay=false){song=(i+3)%3;if(audio){audio.pause();audio.src=''}if(!urls[song])urls[song]=makeAudio(song);audio=new Audio(urls[song]);audio.volume=+$('#volume').value;audio.ontimeupdate=()=>{$('#seek').value=audio.currentTime;$('#elapsed').textContent='0:'+String(Math.floor(audio.currentTime)).padStart(2,'0')};audio.onended=()=>setSong(song+1,true);audio.onplay=()=>{$('#play').textContent='Ⅱ';$('#play').setAttribute('aria-label','暂停')};audio.onpause=()=>{$('#play').textContent='▶';$('#play').setAttribute('aria-label','播放')};$('#songTitle').textContent=songs[song];$('#coverTitle').textContent=['慢慢，出发','听海，来信','今晚，有星'][song];$('#seek').value=0;$('#elapsed').textContent='0:00';$('#play').textContent='▶';$('#tracks').innerHTML=songs.map((s,i)=>'<button class="track '+(i===song?'active':'')+'" data-song="'+i+'"><span>0'+(i+1)+' &nbsp; '+s+'</span><span>0:30</span></button>').join('');$$('[data-song]').forEach(b=>b.onclick=()=>setSong(+b.dataset.song,true));if(autoplay)playAudio()}function playAudio(){audio.play().catch(()=>{$('#toast').textContent='播放未开始，请再次点击播放';$('#toast').classList.remove('hidden');setTimeout(()=>$('#toast').classList.add('hidden'),2500)})}setSong(0);$('#play').onclick=()=>audio.paused?playAudio():audio.pause();$('#prev').onclick=()=>setSong(song-1,true);$('#next').onclick=()=>setSong(song+1,true);$('#seek').oninput=e=>audio.currentTime=+e.target.value;$('#volume').oninput=e=>audio.volume=+e.target.value;
+// ===== 音乐歌单数据 =====
+// 每首歌：name 歌名, artist 歌手, album 专辑, cover 封面图, duration 时长(秒), audio 音频文件(可选)
+const playlist=[
+  {name:'OSAKA', artist:'ELO, ZICO', album:'GRADATION Vol.4', cover:'music/osaka_cover.jpg', duration:30, audio:null}
+];
+let song=0, audio=null, currentAudioUrl=null;
+
+// 合成旋律（当没有真实音频时使用）
+function makeAudio(index){
+  let rate=16000,len=30*rate,buf=new ArrayBuffer(44+len*2),v=new DataView(buf);
+  function str(o,s){[...s].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)))}
+  str(0,'RIFF');v.setUint32(4,36+len*2,true);str(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,rate,true);v.setUint32(28,rate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);str(36,'data');v.setUint32(40,len*2,true);
+  let scales=[[261.63,329.63,392,523.25,440,392,329.63,293.66],[293.66,369.99,440,587.33,493.88,440,369.99,329.63],[220,261.63,329.63,440,392,329.63,261.63,246.94]],scale=scales[index%3];
+  for(let i=0;i<len;i++){let t=i/rate,beat=Math.floor(t/.375),phase=t% .375,f=scale[beat%8],env=Math.exp(-phase*8),fade=Math.min(t,1,30-t),s=(Math.sin(2*Math.PI*f*t)*.35+Math.sin(2*Math.PI*f*2*t)*.08)*env; s+=.10*Math.sin(2*Math.PI*scale[Math.floor(t/3)%4]/2*t)*Math.min(1,(t%3)*3);v.setInt16(44+i*2,Math.max(-1,Math.min(1,s*fade)) *26000,true)}
+  return URL.createObjectURL(new Blob([buf],{type:'audio/wav'}))
+}
+
+// 渲染歌单列表
+function renderPlaylist(){
+  const list=$('#songList');
+  list.innerHTML=playlist.map((s,i)=>`
+    <button class="song-item ${i===song?'active':''}" data-song="${i}">
+      <div class="song-thumb" style="background-image:url('${s.cover}')"></div>
+      <div class="song-text">
+        <div class="song-name">${s.name}</div>
+        <div class="song-artist">${s.artist}</div>
+      </div>
+      <div class="song-dur">${formatTime(s.duration)}</div>
+    </button>`).join('');
+  $$('[data-song]').forEach(b=>b.onclick=()=>{setSong(+b.dataset.song,true);showPlayer()});
+  // 歌单头部封面用第一首
+  if(playlist[0]) $('#playlistCover').style.backgroundImage=`url('${playlist[0].cover}')`;
+  $('#playlistMeta').textContent=playlist.length+' 首歌曲';
+}
+
+function formatTime(sec){
+  const m=Math.floor(sec/60), s=Math.floor(sec%60);
+  return m+':'+String(s).padStart(2,'0');
+}
+
+// 显示播放详情页
+function showPlayer(){
+  $('#playlistPage').classList.add('hidden');
+  $('#playerPage').classList.remove('hidden');
+}
+// 返回歌单
+function showPlaylist(){
+  $('#playerPage').classList.add('hidden');
+  $('#playlistPage').classList.remove('hidden');
+  renderPlaylist();
+}
+
+// 切换歌曲
+function setSong(i,autoplay=false){
+  song=(i+playlist.length)%playlist.length;
+  const s=playlist[song];
+  if(audio){audio.pause();audio.src=''}
+  // 有真实音频用真实音频，否则用合成旋律
+  if(s.audio){
+    currentAudioUrl=s.audio;
+  }else{
+    currentAudioUrl=makeAudio(song);
+  }
+  audio=new Audio(currentAudioUrl);
+  audio.ontimeupdate=()=>{
+    $('#seek').value=audio.currentTime;
+    $('#elapsed').textContent=formatTime(audio.currentTime);
+  };
+  audio.onloadedmetadata=()=>{
+    if(isFinite(audio.duration)&&audio.duration>0){
+      $('#seek').max=audio.duration;
+      $('#totalTime').textContent=formatTime(audio.duration);
+    }
+  };
+  audio.onended=()=>setSong(song+1,true);
+  audio.onplay=()=>{$('#play').textContent='Ⅱ';$('#play').setAttribute('aria-label','暂停')};
+  audio.onpause=()=>{$('#play').textContent='▶';$('#play').setAttribute('aria-label','播放')};
+  // 更新界面
+  $('#songTitle').textContent=s.name;
+  $('#artist').textContent=s.artist;
+  $('#coverImg').src=s.cover;
+  $('#coverImg').alt=s.name+' 专辑封面';
+  $('#seek').value=0;
+  $('#seek').max=s.duration;
+  $('#elapsed').textContent='0:00';
+  $('#totalTime').textContent=formatTime(s.duration);
+  $('#play').textContent='▶';
+  if(autoplay)playAudio();
+}
+
+function playAudio(){
+  audio.play().catch(()=>{
+    $('#toast').textContent='播放未开始，请再次点击播放';
+    $('#toast').classList.remove('hidden');
+    setTimeout(()=>$('#toast').classList.add('hidden'),2500);
+  });
+}
+
+// 初始化
+renderPlaylist();
+setSong(0);
+$('#play').onclick=()=>audio.paused?playAudio():audio.pause();
+$('#prev').onclick=()=>setSong(song-1,true);
+$('#next').onclick=()=>setSong(song+1,true);
+$('#seek').oninput=e=>audio.currentTime=+e.target.value;
+$('#backToPlaylist').onclick=showPlaylist;
 let running=false,elapsed=0,started=0;$('#startTimer').onclick=()=>{if(running)elapsed+=performance.now()-started;else started=performance.now();running=!running;$('#startTimer').textContent=running?'暂停':'继续'};$('#resetTimer').onclick=()=>{elapsed=0;started=performance.now()};setInterval(()=>{let t=elapsed+(running?performance.now()-started:0);$('#stopwatch').textContent=String(Math.floor(t/60000)).padStart(2,'0')+':'+String(Math.floor(t/1000)%60).padStart(2,'0')+'.'+Math.floor(t/100)%10},100);
 
 const contacts=[{name:'Jiwon',icon:'J',text:'今天一起去喝咖啡吗？'},{name:'Minji',icon:'M',text:'刚刚的照片好好看 ✨'},{name:'周末小分队',icon:'☀',text:'周六见！'}];
-$('#stories').innerHTML=contacts.concat([{name:'我的动态',icon:'＋'}]).map((c,i)=>'<button class="story" data-story="'+i+'"><span class="avatar">'+c.icon+'</span>'+c.name+'</button>').join('');
-$('[data-story]').forEach(b=>b.onclick=()=>viewPhoto(+b.dataset.story));
-$('#feed').innerHTML=photos.slice(0,3).map((p,i)=>'<article class="post"><div class="post-head"><span class="avatar">'+contacts[i].icon+'</span><b>'+contacts[i].name.toLowerCase()+'</b></div><img src="'+p.src+'" alt="'+p.name+'"><div class="post-actions"><button data-like aria-label="点赞" aria-pressed="false">♡</button><button data-comment aria-label="评论">♧</button></div><p><b>'+contacts[i].name.toLowerCase()+'</b> '+p.name+' ✨<br><span data-count>12</span> 次赞</p></article>').join('');
-$('[data-like]').forEach(b=>b.onclick=()=>{const liked=b.classList.toggle('liked');b.textContent=liked?'♥':'♡';b.setAttribute('aria-pressed',String(liked));b.closest('.post').querySelector('[data-count]').textContent=liked?'13':'12'});
-$('[data-comment]').forEach(b=>b.onclick=()=>{let input=b.closest('.post').querySelector('form');if(input){input.querySelector('input').focus();return}input=document.createElement('form');input.className='composer';input.innerHTML='<input aria-label="评论" placeholder="添加评论…" maxlength="500" required><button>发布</button>';input.onsubmit=e=>{e.preventDefault();const field=input.querySelector('input');if(!field.value.trim())return;const p=document.createElement('p');p.textContent='我：'+field.value.trim();input.before(p);field.value=''};b.closest('.post').append(input);input.querySelector('input').focus()});
+
+// ===== Instagram 快拍数据 =====
+// 每个快拍：{type:'blank'|'image', src:'图片路径', text:'文字', duration:秒}
+// 现在先放空白占位页，之后你把内容整理好给我，我替换这里
+const myStories=[
+  {type:'blank', text:'快拍 1\n（内容待添加）', duration:5},
+  {type:'blank', text:'快拍 2\n（内容待添加）', duration:5},
+  {type:'blank', text:'快拍 3\n（内容待添加）', duration:5}
+];
+
+let storyIndex=0, storyTimer=null;
+
+function openStory(contactIndex){
+  // 快拍列表：[我的动态(index 0), ...contacts(index 1..)]
+  storyIndex=0;
+  $('#storyViewer').classList.remove('hidden');
+  if(contactIndex===0){
+    $('#storyName').textContent='我的动态';
+    $('#storyAvatar').textContent='＋';
+  }else{
+    const c=contacts[contactIndex-1];
+    $('#storyName').textContent=c.name;
+    $('#storyAvatar').textContent=c.icon;
+  }
+  renderStory();
+}
+
+function renderStory(){
+  const s=myStories[storyIndex];
+  if(!s){closeStory();return;}
+  // 进度条
+  $('#storyProgress').innerHTML=myStories.map((_,i)=>{
+    let cls='seg';
+    if(i<storyIndex)cls+=' done';
+    else if(i===storyIndex)cls+=' active';
+    return '<div class="'+cls+'"><div class="fill"></div></div>';
+  }).join('');
+  // 设置当前段动画时长
+  const activeSeg=$('#storyProgress .seg.active');
+  if(activeSeg)activeSeg.style.setProperty('--dur',(s.duration||5)+'s');
+  // 内容
+  const content=$('#storyContent');
+  if(s.type==='image'&&s.src){
+    content.innerHTML='<img src="'+s.src+'" alt="快拍">';
+  }else{
+    content.innerHTML='<div class="story-blank">'+((s.text||'').replace(/\n/g,'<br>'))+'</div>';
+  }
+  // 自动翻页计时
+  clearTimeout(storyTimer);
+  storyTimer=setTimeout(()=>nextStory(),(s.duration||5)*1000);
+}
+
+function nextStory(){
+  if(storyIndex<myStories.length-1){storyIndex++;renderStory();}
+  else closeStory();
+}
+function prevStory(){
+  if(storyIndex>0){storyIndex--;renderStory();}
+  else {storyIndex=0;renderStory();}
+}
+function closeStory(){
+  clearTimeout(storyTimer);
+  $('#storyViewer').classList.add('hidden');
+}
+
+$('#storyNext').onclick=nextStory;
+$('#storyPrev').onclick=prevStory;
+$('#storyClose').onclick=closeStory;
+$('#stories').innerHTML=[{name:'我的动态',icon:'＋'}].concat(contacts).map((c,i)=>'<button class="story" data-story="'+i+'"><span class="avatar">'+c.icon+'</span>'+c.name+'</button>').join('');
+$$('[data-story]').forEach(b=>b.onclick=()=>openStory(+b.dataset.story));
+$('#feed').innerHTML='';
+$$('[data-like]').forEach(b=>b.onclick=()=>{const liked=b.classList.toggle('liked');b.textContent=liked?'♥':'♡';b.setAttribute('aria-pressed',String(liked));b.closest('.post').querySelector('[data-count]').textContent=liked?'13':'12'});
+$$('[data-comment]').forEach(b=>b.onclick=()=>{let input=b.closest('.post').querySelector('form');if(input){input.querySelector('input').focus();return}input=document.createElement('form');input.className='composer';input.innerHTML='<input aria-label="评论" placeholder="添加评论…" maxlength="500" required><button>发布</button>';input.onsubmit=e=>{e.preventDefault();const field=input.querySelector('input');if(!field.value.trim())return;const p=document.createElement('p');p.textContent='我：'+field.value.trim();input.before(p);field.value=''};b.closest('.post').append(input);input.querySelector('input').focus()});
 let chatHistory={};try{chatHistory=JSON.parse(localStorage.getItem('galaxy-chats')||'{}')||{}}catch{}let selectedChat=0;
 function saveChats(){try{localStorage.setItem('galaxy-chats',JSON.stringify(chatHistory))}catch{}}
 function renderMessages(){const box=$('#messages');box.replaceChildren();const list=Array.isArray(chatHistory[selectedChat])?chatHistory[selectedChat]:[];[{text:contacts[selectedChat].text,mine:false},...list].forEach(m=>{const b=document.createElement('div');b.className='bubble'+(m.mine?' mine':'');b.textContent=m.text;box.append(b)});box.scrollTop=box.scrollHeight}
 $('#chatList').innerHTML=contacts.map((c,i)=>'<button data-chat="'+i+'"><span class="avatar">'+c.icon+'</span><span class="chat-info"><b>'+c.name+'</b><small>'+c.text+'</small></span><time>刚刚</time></button>').join('');
-$('[data-chat]').forEach(b=>b.onclick=()=>{selectedChat=+b.dataset.chat;$('#chatName').textContent=contacts[selectedChat].name;$('#conversation').classList.remove('hidden');renderMessages()});
+$$('[data-chat]').forEach(b=>b.onclick=()=>{selectedChat=+b.dataset.chat;$('#chatName').textContent=contacts[selectedChat].name;$('#conversation').classList.remove('hidden');renderMessages()});
 $('#closeChat').onclick=()=>$('#conversation').classList.add('hidden');
 $('#composer').onsubmit=e=>{e.preventDefault();const input=$('#chatInput'),text=input.value.trim();if(!text)return;const id=selectedChat;if(!Array.isArray(chatHistory[id]))chatHistory[id]=[];chatHistory[id].push({text,mine:true});input.value='';saveChats();renderMessages();setTimeout(()=>{chatHistory[id].push({text:['好呀！一会儿见 ☕','谢谢！下次一起拍照吧 ✨','好，周六见！'][id],mine:false});saveChats();if(selectedChat===id)renderMessages()},900)};
 show('home');
