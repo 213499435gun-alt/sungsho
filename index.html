@@ -64,7 +64,7 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .story-reply .reply-icon{width:44px;height:44px;display:grid;place-items:center;color:#fff;font-size:22px}
 
 /* ===== Instagram 完整布局 ===== */
-.ig-app{padding:0!important;display:flex;flex-direction:column;overflow:hidden!important}
+.ig-app{padding:52px 0 0 0!important;display:flex;flex-direction:column;overflow:hidden!important}
 .ig-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;background:#fff;flex-shrink:0;border-bottom:1px solid #efefef}
 .ig-logo{font-family:Georgia,serif;font-style:italic;font-size:24px;font-weight:600;color:#262626}
 .ig-top-actions{display:flex;gap:16px}
@@ -673,6 +673,33 @@ $('#composer').onsubmit=e=>{e.preventDefault();const input=$('#chatInput'),text=
     if(dx<-50) viewPhoto(photoIndex+1);
     else if(dx>50) viewPhoto(photoIndex-1);
     sx=null;
+  },{passive:true});
+})();
+
+// 4) 底部横杠上滑：回到主屏幕（像真 iPhone）
+(function(){
+  let sy=null, sx=null, active=false;
+  const screen=document.querySelector('.screen');
+  screen.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    const t=e.touches[0];
+    const rect=screen.getBoundingClientRect();
+    // 底部 40px 区域内才算手势区
+    if(t.clientY - rect.top > rect.height - 40){
+      sy=t.clientY; sx=t.clientX; active=true;
+    }else{ active=false; }
+  },{passive:true});
+  screen.addEventListener('touchend',e=>{
+    if(!active||sy===null)return;
+    const dy=sy - e.changedTouches[0].clientY;  // 上滑为正
+    const dx=Math.abs(e.changedTouches[0].clientX - sx);
+    if(dy>50 && dy>dx*1.2){
+      // 上滑：关闭浮层或回主屏
+      if(!$('#viewer').classList.contains('hidden')){ $('#viewer').classList.add('hidden'); }
+      else if(!$('#storyViewer').classList.contains('hidden')){ closeStory(); }
+      else if(page!=='home' && page!=='lock' && page!=='pass'){ home(); }
+    }
+    sy=null; sx=null; active=false;
   },{passive:true});
 })();
 
