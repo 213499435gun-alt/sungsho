@@ -52,6 +52,12 @@ h1{font-size:22px;margin-bottom:6px}
 .panel{width:280px;flex-shrink:0}
 .panel h3{font-size:14px;color:#8a8a95;margin-bottom:10px;font-weight:500}
 .panel .empty{color:#666;font-size:12px;padding:20px 0;text-align:center}
+.img-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.img-grid .img-cell{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#1a1a1f}
+.img-grid .img-cell img{width:100%;height:100%;object-fit:cover;display:block}
+.img-grid .img-cell .rm{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:#000a;color:#fff;border:0;font-size:12px;cursor:pointer;display:grid;place-items:center;padding:0}
+.img-grid .img-cell .rm:hover{background:#ff5c7a}
+.img-grid .img-cell .idx{position:absolute;bottom:2px;left:2px;background:#000a;color:#fff;font-size:10px;padding:1px 5px;border-radius:4px}
 .output{margin-top:24px;background:#26262e;border-radius:14px;padding:16px}
 .output h3{font-size:13px;color:#8a8a95;margin-bottom:10px}
 .output textarea{width:100%;min-height:120px;background:#1a1a1f;border:1px solid #3a3a46;color:#9ae6b4;padding:12px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px;resize:vertical}
@@ -106,12 +112,10 @@ h1{font-size:22px;margin-bottom:6px}
       <div class="empty" id="postEmpty">选中一条帖子来编辑</div>
       <div id="postProps" style="display:none">
         <div class="card">
-          <label>图片</label>
-          <div style="margin-bottom:10px">
-            <img id="postImgPreview" style="width:100%;border-radius:8px;display:none;margin-bottom:8px">
-            <button class="btn block" id="pickPostImg">选择图片</button>
-            <input type="file" id="postImgInput" accept="image/*" style="display:none">
-          </div>
+          <label>图片（可多张，左右滑动）</label>
+          <div class="img-grid" id="postImgGrid"></div>
+          <button class="btn block" id="pickPostImg" style="margin-bottom:10px">＋ 添加图片</button>
+          <input type="file" id="postImgInput" accept="image/*" multiple style="display:none">
           <label>文案</label>
           <textarea id="postCaption" placeholder="写点什么…"></textarea>
           <label>点赞数</label>
@@ -149,14 +153,14 @@ const STORAGE_KEY = 'ig-editor-data';
 const LAST_KEY = 'ig-editor-last-generated';
 
 let profile = { avatar: '', avatarFile: '', id: '', name: '', bio: '' };
-let posts = [];   // {src, fileName, caption, likes, time}
+let posts = [];   // {images:[{src,fileName}], caption, likes, time}
 let currentIndex = -1;
 
 function saveLocal() {
   try {
     const meta = {
       profile: { avatarFile: profile.avatarFile, id: profile.id, name: profile.name, bio: profile.bio },
-      posts: posts.map(p => ({ fileName: p.fileName || '', caption: p.caption || '', likes: p.likes || '', time: p.time || '' }))
+      posts: posts.map(p => ({ images: (p.images||[]).map(im => ({ fileName: im.fileName || '' })), caption: p.caption || '', likes: p.likes || '', time: p.time || '' }))
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(meta));
   } catch (e) {}
@@ -175,13 +179,16 @@ function loadLocal() {
       if (profile.avatarFile) profile.avatar = 'ig/' + profile.avatarFile;
     }
     if (Array.isArray(meta.posts)) {
-      posts = meta.posts.map(m => ({
-        src: m.fileName ? ('ig/' + m.fileName) : '',
-        fileName: m.fileName || '',
-        caption: m.caption || '',
-        likes: m.likes || '',
-        time: m.time || ''
-      }));
+      posts = meta.posts.map(m => {
+        // 兼容旧格式（单图 fileName）和新格式（images 数组）
+        let imgs = [];
+        if (Array.isArray(m.images)) {
+          imgs = m.images.map(im => ({ src: im.fileName ? ('ig/' + im.fileName) : '', fileName: im.fileName || '' }));
+        } else if (m.fileName) {
+          imgs = [{ src: 'ig/' + m.fileName, fileName: m.fileName }];
+        }
+        return { images: imgs, caption: m.caption || '', likes: m.likes || '', time: m.time || '' };
+      });
     }
   } catch (e) {}
 }
@@ -210,10 +217,10 @@ function renderList() {
   list.innerHTML = posts.map((p, i) => `
     <div class="post-item ${i===currentIndex?'active':''}" data-idx="${i}" draggable="true">
       <span class="num">${i+1}</span>
-      <div class="mini" style="background-image:url('${p.src||''}')"></div>
+      <div class="mini" style="background-image:url('${(p.images&&p.images[0]&&p.images[0].src)||''}')"></div>
       <div class="info">
         <b>${(p.caption||'（无文案）').slice(0,16)}</b>
-        <small>${p.likes||0} 赞 · ${p.time||''}</small>
+        <small>${(p.images||[]).length} 张 · ${p.likes||0} 赞 · ${p.time||''}</small>
       </div>
       <button class="del" data-del="${i}" title="删除">✕</button>
     </div>
@@ -276,10 +283,25 @@ function renderPreview() {
   const avStyle = profile.avatar ? 'background-image:url(' + profile.avatar + ')' : '';
   const avText = profile.avatar ? '' : '我';
   body.innerHTML = posts.map(p => {
-    const img = p.src ? '<img src="' + p.src + '" alt="">' : '<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:12px">暂无图片</div>';
+    const imgs = p.images || [];
+    let imgHtml;
+    if (imgs.length === 0) {
+      imgHtml = '<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:12px">暂无图片</div>';
+    } else if (imgs.length === 1) {
+      imgHtml = '<img src="' + imgs[0].src + '" alt="">';
+    } else {
+      // 多图：横向滑动轮播
+      const slides = imgs.map(im => '<img src="' + im.src + '" alt="" style="flex:0 0 100%;width:100%;object-fit:cover;max-height:300px">').join('');
+      const dots = imgs.map((_,i) => '<span style="width:6px;height:6px;border-radius:50%;background:' + (i===0?'#3897f0':'#c7c7c7') + ';display:inline-block;margin:0 2px"></span>').join('');
+      imgHtml = '<div style="position:relative">'
+        + '<div style="display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch">' + slides + '</div>'
+        + '<div style="position:absolute;bottom:8px;left:0;right:0;text-align:center">' + dots + '</div>'
+        + '<div style="position:absolute;top:8px;right:8px;background:#000a;color:#fff;font-size:10px;padding:2px 7px;border-radius:10px">1/' + imgs.length + '</div>'
+        + '</div>';
+    }
     return '<div class="preview-post">'
       + '<div class="head"><span class="av" style="' + avStyle + '">' + avText + '</span><b>' + (profile.id || '我的账号') + '</b></div>'
-      + img
+      + imgHtml
       + '<div class="cap"><b>' + (p.likes || 0) + ' 次赞</b></div>'
       + '<div class="cap"><b>' + (profile.id || '我的账号') + '</b> ' + (p.caption || '') + '</div>'
       + '<div class="meta">' + (p.time || '') + '</div>'
@@ -304,9 +326,27 @@ function updatePanel() {
   empty.style.display = 'none';
   props.style.display = 'block';
   const p = posts[currentIndex];
-  const img = $('#postImgPreview');
-  if (p.src) { img.src = p.src; img.style.display = 'block'; }
-  else { img.style.display = 'none'; }
+  // 多图网格
+  const grid = $('#postImgGrid');
+  const imgs = p.images || [];
+  if (imgs.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;color:#666;font-size:12px;padding:8px 0">还没有图片</div>';
+  } else {
+    grid.innerHTML = imgs.map((im, i) => `
+      <div class="img-cell">
+        <img src="${im.src}" alt="">
+        <button class="rm" data-rm="${i}" title="移除">✕</button>
+        <span class="idx">${i+1}</span>
+      </div>
+    `).join('');
+    $$('[data-rm]').forEach(b => {
+      b.onclick = () => {
+        const idx = +b.dataset.rm;
+        posts[currentIndex].images.splice(idx, 1);
+        saveLocal(); renderList(); renderPreview(); updatePanel();
+      };
+    });
+  }
   $('#postCaption').value = p.caption || '';
   $('#postLikes').value = p.likes || '';
   $('#postTime').value = p.time || '';
@@ -333,24 +373,32 @@ $('#avatarInput').onchange = e => {
 };
 
 $('#addPost').onclick = () => {
-  posts.push({ src: '', fileName: '', caption: '', likes: '', time: '' });
+  posts.push({ images: [], caption: '', likes: '', time: '' });
   selectPost(posts.length - 1);
   saveLocal(); renderList(); renderPreview();
 };
 
 $('#pickPostImg').onclick = () => $('#postImgInput').click();
-$('#postImgInput').onchange = e => {
-  const f = e.target.files[0];
-  if (!f || currentIndex < 0) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    posts[currentIndex].src = ev.target.result;
-    posts[currentIndex].fileName = f.name;
-    saveLocal(); renderList(); renderPreview(); updatePanel();
-    toast('图片已加载');
-  };
-  reader.readAsDataURL(f);
+$('#postImgInput').onchange = async e => {
+  if (currentIndex < 0) { e.target.value = ''; return; }
+  const files = [...e.target.files].filter(f => f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name));
   e.target.value = '';
+  if (!files.length) return;
+  toast('正在添加 ' + files.length + ' 张…');
+  if (!Array.isArray(posts[currentIndex].images)) posts[currentIndex].images = [];
+  for (const file of files) {
+    try {
+      const dataUrl = await readAsDataURL(file);
+      let src = dataUrl, fileName = file.name;
+      if (/\.(heic|heif)$/i.test(file.name)) {
+        const jpg = await heicToJpg(dataUrl, file.name);
+        if (jpg) { src = jpg.dataUrl; fileName = jpg.fileName; }
+      }
+      posts[currentIndex].images.push({ src, fileName });
+    } catch (err) { console.warn('添加失败:', file.name, err); }
+  }
+  saveLocal(); renderList(); renderPreview(); updatePanel();
+  toast('已添加 ' + files.length + ' 张');
 };
 
 $('#postCaption').oninput = e => { if (currentIndex < 0) return; posts[currentIndex].caption = e.target.value; saveLocal(); renderList(); renderPreview(); };
@@ -364,14 +412,14 @@ $('#deletePost').onclick = () => {
   saveLocal(); renderList(); renderPreview(); updatePanel();
 };
 
-// 批量导入
+// 批量导入：一次选多张 → 全部放进同一个新帖子（轮播）
 $('#batchImport').onclick = () => $('#batchInput').click();
 $('#batchInput').onchange = async e => {
   const files = [...e.target.files].filter(f => f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name));
   e.target.value = '';
   if (!files.length) { toast('没有选择图片'); return; }
-  toast('正在导入 ' + files.length + ' 张…');
-  let added = 0;
+  toast('正在导入 ' + files.length + ' 张到同一个帖子…');
+  const newPost = { images: [], caption: '', likes: '', time: '' };
   for (const file of files) {
     try {
       const dataUrl = await readAsDataURL(file);
@@ -380,14 +428,14 @@ $('#batchInput').onchange = async e => {
         const jpg = await heicToJpg(dataUrl, file.name);
         if (jpg) { src = jpg.dataUrl; fileName = jpg.fileName; }
       }
-      posts.push({ src, fileName, caption: '', likes: '', time: '' });
-      added++;
+      newPost.images.push({ src, fileName });
     } catch (err) { console.warn('导入失败:', file.name, err); }
   }
-  if (added) {
+  if (newPost.images.length) {
+    posts.push(newPost);
     currentIndex = posts.length - 1;
     saveLocal(); renderList(); renderPreview(); updatePanel();
-    toast('已导入 ' + added + ' 条');
+    toast('已创建 1 条帖子，含 ' + newPost.images.length + ' 张图');
   } else toast('导入失败');
 };
 
@@ -426,7 +474,7 @@ function buildData() {
       bio: profile.bio || ''
     },
     posts: posts.map(p => ({
-      img: p.fileName ? ('ig/' + p.fileName) : '',
+      images: (p.images || []).map(im => im.fileName ? ('ig/' + im.fileName) : '').filter(Boolean),
       caption: p.caption || '',
       likes: p.likes || '',
       time: p.time || ''
@@ -487,8 +535,9 @@ $('#exportFile').onclick = () => {
 };
 
 $('#downloadBtn').onclick = () => {
-  const imgs = posts.filter(p => p.src);
-  if (profile.avatar) imgs.unshift({ src: profile.avatar, fileName: profile.avatarFile || 'avatar.jpg' });
+  const imgs = [];
+  if (profile.avatar) imgs.push({ src: profile.avatar, fileName: profile.avatarFile || 'avatar.jpg' });
+  posts.forEach(p => (p.images || []).forEach(im => { if (im.src) imgs.push(im); }));
   if (imgs.length === 0) { toast('还没有图片'); return; }
   imgs.forEach(p => {
     const a = document.createElement('a');

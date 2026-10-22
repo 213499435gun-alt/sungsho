@@ -113,6 +113,17 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
   to{opacity:0;transform:scale(.12) translate(var(--zx,0),var(--zy,0));border-radius:24px}
 }
 
+
+/* IG 多图轮播 */
+.ig-carousel{position:relative;background:#000}
+.ig-carousel-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.ig-carousel-track::-webkit-scrollbar{display:none}
+.ig-carousel-track img{flex:0 0 100%;width:100%;height:auto;max-height:470px;object-fit:cover;display:block;scroll-snap-align:start}
+.ig-carousel-dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+.ig-dot{width:6px;height:6px;border-radius:50%;background:#ffffff80;transition:.2s}
+.ig-dot.on{background:#fff}
+.ig-carousel-count{position:absolute;top:10px;right:10px;background:#000a;color:#fff;font-size:11px;padding:2px 8px;border-radius:10px}
+
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
@@ -570,10 +581,28 @@ function renderIGFeed(){
   const avText=prof.avatar?'':'我';
   const accName=prof.id||'我的账号';
   feed.innerHTML=igPosts.map((p,i)=>{
-    const img=p.img?'<img src="'+p.img+'" alt="帖子">':'<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:13px">暂无图片</div>';
+    // 兼容单图(img)和多图(images)
+    let imgs=[];
+    if(Array.isArray(p.images)&&p.images.length) imgs=p.images;
+    else if(p.img) imgs=[p.img];
+    let imgHtml;
+    if(imgs.length===0){
+      imgHtml='<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:13px">暂无图片</div>';
+    }else if(imgs.length===1){
+      imgHtml='<img src="'+imgs[0]+'" alt="帖子">';
+    }else{
+      // 多图轮播
+      const slides=imgs.map(src=>'<img src="'+src+'" alt="帖子" style="flex:0 0 100%;width:100%;scroll-snap-align:start">').join('');
+      const dots=imgs.map((_,k)=>'<span class="ig-dot'+(k===0?' on':'')+'"></span>').join('');
+      imgHtml='<div class="ig-carousel" data-carousel="'+i+'">'
+        +'<div class="ig-carousel-track">'+slides+'</div>'
+        +'<div class="ig-carousel-dots">'+dots+'</div>'
+        +'<div class="ig-carousel-count"><span class="cur">1</span>/'+imgs.length+'</div>'
+        +'</div>';
+    }
     return '<article class="post" data-post="'+i+'">'
       +'<div class="post-head"><span class="avatar" style="'+avStyle+'">'+avText+'</span><b>'+accName+'</b></div>'
-      +img
+      +imgHtml
       +'<div class="post-actions">'
       +'<button data-like aria-label="点赞">♡</button>'
       +'<button data-comment aria-label="评论">💬</button>'
@@ -583,6 +612,17 @@ function renderIGFeed(){
       +'<p style="color:#8e8e8e;font-size:11px">'+(p.time||'')+'</p>'
       +'</article>';
   }).join('');
+  // 轮播：滑动时更新圆点和计数
+  $$('.ig-carousel').forEach(car=>{
+    const track=car.querySelector('.ig-carousel-track');
+    const dots=car.querySelectorAll('.ig-dot');
+    const cur=car.querySelector('.cur');
+    track.addEventListener('scroll',()=>{
+      const idx=Math.round(track.scrollLeft/track.clientWidth);
+      dots.forEach((d,k)=>d.classList.toggle('on',k===idx));
+      if(cur)cur.textContent=idx+1;
+    },{passive:true});
+  });
   // 点赞
   $$('[data-like]').forEach(b=>b.onclick=()=>{
     const liked=b.classList.toggle('liked');
@@ -646,7 +686,8 @@ function openIGProfile(){
     grid.innerHTML='<div class="empty">还没有帖子</div>';
   }else{
     grid.innerHTML=igPosts.map(p=>{
-      const img=p.img?'<img src="'+p.img+'" alt="">':'';
+      const first=(Array.isArray(p.images)&&p.images[0])||p.img||'';
+      const img=first?'<img src="'+first+'" alt="">':'';
       return '<div class="cell">'+img+'</div>';
     }).join('');
   }
