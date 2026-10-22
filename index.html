@@ -50,8 +50,11 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .story-user b{font-weight:600}
 .story-time{color:#ffffffb0;font-size:11px}
 .story-close{background:none;color:#fff;font-size:20px;padding:4px 8px;z-index:4}
-.story-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;text-align:center;padding:60px 24px}
-.story-content img{width:100%;height:100%;object-fit:contain;object-position:center;position:absolute;inset:0;background:#000}
+.story-content{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;text-align:center}
+.story-content img{width:100%;height:100%;object-fit:contain;object-position:center center;position:absolute;inset:0;background:#000;display:block}
+.story-content img.fit-cover{object-fit:cover}
+.story-blur-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(28px) brightness(.6);transform:scale(1.15);z-index:0}
+.story-content img.fit-blur{object-fit:contain;z-index:1}
 .story-content .story-blank{color:#ffffff60;font-size:13px;line-height:1.8}
 .story-tap{position:absolute;top:0;bottom:0;width:50%;z-index:2}
 .story-tap-left{left:0}
@@ -382,7 +385,17 @@ function renderStory(){
   // 内容
   const content=$('#storyContent');
   if(s.type==='image'&&s.src){
-    let html='<img src="'+s.src+'" alt="快拍">';
+    const fit=s.fit||'contain';
+    let html='';
+    if(fit==='blur'){
+      // 模糊背景 + 完整图片
+      html='<div class="story-blur-bg" style="background-image:url(\''+s.src+'\')"></div>';
+      html+='<img class="fit-blur" src="'+s.src+'" alt="快拍">';
+    }else if(fit==='cover'){
+      html='<img class="fit-cover" src="'+s.src+'" alt="快拍">';
+    }else{
+      html='<img src="'+s.src+'" alt="快拍">';
+    }
     // 渲染文字框
     (s.texts||[]).forEach(t=>{
       let bg='';
