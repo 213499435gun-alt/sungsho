@@ -31,11 +31,17 @@ def main():
         html = f.read()
     stories = load_stories(html)
     print(f"当前 {len(stories)} 页")
-    for idx in sorted(diff.get('removed', []), reverse=True):
-        if 0 <= idx < len(stories):
-            print(f"  删除第 {idx + 1} 页")
-            del stories[idx]
-    for item in diff.get('changed', []):
+
+    changed_idx = {item['index'] for item in diff.get('changed', [])}
+    removed = diff.get('removed', [])
+
+    # 冲突检测：同一索引既 changed 又 removed
+    conflict = changed_idx & set(removed)
+    if conflict:
+        print(f"  ⚠️ 索引 {sorted(conflict)} 同时出现在 changed 和 removed，按 changed（修改）处理，忽略删除")
+
+    # 1) 先应用修改/新增（按索引升序，保证新增顺序正确）
+    for item in sorted(diff.get('changed', []), key=lambda x: x['index']):
         idx, page = item['index'], item['page']
         if 0 <= idx < len(stories):
             print(f"  修改第 {idx + 1} 页")
@@ -45,6 +51,14 @@ def main():
             stories.append(page)
         else:
             print(f"  ⚠️ 索引 {idx} 超出范围，跳过")
+
+    # 2) 再删除（从大到小，跳过已 changed 的索引）
+    for idx in sorted(removed, reverse=True):
+        if idx in conflict:
+            continue
+        if 0 <= idx < len(stories):
+            print(f"  删除第 {idx + 1} 页")
+            del stories[idx]
     new_block = dump_stories(stories)
     html = re.sub(r'const myStories=\[[\s\S]*?\];', new_block, html, count=1)
     with open(path, 'w', encoding='utf-8') as f:

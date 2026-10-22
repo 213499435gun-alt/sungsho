@@ -564,21 +564,31 @@ function pageSig(p) {
 
 // 对比新旧数据，返回差异
 function diffData(oldArr, newArr) {
-  const oldMap = {};
-  (oldArr || []).forEach((p, i) => { oldMap[pageSig(p)] = i; });
+  // 按索引位置对比：同位置内容不同=修改，多出来的=新增，少掉的=删除
+  oldArr = oldArr || [];
   const changed = [];   // 修改或新增的页（带新索引）
   const unchanged = []; // 未变的页索引
-  newArr.forEach((p, i) => {
-    const sig = pageSig(p);
-    if (oldMap[sig] !== undefined) {
-      unchanged.push(i);
-      delete oldMap[sig];
-    } else {
-      changed.push({ index: i, page: p });
+  const n = Math.max(oldArr.length, newArr.length);
+  for (let i = 0; i < n; i++) {
+    const o = oldArr[i];
+    const p = newArr[i];
+    if (p === undefined) {
+      // 新数组没有这页 -> 删除
+      continue;
     }
-  });
-  // 剩下的 oldMap 是被删除的页
-  const removed = Object.values(oldMap);
+    if (o === undefined) {
+      // 旧数组没有这页 -> 新增
+      changed.push({ index: i, page: p });
+    } else if (pageSig(o) !== pageSig(p)) {
+      // 同位置内容变了 -> 修改
+      changed.push({ index: i, page: p });
+    } else {
+      unchanged.push(i);
+    }
+  }
+  // 删除的页：旧数组比新数组多出来的索引
+  const removed = [];
+  for (let i = newArr.length; i < oldArr.length; i++) removed.push(i);
   return { changed, unchanged, removed };
 }
 
