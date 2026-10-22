@@ -96,12 +96,6 @@ h1{font-size:22px;margin-bottom:6px}
     <div id="pageSettings" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #3a3a46">
       <label style="display:block;font-size:12px;color:#b0b0bc;margin-bottom:6px">当前页日期（输入 6 位数字，自动变 21.09.06）</label>
       <input type="text" id="pageDate" placeholder="210906" maxlength="8" inputmode="numeric" style="width:100%;background:#1a1a1f;border:1px solid #3a3a46;color:#e8e8ec;padding:9px 11px;border-radius:8px;font-size:13px;font-family:inherit">
-      <label style="display:block;font-size:12px;color:#b0b0bc;margin:14px 0 6px">照片显示方式</label>
-      <div class="row" style="display:flex;gap:8px">
-        <button class="btn fit-btn" data-fit="contain" style="flex:1;font-size:12px">完整显示</button>
-        <button class="btn fit-btn" data-fit="blur" style="flex:1;font-size:12px">模糊填充</button>
-        <button class="btn fit-btn" data-fit="cover" style="flex:1;font-size:12px">填满裁切</button>
-      </div>
     </div>
   </div>
   <div class="editor-area">
@@ -168,7 +162,6 @@ function saveLocal() {
       fileName: s.fileName || '',
       duration: s.duration,
       date: s.date || '',
-      fit: s.fit || 'contain',
       texts: s.texts
     }));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(meta));
@@ -185,7 +178,6 @@ function loadLocal() {
       fileName: m.fileName || '',
       duration: m.duration || 5,
       date: m.date || '',
-      fit: m.fit || 'contain',
       texts: Array.isArray(m.texts) ? m.texts : []
     }));
   } catch (e) { /* 忽略 */ }
@@ -345,28 +337,10 @@ function selectStory(i) {
   if (currentIndex >= 0 && stories[currentIndex]) {
     ps.style.display = 'block';
     $('#pageDate').value = stories[currentIndex].date || '';
-    // 高亮当前显示模式
-    const fit = stories[currentIndex].fit || 'contain';
-    $$('.fit-btn').forEach(b => {
-      const on = b.dataset.fit === fit;
-      b.style.background = on ? '#e84e8a' : '';
-      b.style.color = on ? '#fff' : '';
-      b.style.borderColor = on ? '#e84e8a' : '';
-    });
   } else {
     ps.style.display = 'none';
   }
 }
-
-// 显示模式切换
-$$('.fit-btn').forEach(b => {
-  b.onclick = () => {
-    if (currentIndex < 0 || !stories[currentIndex]) return;
-    stories[currentIndex].fit = b.dataset.fit;
-    saveLocal();
-    selectStory(currentIndex);
-  };
-});
 
 function renderCanvas() {
   const bg = $('#canvasBg');
@@ -607,7 +581,6 @@ function buildData() {
     src: s.fileName ? ('stories/' + s.fileName) : '',
     duration: s.duration,
     date: s.date || '',
-    fit: s.fit || 'contain',
     texts: s.texts.map(t => ({ content: t.content, x: Math.round(t.x), y: Math.round(t.y), size: t.size, color: t.color, bg: t.bg }))
   }));
 }
@@ -618,7 +591,7 @@ const LAST_KEY = 'story-editor-last-generated';
 // 把一页数据转成可比较的字符串（忽略无关字段）
 function pageSig(p) {
   return JSON.stringify({
-    type: p.type, src: p.src, duration: p.duration, date: p.date, fit: p.fit,
+    type: p.type, src: p.src, duration: p.duration, date: p.date,
     texts: (p.texts || []).map(t => ({ content: t.content, x: t.x, y: t.y, size: t.size, color: t.color, bg: t.bg }))
   });
 }
