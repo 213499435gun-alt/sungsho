@@ -89,11 +89,13 @@ h1{font-size:22px;margin-bottom:6px}
   <div class="sidebar">
     <h2>快拍列表</h2>
     <div class="story-list" id="storyList"></div>
+    <button class="btn block primary" id="batchImport">📥 批量导入照片（多选）</button>
+    <input type="file" id="batchInput" accept="image/*" multiple style="display:none">
     <button class="btn block" id="addStory">＋ 添加一页</button>
     <button class="btn block" id="addText">＋ 给当前页加文字</button>
     <div id="pageSettings" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #3a3a46">
-      <label style="display:block;font-size:12px;color:#b0b0bc;margin-bottom:6px">当前页日期（如 220805）</label>
-      <input type="text" id="pageDate" placeholder="220805" maxlength="10" style="width:100%;background:#1a1a1f;border:1px solid #3a3a46;color:#e8e8ec;padding:9px 11px;border-radius:8px;font-size:13px;font-family:inherit">
+      <label style="display:block;font-size:12px;color:#b0b0bc;margin-bottom:6px">当前页日期（输入 6 位数字，自动变 21.09.06）</label>
+      <input type="text" id="pageDate" placeholder="210906" maxlength="8" inputmode="numeric" style="width:100%;background:#1a1a1f;border:1px solid #3a3a46;color:#e8e8ec;padding:9px 11px;border-radius:8px;font-size:13px;font-family:inherit">
     </div>
   </div>
   <div class="editor-area">
@@ -139,6 +141,7 @@ h1{font-size:22px;margin-bottom:6px}
   <div class="actions">
     <button class="btn primary" id="generate">生成数据</button>
     <button class="btn" id="copyBtn">复制</button>
+    <button class="btn" id="exportFile">💾 导出为文件</button>
     <button class="btn primary" id="downloadBtn" style="background:#2e9e5b">⬇ 下载图片</button>
   </div>
   <div id="outputInfo" style="font-size:11px;color:#8a8a95;margin-top:8px;line-height:1.6"></div>
@@ -415,9 +418,18 @@ $('#propBgNone').onclick = () => { if(selectedText){selectedText.bg='none';rende
 $('#propBgDark').onclick = () => { if(selectedText){selectedText.bg='dark';renderCanvas();} };
 $('#propBgLight').onclick = () => { if(selectedText){selectedText.bg='light';renderCanvas();} };
 $('#propDuration').oninput = e => { if (currentIndex < 0) return; stories[currentIndex].duration = +e.target.value; saveLocal(); renderList(); };
+// 日期自动格式化：输入 6 位数字 → 21.09.06
+function formatDate(raw) {
+  const digits = raw.replace(/\D/g, '').slice(0, 6);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return digits.slice(0, 2) + '.' + digits.slice(2);
+  return digits.slice(0, 2) + '.' + digits.slice(2, 4) + '.' + digits.slice(4);
+}
 $('#pageDate').oninput = e => {
   if (currentIndex < 0) return;
-  stories[currentIndex].date = e.target.value;
+  const formatted = formatDate(e.target.value);
+  e.target.value = formatted;
+  stories[currentIndex].date = formatted;
   saveLocal(); renderList();
 };
 $('#deleteText').onclick = () => {
@@ -463,6 +475,70 @@ function loadPhoto(file) {
   reader.readAsDataURL(file);
 }
 
+// ===== 批量导入：一次选多张照片，每张自动生成一页 =====
+$('#batchImport').onclick = () => $('#batchInput').click();
+$('#batchInput').onchange = async e => {
+  const files = [...e.target.files].filter(f => f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name));
+  e.target.value = '';
+  if (!files.length) { toast('没有选择图片'); return; }
+  toast('正在导入 ' + files.length + ' 张照片…');
+  let added = 0;
+  for (const file of files) {
+    const page = { src: '', fileName: '', duration: 5, date: '', texts: [] };
+    try {
+      const dataUrl = await readAsDataURL(file);
+      page.src = dataUrl;
+      page.fileName = file.name;
+      // 如果是 HEIC，尝试转成 JPG（浏览器能显示）
+      if (/\.(heic|heif)$/i.test(file.name)) {
+        const jpg = await heicToJpg(dataUrl, file.name);
+        if (jpg) { page.src = jpg.dataUrl; page.fileName = jpg.fileName; }
+      }
+      stories.push(page);
+      added++;
+    } catch (err) {
+      console.warn('导入失败:', file.name, err);
+    }
+  }
+  if (added) {
+    currentIndex = stories.length - 1;
+    saveLocal(); renderList(); renderCanvas(); updatePanel();
+    toast('已导入 ' + added + ' 页');
+  } else {
+    toast('导入失败，请检查图片格式');
+  }
+};
+
+function readAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = ev => resolve(ev.target.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+// HEIC → JPG：用浏览器解码后画到 canvas 再导出 JPG
+// 注意：Safari 原生支持 HEIC；Chrome 不支持，会失败并保留原图
+function heicToJpg(dataUrl, originalName) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        const jpgUrl = canvas.toDataURL('image/jpeg', 0.92);
+        const newName = originalName.replace(/\.(heic|heif)$/i, '.jpg');
+        resolve({ dataUrl: jpgUrl, fileName: newName });
+      } catch (e) { resolve(null); }
+    };
+    img.onerror = () => resolve(null);  // 浏览器不支持 HEIC，保留原图
+    img.src = dataUrl;
+  });
+}
+
 // 生成精简数据：src 只写文件名（不含 base64），方便直接贴到聊天框
 function buildData() {
   return stories.map((s, i) => ({
@@ -491,6 +567,19 @@ $('#copyBtn').onclick = () => {
   ta.select();
   document.execCommand('copy');
   toast('已复制到剪贴板');
+};
+
+// 导出为 .json 文件，方便保存/备份
+$('#exportFile').onclick = () => {
+  if (stories.length === 0) { toast('还没有快拍'); return; }
+  const json = JSON.stringify(buildData(), null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'stories.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出 stories.json');
 };
 
 // 下载图片：把每页照片单独存成文件（放进 stories/ 文件夹即可）
