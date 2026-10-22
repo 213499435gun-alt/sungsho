@@ -13,7 +13,7 @@ h1{font-size:22px;margin-bottom:6px}
 .sidebar{width:260px;flex-shrink:0}
 .sidebar h2{font-size:14px;color:#8a8a95;margin-bottom:10px;font-weight:500}
 .story-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.story-thumb{display:flex;align-items:center;gap:10px;padding:8px;background:#26262e;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:.15s}
+.story-thumb{display:flex;align-items:center;gap:10px;padding:8px;background:#26262e;border-radius:10px;cursor:grab;border:2px solid transparent;transition:.15s}.story-thumb.dragging{opacity:.4;cursor:grabbing}.story-thumb.drag-over{border-color:#e84e8a;transform:scale(1.02)}
 .story-thumb:hover{background:#2e2e38}
 .story-thumb.active{border-color:#e84e8a;background:#2e2e38}
 .story-thumb .num{width:24px;height:24px;border-radius:50%;background:#3a3a46;display:grid;place-items:center;font-size:12px;flex-shrink:0}
@@ -103,12 +103,10 @@ h1{font-size:22px;margin-bottom:6px}
       <div class="canvas-bg" id="canvasBg"></div>
       <div class="drop-hint" id="dropHint">
         <div class="big">🖼️</div>
-        <div>把照片拖到这里<br>或点击下方按钮选择</div>
+        <div>把照片拖到这里</div>
+        <button class="btn primary" id="pickPhoto" style="margin-top:14px">选择照片</button>
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
       </div>
-    </div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn" id="pickPhoto">选择照片</button>
-      <input type="file" id="fileInput" accept="image/*" style="display:none">
     </div>
   </div>
   <div class="panel" id="panel">
@@ -192,7 +190,7 @@ function renderList() {
     return;
   }
   list.innerHTML = stories.map((s, i) => `
-    <div class="story-thumb ${i===currentIndex?'active':''}" data-idx="${i}">
+    <div class="story-thumb ${i===currentIndex?'active':''}" data-idx="${i}" draggable="true">
       <span class="num">${i+1}</span>
       <div class="mini" style="background-image:url('${s.src||''}')"></div>
       <div class="info">
@@ -216,6 +214,42 @@ function renderList() {
       if (currentIndex >= stories.length) currentIndex = stories.length - 1;
       saveLocal(); renderList(); renderCanvas();
     };
+  });
+  // ===== 侧边栏拖拽排序 =====
+  let dragIdx = -1;
+  $$('.story-thumb').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragIdx = +el.dataset.idx;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      $$('.story-thumb').forEach(x => x.classList.remove('drag-over'));
+    });
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', () => {
+      el.classList.remove('drag-over');
+    });
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      const to = +el.dataset.idx;
+      if (dragIdx < 0 || dragIdx === to) return;
+      // 移动数组元素
+      const [moved] = stories.splice(dragIdx, 1);
+      stories.splice(to, 0, moved);
+      // 保持当前选中页跟随
+      if (currentIndex === dragIdx) currentIndex = to;
+      else if (dragIdx < currentIndex && to >= currentIndex) currentIndex--;
+      else if (dragIdx > currentIndex && to <= currentIndex) currentIndex++;
+      dragIdx = -1;
+      saveLocal(); renderList(); renderCanvas();
+    });
   });
   renderOverview();
 }
