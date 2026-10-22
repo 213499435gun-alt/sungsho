@@ -87,7 +87,7 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .ig-scroll .post p{font-size:13px;margin:0;padding:0 12px 12px;line-height:1.6;color:#262626}
 .ig-scroll .post p b{font-weight:600}
 /* 个人主页 */
-.ig-profile{position:absolute;inset:0 0 50px 0;background:#fff;z-index:10;display:flex;flex-direction:column;overflow-y:auto}
+.ig-profile{position:absolute;inset:52px 0 50px 0;background:#fff;z-index:10;display:flex;flex-direction:column;overflow-y:auto}
 .ig-profile-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #efefef;flex-shrink:0}
 .ig-profile-head b{font-size:16px}
 .ig-back{background:none;font-size:26px;color:#262626;padding:0 8px;line-height:1}
@@ -104,6 +104,14 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .ig-profile-grid .cell{aspect-ratio:1;overflow:hidden;background:#efefef}
 .ig-profile-grid .cell img{width:100%;height:100%;object-fit:cover;display:block}
 .ig-profile-grid .empty{grid-column:1/-1;text-align:center;color:#8e8e8e;font-size:13px;padding:40px 0}
+
+
+/* 应用缩小回图标动画 */
+.view.zoom-out{animation:zoomOut .32s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none}
+@keyframes zoomOut{
+  from{opacity:1;transform:scale(1) translate(0,0);border-radius:0}
+  to{opacity:0;transform:scale(.12) translate(var(--zx,0),var(--zy,0));border-radius:24px}
+}
 
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
@@ -205,7 +213,37 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
   </div>
 <div class="photo-view hidden" id="viewer"><button class="back" id="closePhoto">‹ 照片</button><img id="largePhoto" alt="放大的风景"><div class="photo-nav"><button id="photoPrev" aria-label="上一张">‹</button><button id="photoNext" aria-label="下一张">›</button></div></div><button class="homebar hidden" aria-label="返回主屏幕" id="homebar"></button><div class="toast hidden" id="toast" role="status"></div></div></div></main>
 <script>
-const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);let unlocked=false,pin='',page='lock';function show(id){$$('.view').forEach(e=>e.classList.toggle('hidden',e.id!==id));page=id;$('#homebar').classList.toggle('hidden',!unlocked);$('.status').style.color=['photos','notes','settings','clock','instagram','kakao'].includes(id)?'#263c39':'white'}function home(){if(unlocked){$('#viewer').classList.add('hidden');show('home')}}function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:4},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;if(n==='del')pin=pin.slice(0,-1);else if(pin.length<4)pin+=n;drawDots();if(pin.length===4){checking=true;setTimeout(()=>{if(pin==='0000'){unlocked=true;show('home')}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=goPass;$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);// ===== SVG 图标（精确绘制）=====
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);let unlocked=false,pin='',page='lock';function show(id){$$('.view').forEach(e=>e.classList.toggle('hidden',e.id!==id));page=id;$('#homebar').classList.toggle('hidden',!unlocked);$('.status').style.color=['photos','notes','settings','clock','instagram','kakao'].includes(id)?'#263c39':'white'}function home(){if(unlocked){$('#viewer').classList.add('hidden');show('home')}}
+// 带缩小动画回主屏：当前页缩小到对应图标位置
+function animateHome(){
+  if(!unlocked)return;
+  // 关闭浮层优先
+  if(!$('#viewer').classList.contains('hidden')){$('#viewer').classList.add('hidden');return;}
+  if(!$('#storyViewer').classList.contains('hidden')){closeStory();return;}
+  if(page==='home'||page==='lock'||page==='pass')return;
+  const cur=document.getElementById(page);
+  if(!cur){home();return;}
+  // 找当前应用图标位置
+  const iconBtn=document.querySelector('[data-app="'+page+'"] .icon')||document.querySelector('[data-app="'+page+'"]');
+  const screen=document.querySelector('.screen');
+  if(iconBtn){
+    const ir=iconBtn.getBoundingClientRect();
+    const sr=screen.getBoundingClientRect();
+    // 图标中心相对屏幕中心的偏移（用于 translate）
+    const cx=(ir.left+ir.width/2)-(sr.left+sr.width/2);
+    const cy=(ir.top+ir.height/2)-(sr.top+sr.height/2);
+    cur.style.setProperty('--zx',cx+'px');
+    cur.style.setProperty('--zy',cy+'px');
+  }
+  cur.classList.add('zoom-out');
+  setTimeout(()=>{
+    cur.classList.remove('zoom-out');
+    cur.style.removeProperty('--zx');
+    cur.style.removeProperty('--zy');
+    show('home');
+  },320);
+}
+function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:4},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;if(n==='del')pin=pin.slice(0,-1);else if(pin.length<4)pin+=n;drawDots();if(pin.length===4){checking=true;setTimeout(()=>{if(pin==='0000'){unlocked=true;show('home')}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=goPass;$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);// ===== SVG 图标（精确绘制）=====
 const ICONS={
   // 三星相册：彩色风车花瓣（8 个扇形，彩虹渐变）
   photos:'<svg viewBox="0 0 100 100"><g transform="translate(50 50)">'+
@@ -697,7 +735,7 @@ $('#composer').onsubmit=e=>{e.preventDefault();const input=$('#chatInput'),text=
       // 上滑：关闭浮层或回主屏
       if(!$('#viewer').classList.contains('hidden')){ $('#viewer').classList.add('hidden'); }
       else if(!$('#storyViewer').classList.contains('hidden')){ closeStory(); }
-      else if(page!=='home' && page!=='lock' && page!=='pass'){ home(); }
+      else if(page!=='home' && page!=='lock' && page!=='pass'){ animateHome(); }
     }
     sy=null; sx=null; active=false;
   },{passive:true});
