@@ -87,7 +87,7 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .ig-scroll .post p{font-size:13px;margin:0;padding:0 12px 12px;line-height:1.6;color:#262626}
 .ig-scroll .post p b{font-weight:600}
 /* 个人主页 */
-.ig-profile{position:absolute;inset:0;background:#fff;z-index:10;display:flex;flex-direction:column;overflow-y:auto}
+.ig-profile{position:absolute;inset:0 0 50px 0;background:#fff;z-index:10;display:flex;flex-direction:column;overflow-y:auto}
 .ig-profile-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #efefef;flex-shrink:0}
 .ig-profile-head b{font-size:16px}
 .ig-back{background:none;font-size:26px;color:#262626;padding:0 8px;line-height:1}
@@ -512,13 +512,14 @@ $('#storyPrev').onclick=prevStory;
 $('#storyClose').onclick=closeStory;
 $('#stories').innerHTML=[{name:'我的动态',icon:'＋'}].concat(contacts).map((c,i)=>'<button class="story" data-story="'+i+'"><span class="avatar">'+c.icon+'</span>'+c.name+'</button>').join('');
 $$('[data-story]').forEach(b=>b.onclick=()=>openStory(+b.dataset.story));
-// ===== Instagram 帖子数据（留好位置，之后填照片和文案）=====
-// 每篇帖子：{img:'图片路径', caption:'文案', likes:数字, comments:数字, time:'时间'}
-// 图片放 ig/ 文件夹，例如 ig/post1.jpg
-const igPosts=[
-  // 示例（可删）：
-  // {img:'ig/post1.jpg', caption:'今天的天空 🌤️', likes:128, comments:12, time:'2小时前'},
-];
+// ===== Instagram 数据（用 ig-editor.html 编辑后生成）=====
+// profile: {avatar:'ig/头像.jpg', id:'账号ID', name:'昵称', bio:'简介'}
+// posts: [{img:'ig/图片.jpg', caption:'文案', likes:'128', time:'2小时前'}]
+const igData={
+  profile:{avatar:'', id:'我的账号', name:'', bio:''},
+  posts:[]
+};
+const igPosts=igData.posts;
 
 function renderIGFeed(){
   const feed=$('#feed');
@@ -526,17 +527,21 @@ function renderIGFeed(){
     feed.innerHTML='<div style="text-align:center;color:#8e8e8e;font-size:13px;padding:40px 20px">还没有帖子<br><small>在 igPosts 里添加照片和文案</small></div>';
     return;
   }
+  const prof=igData.profile||{};
+  const avStyle=prof.avatar?'background-image:url('+prof.avatar+');background-size:cover;background-position:center':'';
+  const avText=prof.avatar?'':'我';
+  const accName=prof.id||'我的账号';
   feed.innerHTML=igPosts.map((p,i)=>{
     const img=p.img?'<img src="'+p.img+'" alt="帖子">':'<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:13px">暂无图片</div>';
     return '<article class="post" data-post="'+i+'">'
-      +'<div class="post-head"><span class="avatar">我</span><b>我的账号</b></div>'
+      +'<div class="post-head"><span class="avatar" style="'+avStyle+'">'+avText+'</span><b>'+accName+'</b></div>'
       +img
       +'<div class="post-actions">'
       +'<button data-like aria-label="点赞">♡</button>'
       +'<button data-comment aria-label="评论">💬</button>'
       +'</div>'
       +'<p><b>'+(p.likes||0)+' 次赞</b></p>'
-      +'<p><b>我的账号</b> '+(p.caption||'')+'</p>'
+      +'<p><b>'+accName+'</b> '+(p.caption||'')+'</p>'
       +'<p style="color:#8e8e8e;font-size:11px">'+(p.time||'')+'</p>'
       +'</article>';
   }).join('');
@@ -590,7 +595,15 @@ $$('.ig-tab').forEach(tab=>{
 // ===== IG 个人主页 =====
 function openIGProfile(){
   const grid=$('#igProfileGrid');
+  const prof=igData.profile||{};
   $('#igPostCount').textContent=igPosts.length;
+  // 头像
+  const av=$('#igProfileAvatar');
+  if(prof.avatar){ av.style.backgroundImage='url('+prof.avatar+')'; av.style.backgroundSize='cover'; av.style.backgroundPosition='center'; av.textContent=''; }
+  else { av.style.backgroundImage=''; av.textContent='我'; }
+  // 名字/简介
+  $('#igProfileName').textContent=prof.id||'我的主页';
+  $('#igProfileBio').textContent=prof.bio||'还没有简介';
   if(igPosts.length===0){
     grid.innerHTML='<div class="empty">还没有帖子</div>';
   }else{

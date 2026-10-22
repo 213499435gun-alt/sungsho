@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IG 编辑器 · Instagram Editor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#1a1a1f;color:#e8e8ec;min-height:100vh;padding:20px}
+h1{font-size:22px;margin-bottom:6px}
+.sub{font-size:13px;color:#8a8a95;margin-bottom:20px}
+.layout{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.sidebar{width:300px;flex-shrink:0}
+.sidebar h2{font-size:14px;color:#8a8a95;margin-bottom:10px;font-weight:500}
+.card{background:#26262e;border-radius:12px;padding:14px;margin-bottom:14px}
+.card label{display:block;font-size:12px;color:#b0b0bc;margin-bottom:6px}
+.card input[type=text],.card textarea{width:100%;background:#1a1a1f;border:1px solid #3a3a46;color:#e8e8ec;padding:9px 11px;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:10px}
+.card textarea{resize:vertical;min-height:60px}
+.avatar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.avatar-preview{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);display:grid;place-items:center;color:#fff;font-size:24px;font-weight:600;background-size:cover;background-position:center;flex-shrink:0}
+.btn{background:#3a3a46;color:#e8e8ec;border:0;padding:9px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn:hover{background:#4a4a58}
+.btn.primary{background:#e84e8a;color:#fff}
+.btn.primary:hover{background:#f0609a}
+.btn.block{display:block;width:100%;margin-bottom:8px}
+.btn.danger{color:#ff5c7a}
+.post-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.post-item{display:flex;align-items:center;gap:10px;padding:8px;background:#26262e;border-radius:10px;cursor:grab;border:2px solid transparent;transition:.15s}
+.post-item:hover{background:#2e2e38}
+.post-item.active{border-color:#e84e8a;background:#2e2e38}
+.post-item.dragging{opacity:.4;cursor:grabbing}
+.post-item.drag-over{border-color:#e84e8a;transform:scale(1.02)}
+.post-item .num{width:24px;height:24px;border-radius:50%;background:#3a3a46;display:grid;place-items:center;font-size:12px;flex-shrink:0}
+.post-item .mini{width:44px;height:44px;border-radius:6px;background:#3a3a46 center/cover;flex-shrink:0}
+.post-item .info{flex:1;min-width:0}
+.post-item .info b{font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post-item .info small{font-size:10px;color:#8a8a95}
+.post-item .del{background:none;border:0;color:#ff5c7a;font-size:16px;cursor:pointer;padding:4px}
+.editor-area{flex:1;min-width:320px;max-width:420px}
+.preview{background:#000;border-radius:16px;overflow:hidden;aspect-ratio:9/16;display:flex;flex-direction:column;position:relative}
+.preview-top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff;color:#262626;flex-shrink:0}
+.preview-top .logo{font-family:Georgia,serif;font-style:italic;font-size:20px;font-weight:600}
+.preview-body{flex:1;overflow-y:auto;background:#fff;color:#262626}
+.preview-post{background:#fff;border-bottom:1px solid #efefef}
+.preview-post .head{display:flex;align-items:center;gap:8px;padding:10px 12px;font-size:12px}
+.preview-post .head .av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);display:grid;place-items:center;color:#fff;font-size:12px;background-size:cover;background-position:center}
+.preview-post img{width:100%;display:block;max-height:300px;object-fit:cover}
+.preview-post .cap{padding:8px 12px;font-size:12px;line-height:1.5}
+.preview-post .cap b{font-weight:600}
+.preview-post .meta{padding:0 12px 10px;font-size:11px;color:#8e8e8e}
+.preview-empty{text-align:center;color:#8e8e8e;font-size:13px;padding:40px 20px}
+.panel{width:280px;flex-shrink:0}
+.panel h3{font-size:14px;color:#8a8a95;margin-bottom:10px;font-weight:500}
+.panel .empty{color:#666;font-size:12px;padding:20px 0;text-align:center}
+.output{margin-top:24px;background:#26262e;border-radius:14px;padding:16px}
+.output h3{font-size:13px;color:#8a8a95;margin-bottom:10px}
+.output textarea{width:100%;min-height:120px;background:#1a1a1f;border:1px solid #3a3a46;color:#9ae6b4;padding:12px;border-radius:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px;resize:vertical}
+.output .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#e84e8a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:100}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<h1>IG 编辑器</h1>
+<p class="sub">编辑头像、ID、简介和每条帖子，拖拽排序，生成数据发给我</p>
+
+<div class="layout">
+  <div class="sidebar">
+    <h2>账号信息</h2>
+    <div class="card">
+      <label>头像</label>
+      <div class="avatar-row">
+        <div class="avatar-preview" id="avatarPreview">我</div>
+        <button class="btn" id="pickAvatar">选择头像</button>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none">
+      </div>
+      <label>ID（@后面的名字）</label>
+      <input type="text" id="igId" placeholder="my_account">
+      <label>昵称</label>
+      <input type="text" id="igName" placeholder="我的名字">
+      <label>简介</label>
+      <textarea id="igBio" placeholder="写点什么…"></textarea>
+    </div>
+
+    <h2>帖子列表</h2>
+    <div class="post-list" id="postList"></div>
+    <button class="btn block" id="addPost">＋ 添加帖子</button>
+    <button class="btn block" id="batchImport">📷 批量导入照片</button>
+    <input type="file" id="batchInput" accept="image/*" multiple style="display:none">
+  </div>
+
+  <div class="editor-area">
+    <h2 style="font-size:14px;color:#8a8a95;margin-bottom:10px;font-weight:500">预览</h2>
+    <div class="preview">
+      <div class="preview-top">
+        <span class="logo">Instagram</span>
+        <span>♡ ✉</span>
+      </div>
+      <div class="preview-body" id="previewBody"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>帖子设置</h3>
+    <div id="postPanel">
+      <div class="empty" id="postEmpty">选中一条帖子来编辑</div>
+      <div id="postProps" style="display:none">
+        <div class="card">
+          <label>图片</label>
+          <div style="margin-bottom:10px">
+            <img id="postImgPreview" style="width:100%;border-radius:8px;display:none;margin-bottom:8px">
+            <button class="btn block" id="pickPostImg">选择图片</button>
+            <input type="file" id="postImgInput" accept="image/*" style="display:none">
+          </div>
+          <label>文案</label>
+          <textarea id="postCaption" placeholder="写点什么…"></textarea>
+          <label>点赞数</label>
+          <input type="text" id="postLikes" placeholder="128" inputmode="numeric">
+          <label>时间</label>
+          <input type="text" id="postTime" placeholder="2小时前">
+          <button class="btn block danger" id="deletePost">删除这条帖子</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="output">
+  <h3>保存数据（复制这段发给我）</h3>
+  <textarea id="outputData" readonly placeholder="编辑完成后点「生成数据」"></textarea>
+  <div class="actions">
+    <button class="btn primary" id="generate">生成数据</button>
+    <button class="btn" id="copyBtn">复制</button>
+    <button class="btn" id="resetDiff" title="清空对比基准，下次生成全量">↺ 重置对比</button>
+    <button class="btn" id="exportFile">💾 导出为文件</button>
+    <button class="btn primary" id="downloadBtn" style="background:#2e9e5b">⬇ 下载图片</button>
+  </div>
+  <div id="outputInfo" style="font-size:11px;color:#8a8a95;margin-top:8px;line-height:1.6"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+// ===== 数据 =====
+const STORAGE_KEY = 'ig-editor-data';
+const LAST_KEY = 'ig-editor-last-generated';
+
+let profile = { avatar: '', avatarFile: '', id: '', name: '', bio: '' };
+let posts = [];   // {src, fileName, caption, likes, time}
+let currentIndex = -1;
+
+function saveLocal() {
+  try {
+    const meta = {
+      profile: { avatarFile: profile.avatarFile, id: profile.id, name: profile.name, bio: profile.bio },
+      posts: posts.map(p => ({ fileName: p.fileName || '', caption: p.caption || '', likes: p.likes || '', time: p.time || '' }))
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(meta));
+  } catch (e) {}
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const meta = JSON.parse(raw);
+    if (meta.profile) {
+      profile.avatarFile = meta.profile.avatarFile || '';
+      profile.id = meta.profile.id || '';
+      profile.name = meta.profile.name || '';
+      profile.bio = meta.profile.bio || '';
+      if (profile.avatarFile) profile.avatar = 'ig/' + profile.avatarFile;
+    }
+    if (Array.isArray(meta.posts)) {
+      posts = meta.posts.map(m => ({
+        src: m.fileName ? ('ig/' + m.fileName) : '',
+        fileName: m.fileName || '',
+        caption: m.caption || '',
+        likes: m.likes || '',
+        time: m.time || ''
+      }));
+    }
+  } catch (e) {}
+}
+
+// ===== 渲染 =====
+function renderProfileFields() {
+  $('#igId').value = profile.id || '';
+  $('#igName').value = profile.name || '';
+  $('#igBio').value = profile.bio || '';
+  const av = $('#avatarPreview');
+  if (profile.avatar) {
+    av.style.backgroundImage = 'url(' + profile.avatar + ')';
+    av.textContent = '';
+  } else {
+    av.style.backgroundImage = '';
+    av.textContent = '我';
+  }
+}
+
+function renderList() {
+  const list = $('#postList');
+  if (posts.length === 0) {
+    list.innerHTML = '<div style="color:#666;font-size:12px;padding:10px">还没有帖子，点下面添加</div>';
+    return;
+  }
+  list.innerHTML = posts.map((p, i) => `
+    <div class="post-item ${i===currentIndex?'active':''}" data-idx="${i}" draggable="true">
+      <span class="num">${i+1}</span>
+      <div class="mini" style="background-image:url('${p.src||''}')"></div>
+      <div class="info">
+        <b>${(p.caption||'（无文案）').slice(0,16)}</b>
+        <small>${p.likes||0} 赞 · ${p.time||''}</small>
+      </div>
+      <button class="del" data-del="${i}" title="删除">✕</button>
+    </div>
+  `).join('');
+  $$('.post-item').forEach(el => {
+    el.onclick = e => {
+      if (e.target.dataset.del !== undefined) return;
+      selectPost(+el.dataset.idx);
+    };
+  });
+  $$('[data-del]').forEach(b => {
+    b.onclick = e => {
+      e.stopPropagation();
+      const idx = +b.dataset.del;
+      posts.splice(idx, 1);
+      if (currentIndex >= posts.length) currentIndex = posts.length - 1;
+      saveLocal(); renderList(); renderPreview(); updatePanel();
+    };
+  });
+  // 拖拽排序
+  let dragIdx = -1;
+  $$('.post-item').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragIdx = +el.dataset.idx;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      $$('.post-item').forEach(x => x.classList.remove('drag-over'));
+    });
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      const to = +el.dataset.idx;
+      if (dragIdx < 0 || dragIdx === to) return;
+      const [moved] = posts.splice(dragIdx, 1);
+      posts.splice(to, 0, moved);
+      if (currentIndex === dragIdx) currentIndex = to;
+      else if (dragIdx < currentIndex && to >= currentIndex) currentIndex--;
+      else if (dragIdx > currentIndex && to <= currentIndex) currentIndex++;
+      dragIdx = -1;
+      saveLocal(); renderList(); renderPreview();
+    });
+  });
+}
+
+function renderPreview() {
+  const body = $('#previewBody');
+  if (posts.length === 0) {
+    body.innerHTML = '<div class="preview-empty">还没有帖子</div>';
+    return;
+  }
+  const avStyle = profile.avatar ? 'background-image:url(' + profile.avatar + ')' : '';
+  const avText = profile.avatar ? '' : '我';
+  body.innerHTML = posts.map(p => {
+    const img = p.src ? '<img src="' + p.src + '" alt="">' : '<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:12px">暂无图片</div>';
+    return '<div class="preview-post">'
+      + '<div class="head"><span class="av" style="' + avStyle + '">' + avText + '</span><b>' + (profile.id || '我的账号') + '</b></div>'
+      + img
+      + '<div class="cap"><b>' + (p.likes || 0) + ' 次赞</b></div>'
+      + '<div class="cap"><b>' + (profile.id || '我的账号') + '</b> ' + (p.caption || '') + '</div>'
+      + '<div class="meta">' + (p.time || '') + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function selectPost(i) {
+  currentIndex = i;
+  renderList();
+  updatePanel();
+}
+
+function updatePanel() {
+  const empty = $('#postEmpty');
+  const props = $('#postProps');
+  if (currentIndex < 0 || !posts[currentIndex]) {
+    empty.style.display = 'block';
+    props.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  props.style.display = 'block';
+  const p = posts[currentIndex];
+  const img = $('#postImgPreview');
+  if (p.src) { img.src = p.src; img.style.display = 'block'; }
+  else { img.style.display = 'none'; }
+  $('#postCaption').value = p.caption || '';
+  $('#postLikes').value = p.likes || '';
+  $('#postTime').value = p.time || '';
+}
+
+// ===== 事件 =====
+$('#igId').oninput = e => { profile.id = e.target.value; saveLocal(); renderPreview(); };
+$('#igName').oninput = e => { profile.name = e.target.value; saveLocal(); };
+$('#igBio').oninput = e => { profile.bio = e.target.value; saveLocal(); };
+
+$('#pickAvatar').onclick = () => $('#avatarInput').click();
+$('#avatarInput').onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    profile.avatar = ev.target.result;
+    profile.avatarFile = f.name;
+    saveLocal(); renderProfileFields(); renderPreview();
+    toast('头像已加载');
+  };
+  reader.readAsDataURL(f);
+  e.target.value = '';
+};
+
+$('#addPost').onclick = () => {
+  posts.push({ src: '', fileName: '', caption: '', likes: '', time: '' });
+  selectPost(posts.length - 1);
+  saveLocal(); renderList(); renderPreview();
+};
+
+$('#pickPostImg').onclick = () => $('#postImgInput').click();
+$('#postImgInput').onchange = e => {
+  const f = e.target.files[0];
+  if (!f || currentIndex < 0) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    posts[currentIndex].src = ev.target.result;
+    posts[currentIndex].fileName = f.name;
+    saveLocal(); renderList(); renderPreview(); updatePanel();
+    toast('图片已加载');
+  };
+  reader.readAsDataURL(f);
+  e.target.value = '';
+};
+
+$('#postCaption').oninput = e => { if (currentIndex < 0) return; posts[currentIndex].caption = e.target.value; saveLocal(); renderList(); renderPreview(); };
+$('#postLikes').oninput = e => { if (currentIndex < 0) return; posts[currentIndex].likes = e.target.value; saveLocal(); renderList(); renderPreview(); };
+$('#postTime').oninput = e => { if (currentIndex < 0) return; posts[currentIndex].time = e.target.value; saveLocal(); renderList(); renderPreview(); };
+
+$('#deletePost').onclick = () => {
+  if (currentIndex < 0) return;
+  posts.splice(currentIndex, 1);
+  if (currentIndex >= posts.length) currentIndex = posts.length - 1;
+  saveLocal(); renderList(); renderPreview(); updatePanel();
+};
+
+// 批量导入
+$('#batchImport').onclick = () => $('#batchInput').click();
+$('#batchInput').onchange = async e => {
+  const files = [...e.target.files].filter(f => f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name));
+  e.target.value = '';
+  if (!files.length) { toast('没有选择图片'); return; }
+  toast('正在导入 ' + files.length + ' 张…');
+  let added = 0;
+  for (const file of files) {
+    try {
+      const dataUrl = await readAsDataURL(file);
+      let src = dataUrl, fileName = file.name;
+      if (/\.(heic|heif)$/i.test(file.name)) {
+        const jpg = await heicToJpg(dataUrl, file.name);
+        if (jpg) { src = jpg.dataUrl; fileName = jpg.fileName; }
+      }
+      posts.push({ src, fileName, caption: '', likes: '', time: '' });
+      added++;
+    } catch (err) { console.warn('导入失败:', file.name, err); }
+  }
+  if (added) {
+    currentIndex = posts.length - 1;
+    saveLocal(); renderList(); renderPreview(); updatePanel();
+    toast('已导入 ' + added + ' 条');
+  } else toast('导入失败');
+};
+
+function readAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = ev => resolve(ev.target.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+function heicToJpg(dataUrl, originalName) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve({ dataUrl: canvas.toDataURL('image/jpeg', 0.9), fileName: originalName.replace(/\.(heic|heif)$/i, '.jpg') });
+      } catch (e) { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
+
+// ===== 生成数据 =====
+function buildData() {
+  return {
+    profile: {
+      avatar: profile.avatarFile ? ('ig/' + profile.avatarFile) : '',
+      id: profile.id || '',
+      name: profile.name || '',
+      bio: profile.bio || ''
+    },
+    posts: posts.map(p => ({
+      img: p.fileName ? ('ig/' + p.fileName) : '',
+      caption: p.caption || '',
+      likes: p.likes || '',
+      time: p.time || ''
+    }))
+  };
+}
+
+function dataSig(d) {
+  return JSON.stringify(d);
+}
+
+$('#generate').onclick = () => {
+  const current = buildData();
+  const info = $('#outputInfo');
+  let last = null;
+  try { last = JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); } catch {}
+
+  if (!last) {
+    const json = JSON.stringify(current);
+    $('#outputData').value = json;
+    info.innerHTML = '✅ 首次生成，全量数据（' + current.posts.length + ' 条帖子）';
+    localStorage.setItem(LAST_KEY, JSON.stringify(current));
+    toast('首次生成全量数据');
+    return;
+  }
+  if (dataSig(last) === dataSig(current)) {
+    $('#outputData').value = '';
+    info.innerHTML = '✅ 没有变化，无需发送';
+    toast('没有变化');
+    return;
+  }
+  const json = JSON.stringify(current);
+  $('#outputData').value = json;
+  info.innerHTML = '✅ 数据有变化，已生成（' + current.posts.length + ' 条帖子）';
+  localStorage.setItem(LAST_KEY, JSON.stringify(current));
+  toast('已生成数据');
+};
+
+$('#resetDiff').onclick = () => { localStorage.removeItem(LAST_KEY); toast('已重置，下次生成全量'); };
+
+$('#copyBtn').onclick = () => {
+  const ta = $('#outputData');
+  if (!ta.value) { toast('先点生成数据'); return; }
+  ta.select();
+  document.execCommand('copy');
+  toast('已复制');
+};
+
+$('#exportFile').onclick = () => {
+  const json = JSON.stringify(buildData(), null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ig-data.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出 ig-data.json');
+};
+
+$('#downloadBtn').onclick = () => {
+  const imgs = posts.filter(p => p.src);
+  if (profile.avatar) imgs.unshift({ src: profile.avatar, fileName: profile.avatarFile || 'avatar.jpg' });
+  if (imgs.length === 0) { toast('还没有图片'); return; }
+  imgs.forEach(p => {
+    const a = document.createElement('a');
+    a.href = p.src;
+    a.download = p.fileName || 'image.jpg';
+    a.click();
+  });
+  toast('已下载 ' + imgs.length + ' 张图片');
+};
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ===== 初始化 =====
+loadLocal();
+renderProfileFields();
+renderList();
+renderPreview();
+updatePanel();
+</script>
+</body>
+</html>
