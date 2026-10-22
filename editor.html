@@ -141,6 +141,7 @@ h1{font-size:22px;margin-bottom:6px}
   <div class="actions">
     <button class="btn primary" id="generate">生成数据</button>
     <button class="btn" id="copyBtn">复制</button>
+    <button class="btn" id="resetDiff" title="清空对比基准，下次生成全量">↺ 重置对比</button>
     <button class="btn" id="exportFile">💾 导出为文件</button>
     <button class="btn primary" id="downloadBtn" style="background:#2e9e5b">⬇ 下载图片</button>
   </div>
@@ -550,15 +551,83 @@ function buildData() {
   }));
 }
 
+// ===== 增量对比：只输出变化的部分 =====
+const LAST_KEY = 'story-editor-last-generated';
+
+// 把一页数据转成可比较的字符串（忽略无关字段）
+function pageSig(p) {
+  return JSON.stringify({
+    type: p.type, src: p.src, duration: p.duration, date: p.date,
+    texts: (p.texts || []).map(t => ({ content: t.content, x: t.x, y: t.y, size: t.size, color: t.color, bg: t.bg }))
+  });
+}
+
+// 对比新旧数据，返回差异
+function diffData(oldArr, newArr) {
+  const oldMap = {};
+  (oldArr || []).forEach((p, i) => { oldMap[pageSig(p)] = i; });
+  const changed = [];   // 修改或新增的页（带新索引）
+  const unchanged = []; // 未变的页索引
+  newArr.forEach((p, i) => {
+    const sig = pageSig(p);
+    if (oldMap[sig] !== undefined) {
+      unchanged.push(i);
+      delete oldMap[sig];
+    } else {
+      changed.push({ index: i, page: p });
+    }
+  });
+  // 剩下的 oldMap 是被删除的页
+  const removed = Object.values(oldMap);
+  return { changed, unchanged, removed };
+}
+
 $('#generate').onclick = () => {
   if (stories.length === 0) { toast('还没有快拍'); return; }
-  const json = JSON.stringify(buildData());
-  $('#outputData').value = json;
+  const current = buildData();
   const info = $('#outputInfo');
   const missing = stories.filter(s => s.src && !s.fileName).length;
-  info.innerHTML = '✅ 共 ' + stories.length + ' 页，数据长度 ' + json.length + ' 字符（不含图片，可直接贴给我）'
+
+  // 读取上次生成的数据
+  let last = null;
+  try { last = JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); } catch {}
+
+  if (!last) {
+    // 第一次生成：输出全量
+    const json = JSON.stringify(current);
+    $('#outputData').value = json;
+    info.innerHTML = '✅ 首次生成，共 ' + current.length + ' 页（全量数据）'
+      + (missing ? '<br>⚠️ 有 ' + missing + ' 张图片缺少文件名，请重新拖入照片' : '');
+    localStorage.setItem(LAST_KEY, JSON.stringify(current));
+    toast('首次生成全量数据，复制发给我');
+    return;
+  }
+
+  // 后续生成：只输出差异
+  const d = diffData(last, current);
+  if (d.changed.length === 0 && d.removed.length === 0) {
+    $('#outputData').value = '';
+    info.innerHTML = '✅ 没有变化，无需发送';
+    toast('没有变化');
+    return;
+  }
+  const diffObj = {
+    total: current.length,
+    changed: d.changed,   // [{index, page}]
+    removed: d.removed    // [旧索引]
+  };
+  const json = JSON.stringify(diffObj);
+  $('#outputData').value = json;
+  info.innerHTML = '✅ 增量数据：修改/新增 ' + d.changed.length + ' 页，删除 ' + d.removed.length + ' 页（共 ' + current.length + ' 页）'
     + (missing ? '<br>⚠️ 有 ' + missing + ' 张图片缺少文件名，请重新拖入照片' : '');
-  toast('数据已生成（不含图片），复制发给我');
+  localStorage.setItem(LAST_KEY, JSON.stringify(current));
+  toast('已生成增量数据，复制发给我');
+};
+
+// 重置对比基准（想重新生成全量时用）
+$('#resetDiff').onclick = () => {
+  localStorage.removeItem(LAST_KEY);
+  toast('已重置，下次生成将输出全量');
 };
 
 $('#copyBtn').onclick = () => {
