@@ -101,7 +101,10 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .ig-profile-tabs{border-top:1px solid #efefef;padding:12px 0;text-align:center;font-size:13px;color:#262626;flex-shrink:0}
 .ig-profile-tabs .active{font-weight:600;border-bottom:2px solid #262626;padding-bottom:10px}
 .ig-profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:0 2px 20px}
-.ig-profile-grid .cell{aspect-ratio:1;overflow:hidden;background:#efefef}
+.ig-profile-grid .cell{aspect-ratio:1;overflow:hidden;background:#efefef;padding:0;display:block;width:100%}
+.ig-posts{position:absolute;inset:52px 0 50px;background:#fff;z-index:11;display:flex;flex-direction:column}
+.ig-posts .ig-scroll{min-height:0;overscroll-behavior:contain}
+.ig-posts .ig-profile-head{justify-content:flex-start;gap:20px}
 .ig-profile-grid .cell img{width:100%;height:100%;object-fit:cover;display:block}
 .ig-profile-grid .empty{grid-column:1/-1;text-align:center;color:#8e8e8e;font-size:13px;padding:40px 0}
 
@@ -206,6 +209,10 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
     <div class="ig-profile-bio" id="igProfileBio">还没有简介</div>
     <div class="ig-profile-tabs"><span class="active">▦ 帖子</span></div>
     <div class="ig-profile-grid" id="igProfileGrid"></div>
+  </div>
+  <div class="ig-posts hidden" id="igPosts">
+    <div class="ig-profile-head"><button class="ig-back" id="igPostsBack" aria-label="返回个人主页">‹</button><b>帖子 · <span id="igPostsName"></span></b></div>
+    <div class="ig-scroll" id="igPostsScroll"><div id="igPostsFeed"></div></div>
   </div>
 </section>
 <section id="kakao" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><div class="social-head"><span>聊天</span><span style="font-size:17px">KakaoTalk</span></div><div class="chat-list" id="chatList"></div><div class="social-note">模拟聊天 · 消息仅保存在当前浏览器</div><div class="conversation hidden" id="conversation"><div class="chat-header"><button id="closeChat" aria-label="返回聊天列表">‹</button><b id="chatName"></b></div><div class="messages" id="messages"></div><form class="composer" id="composer"><input id="chatInput" aria-label="消息" placeholder="输入消息…" autocomplete="off" maxlength="1000"><button>发送</button></form></div></section><div class="story-viewer hidden" id="storyViewer">
@@ -508,20 +515,19 @@ function igTimeKey(t){
 }
 
 // ===== IG 首页 Feed 渲染（汇总所有账号，按时间倒序）=====
-function renderIGFeed(){
-  const feed=$('#feed');
+function renderIGFeed(accountIndex=null,feed=$('#feed')){
   if(!feed)return;
   // 收集所有账号的帖子，带上所属账号索引
   const all=[];
   igData.accounts.forEach((a,ai)=>{
-    (a.posts||[]).forEach(p=>all.push({post:p,accIndex:ai}));
+    if(accountIndex===null||ai===accountIndex)(a.posts||[]).forEach((p,pi)=>all.push({post:p,accIndex:ai,postIndex:pi}));
   });
   all.sort((x,y)=>igTimeKey(y.post.time)-igTimeKey(x.post.time));
   if(!all.length){
     feed.innerHTML='<div class="ig-end">还没有帖子</div>';
     return;
   }
-  feed.innerHTML=all.map(({post:p,accIndex:ai})=>{
+  feed.innerHTML=all.map(({post:p,accIndex:ai,postIndex:pi})=>{
     const prof=(igData.accounts[ai]||{}).profile||{};
     const imgs=(p.images||[]).filter(Boolean);
     let media;
@@ -540,7 +546,7 @@ function renderIGFeed(){
     }
     const avStyle=igAvatarStyle(prof);
     const avText=prof.avatar?'':igEsc((prof.id||'?').slice(0,1).toUpperCase());
-    return '<article class="post">'
+    return '<article class="post" data-post-index="'+pi+'">'
       +'<div class="post-head" data-open-acc="'+ai+'">'
         +'<span class="avatar" style="'+avStyle+'">'+avText+'</span>'
         +'<b>'+igEsc(prof.id||'account')+'</b>'
@@ -557,11 +563,11 @@ function renderIGFeed(){
       +'</article>';
   }).join('');
   // 点赞
-  $$('.ig-like').forEach(b=>b.onclick=()=>{const on=b.classList.toggle('liked');b.textContent=on?'♥':'♡';});
+  feed.querySelectorAll('.ig-like').forEach(b=>b.onclick=()=>{const on=b.classList.toggle('liked');b.textContent=on?'♥':'♡';});
   // 点头像/用户名打开该账号主页
-  $$('[data-open-acc]').forEach(h=>h.onclick=()=>openIGProfile(+h.dataset.openAcc));
+  feed.querySelectorAll('[data-open-acc]').forEach(h=>h.onclick=()=>openIGProfile(+h.dataset.openAcc));
   // 轮播圆点跟随
-  $$('[data-carousel]').forEach(track=>{
+  feed.querySelectorAll('[data-carousel]').forEach(track=>{
     const dots=track.parentElement.querySelectorAll('.ig-dot');
     const count=track.parentElement.querySelector('.ig-carousel-count');
     track.addEventListener('scroll',()=>{
@@ -577,6 +583,7 @@ function renderIGProfile(accIndex){
   const acc=igData.accounts[accIndex!=null?accIndex:igAccountIndex]||{};
   const prof=acc.profile||{};
   const posts=acc.posts||[];
+  const ai=accIndex!=null?accIndex:igAccountIndex;
   $('#igProfileName').textContent=prof.id||'我的主页';
   const av=$('#igProfileAvatar');
   if(prof.avatar){
@@ -595,12 +602,22 @@ function renderIGProfile(accIndex){
     grid.innerHTML='<div class="empty">还没有帖子</div>';
     return;
   }
-  grid.innerHTML=posts.map(p=>{
+  grid.innerHTML=posts.map((p,i)=>({post:p,index:i})).sort((a,b)=>igTimeKey(b.post.time)-igTimeKey(a.post.time)).map(({post:p,index:i})=>{
     const first=(p.images||[]).filter(Boolean)[0];
-    return '<div class="cell">'+(first?'<img src="'+igEsc(first)+'" alt="">':'')+'</div>';
+    return '<button class="cell" data-post-index="'+i+'" aria-label="查看帖子 '+igEsc(p.time||i+1)+'">'+(first?'<img src="'+igEsc(first)+'" alt="">':'')+'</button>';
   }).join('');
+  grid.querySelectorAll('[data-post-index]').forEach(b=>b.onclick=()=>openIGPosts(ai,+b.dataset.postIndex));
 }
+function openIGPosts(ai,pi){
+  renderIGFeed(ai,$('#igPostsFeed'));
+  $('#igPostsName').textContent=(igData.accounts[ai].profile||{}).id||'account';
+  $('#igPosts').classList.remove('hidden');
+  const target=$('#igPostsFeed').querySelector('[data-post-index="'+pi+'"]');
+  $('#igPostsScroll').scrollTop=target.offsetTop-$('#igPostsFeed').offsetTop;
+}
+$('#igPostsBack').onclick=()=>$('#igPosts').classList.add('hidden');
 function openIGProfile(accIndex){
+  $('#igPosts').classList.add('hidden');
   renderIGProfile(accIndex);
   $('#igProfile').classList.remove('hidden');
 }
@@ -634,6 +651,16 @@ function myStories(){ return storiesForAccount(igProfile().id); }
 // ===== 快拍查看器 =====
 let storyList=[], storyIndex=0, storyTimer=null, storyOwner='';
 
+function openAccountStory(ai){
+  const prof=(igData.accounts[ai]||{}).profile||{};
+  storyList=storiesForAccount(prof.id);
+  storyOwner=prof.id||'动态';
+  if(!storyList.length)return;
+  storyIndex=0;
+  $('#storyViewer').classList.remove('hidden');
+  showStory();
+}
+
 function openStory(n){
   // n=0 表示当前账号自己的快拍，n>=1 表示联系人（联系人没有真实快拍，用默认图）
   if(n===0){
@@ -661,9 +688,9 @@ function showStory(){
     return '<div class="seg '+cls+'"><div class="fill" style="--dur:'+dur+'"></div></div>';
   }).join('');
   // 顶部信息
-  const prof=igProfile();
+  const prof=(igData.accounts.find(a=>(a.profile||{}).id===storyOwner)||{}).profile||{};
   const av=$('#storyAvatar');
-  if(storyIndex===0&&storyOwner===(prof.id||'我的动态')&&prof.avatar){
+  if(prof.avatar){
     av.style.backgroundImage='url('+prof.avatar+')';
     av.style.backgroundSize='cover';
     av.style.backgroundPosition='center';
@@ -722,17 +749,14 @@ $('#storyPrev').onclick=prevStory;
 
 // ===== IG 快拍列表（按账号）=====
 function renderIGStories(){
-  const prof=igProfile();
-  const list=myStories();
-  const avStyle=prof.avatar?'background-image:url('+prof.avatar+');background-size:cover;background-position:center;color:transparent':'';
-  const avText=prof.avatar?'':'＋';
-  // 当前账号有快拍才显示「我的动态」
-  let html='';
-  if(list.length){
-    html+='<button class="story" data-story="0"><span class="avatar" style="'+avStyle+'">'+avText+'</span>'+(prof.id||'我的动态')+'</button>';
-  }
+  let html=igData.accounts.map((a,ai)=>{
+    const prof=a.profile||{};
+    if(!storiesForAccount(prof.id).length)return '';
+    return '<button class="story" data-story-account="'+ai+'"><span class="avatar" style="'+igAvatarStyle(prof)+'">'+(prof.avatar?'':igEsc((prof.id||'?')[0]))+'</span>'+igEsc(prof.id||'动态')+'</button>';
+  }).join('');
   html+=contacts.map((c,i)=>'<button class="story" data-story="'+(i+1)+'"><span class="avatar">'+c.icon+'</span>'+c.name+'</button>').join('');
   $('#stories').innerHTML=html;
+  $$('[data-story-account]').forEach(b=>b.onclick=()=>openAccountStory(+b.dataset.storyAccount));
   $$('[data-story]').forEach(b=>b.onclick=()=>openStory(+b.dataset.story));
 }
 
@@ -741,6 +765,7 @@ $('#igProfileBack').onclick=()=>$('#igProfile').classList.add('hidden');
 
 // ===== 底部 tab 切换 =====
 $$('.ig-tab').forEach(tab=>tab.onclick=()=>{
+  $('#igPosts').classList.add('hidden');
   const t=tab.dataset.tab;
   $$('.ig-tab').forEach(x=>x.classList.toggle('active',x===tab));
   if(t==='home'){
