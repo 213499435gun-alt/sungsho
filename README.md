@@ -25,3 +25,35 @@
 ## 自定义
 
 在 `index.html` 中修改 `songs`、`palettes` 和 `names` 可调整音乐曲名及相册。
+
+## Instagram 多账号
+
+`index.html` 里的 `igData` 支持多个账号：
+
+```js
+const igData = { accounts: [
+  { profile: { avatar:'ig/头像.jpg', id:'账号ID', name:'昵称', bio:'简介' },
+    posts: [ { images:['ig/a.jpg','ig/b.jpg'], caption:'文案', likes:'18', time:'26.07.11' } ] },
+  { profile: { ... }, posts: [ ... ] }
+]};
+```
+
+- 手机里打开 Instagram → 顶栏 **⇄** 按钮 → 选择账号，即可查看不同账号的主页、帖子和快拍。
+- 快拍按账号拆分，存在 `storiesByAccount` 里，键是账号 ID：
+
+```js
+const storiesByAccount = {
+  '_shotaroo_': [ {type:'image', src:'stories/1.jpg', duration:5, date:'26.09.21', texts:[]} ],
+  'friend_acc': [ {type:'image', src:'stories/friend/1.jpg', duration:5, date:'24.01.01', texts:[]} ]
+};
+```
+
+  账号没有自己的快拍时，回退到 `DEFAULT_STORIES`；列表里也不会显示「我的动态」入口。
+- 用 `ig-editor.html` 编辑：左侧「账号列表」可添加/切换/删除账号，每个账号单独编辑头像、ID、简介、帖子和快拍（快拍支持单条更换图片、日期、时长，以及批量导入）。
+- 编辑完点「生成数据」，把 JSON 发给我，或保存为 `ig-data.json` 后运行：
+
+```sh
+python3 apply_ig.py ig-data.json
+```
+
+脚本同时兼容旧的单账号格式（`{profile, posts}`）。

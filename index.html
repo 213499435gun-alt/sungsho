@@ -124,6 +124,7 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .ig-dot.on{background:#fff}
 .ig-carousel-count{position:absolute;top:10px;right:10px;background:#000a;color:#fff;font-size:11px;padding:2px 8px;border-radius:10px}
 
+
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
@@ -279,7 +280,7 @@ const ICONS={
   instagram:'<svg viewBox="0 0 100 100"><g fill="none" stroke="#fff" stroke-width="5"><rect x="24" y="24" width="52" height="52" rx="15"/><circle cx="50" cy="50" r="13"/></g><circle cx="68" cy="32" r="3.5" fill="#fff"/></svg>'
 };
 
-const apps=[['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.photos;$('#dockMusic').innerHTML=ICONS.music;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;if(b.dataset.app==='settings')return;show(b.dataset.app);if(b.dataset.app==='music')showPlaylist()});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
+const apps=[['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.photos;$('#dockMusic').innerHTML=ICONS.music;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;if(b.dataset.app==='settings')return;show(b.dataset.app);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){renderIGFeed();renderIGStories()}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
 // ===== 锁屏上滑解锁：内容实时模糊，松手引出密码页 =====
 function goPass(){show('pass');$('#passTitle').textContent='输入密码';}
 (function(){
@@ -457,10 +458,11 @@ let running=false,elapsed=0,started=0;$('#startTimer').onclick=()=>{if(running)e
 
 const contacts=[{name:'Jiwon',icon:'J',text:'今天一起去喝咖啡吗？'},{name:'Minji',icon:'M',text:'刚刚的照片好好看 ✨'},{name:'周末小分队',icon:'☀',text:'周六见！'}];
 
-// ===== Instagram 快拍数据 =====
-// 每个快拍：{type:'blank'|'image', src:'图片路径', text:'文字', duration:秒}
-// 现在先放空白占位页，之后你把内容整理好给我，我替换这里
-const myStories=[
+// ===== Instagram 快拍数据（按账号拆分）=====
+// 每个快拍：{type:'blank'|'image', src:'图片路径', text:'文字', duration:秒, date:'日期', texts:[...]}
+// 按账号 ID 存放：storiesByAccount['账号ID'] = [快拍...]
+// 账号没有自己的快拍时，回退到 DEFAULT_STORIES
+const DEFAULT_STORIES=[
   {type:'image', src:'stories/2124.JPG', duration:5, date:'21.09.06', texts:[]},
   {type:'image', src:'stories/2125.JPG', duration:5, date:'21.09.06', texts:[]},
   {type:'image', src:'stories/2046.jpg', duration:5, date:'21.09.13', texts:[]},
@@ -475,248 +477,289 @@ const myStories=[
   {type:'image', src:'stories/2095.jpg', duration:5, date:'26.09.21', texts:[]}
 ];
 
-let storyIndex=0, storyTimer=null;
+// 各账号自己的快拍（键 = 账号 ID，与 igData 里的 profile.id 对应）
+const storiesByAccount={"_shotaroo_":[{"type":"image","src":"stories/2124.JPG","duration":5,"date":"21.09.06","texts":[]},{"type":"image","src":"stories/2125.JPG","duration":5,"date":"21.09.06","texts":[]},{"type":"image","src":"stories/2046.jpg","duration":5,"date":"21.09.13","texts":[]},{"type":"image","src":"stories/2127.JPG","duration":5,"date":"21.09.13","texts":[]},{"type":"image","src":"stories/2129.JPG","duration":5,"date":"22.02.01","texts":[]},{"type":"image","src":"stories/2033.jpg","duration":5,"date":"22.08.21","texts":[]},{"type":"image","src":"stories/2029_2.jpg","duration":5,"date":"22.08.26","texts":[]},{"type":"image","src":"stories/2030_2.jpg","duration":5,"date":"22.08.26","texts":[]},{"type":"image","src":"stories/2038.jpg","duration":5,"date":"22.09.09","texts":[]},{"type":"image","src":"stories/2053.jpg","duration":5,"date":"25.04.18","texts":[]},{"type":"image","src":"stories/2095.jpg","duration":5,"date":"26.09.21","texts":[]}],"sungchanny":[]};
 
-// 滑动窗口预加载：只加载当前页前后各 2 张，内存占用恒定，支持几十上百张
-const preloadCache={};
-function preloadAround(index){
-  for(let i=index-2;i<=index+2;i++){
-    if(i<0||i>=myStories.length)continue;
-    const s=myStories[i];
-    if(s.type==='image'&&s.src&&!preloadCache[s.src]){
-      const img=new Image();
-      img.src=s.src;
-      preloadCache[s.src]=img;
+// ===== IG 数据（由 apply_ig.py 注入，格式：{accounts:[{profile,posts,stories}]}）=====
+// 兜底：没有注入数据时用空账号，避免报错
+// 注意：这里不能再用 var/let/const 声明 igData，否则会和上面的 const igData 冲突
+const igData={"accounts":[{"profile":{"avatar":"ig/IMG_1045.jpg","id":"_shotaroo_","name":"쇼타로","bio":"수달은 살짝 닮고..."},"posts":[{"images":["ig/IMG_5609.JPG"],"caption":"","likes":"8","time":"22.08.05"},{"images":["ig/IMG_5643.JPG","ig/IMG_5644.JPG","ig/IMG_5645.JPG"],"caption":"東京タワー🗼","likes":"31","time":"22.09.27"},{"images":["ig/IMG_5647.JPG","ig/IMG_5648.JPG","ig/IMG_5649.JPG","ig/IMG_5650.JPG","ig/IMG_5651.JPG"],"caption":"☃️❄️🤍","likes":"","time":"22.12.23"},{"images":["ig/1293.JPG","ig/1295.JPG","ig/3996885810cdf2872b1196a0edde6e8f.JPG"],"caption":"성찬 고마워😭😭@sungchanny","likes":"15","time":"22.12.31"},{"images":["ig/IMG_4207.jpg","ig/IMG_4208.jpg"],"caption":"올해는 우리의 해가 될까요.","likes":"31","time":"23.01.01"},{"images":["ig/IMG_1041.jpg","ig/IMG_1042.jpg","ig/IMG_1043.jpg","ig/IMG_1044.jpg","ig/IMG_1045.jpg","ig/IMG_1046.jpg","ig/IMG_1047.jpg","ig/IMG_1048.jpg","ig/IMG_1049.jpg","ig/IMG_1050.JPG","ig/IMG_1051.JPG"],"caption":"","likes":"16","time":"25.02.28"},{"images":["ig/2058_2.jpg"],"caption":"","likes":"7","time":"25.07.14"},{"images":["ig/IMG_4521.jpg","ig/IMG_4523.jpg"],"caption":"","likes":"18","time":"26.07.11"}],"stories":[{"type":"image","src":"stories/2124.JPG","duration":5,"date":"21.09.06","texts":[]},{"type":"image","src":"stories/2125.JPG","duration":5,"date":"21.09.06","texts":[]},{"type":"image","src":"stories/2046.jpg","duration":5,"date":"21.09.13","texts":[]},{"type":"image","src":"stories/2127.JPG","duration":5,"date":"21.09.13","texts":[]},{"type":"image","src":"stories/2129.JPG","duration":5,"date":"22.02.01","texts":[]},{"type":"image","src":"stories/2033.jpg","duration":5,"date":"22.08.21","texts":[]},{"type":"image","src":"stories/2029_2.jpg","duration":5,"date":"22.08.26","texts":[]},{"type":"image","src":"stories/2030_2.jpg","duration":5,"date":"22.08.26","texts":[]},{"type":"image","src":"stories/2038.jpg","duration":5,"date":"22.09.09","texts":[]},{"type":"image","src":"stories/2053.jpg","duration":5,"date":"25.04.18","texts":[]},{"type":"image","src":"stories/2095.jpg","duration":5,"date":"26.09.21","texts":[]}]},{"profile":{"avatar":"ig/IMG_7384.JPG","id":"sungchanny","name":"반피","bio":"윽.."},"posts":[{"images":["ig/IMG_0246.jpg"],"caption":"형 우리 무대 올라가야..","likes":"8","time":"20.10.31"},{"images":["ig/IMG_5645.JPG","ig/IMG_5643.JPG"],"caption":"도쿄 좋아 형이 도 좋아^","likes":"19","time":"22.09.27"},{"images":["ig/IMG_5662.jpg","ig/IMG_5663.jpg","ig/IMG_5664.JPG","ig/IMG_5665.JPG","ig/IMG_4204.JPG","ig/IMG_4205.JPG"],"caption":"사진 진짜 잘 찍는다 ㅋㅋㅋ@_shotaroo_","likes":"28","time":"22.10.21"},{"images":["ig/IMG_4208.jpg","ig/IMG_4209.jpg"],"caption":"성쇼 애~","likes":"31","time":"22.12.31"},{"images":["ig/2058_2.jpg"],"caption":"쇼","likes":"4","time":"25.07.14"},{"images":["ig/IMG_2334.jpg","ig/IMG_2335.jpg"],"caption":"","likes":"7","time":"25.08.12"},{"images":["ig/IMG_0655.jpg","ig/IMG_0656.jpg","ig/IMG_0657.jpg","ig/IMG_0658.jpg"],"caption":"","likes":"","time":"26.06.28"},{"images":["ig/IMG_4523.jpg","ig/IMG_4522.jpg"],"caption":"아 진짜","likes":"24","time":"26.07.11"},{"images":["ig/IMG_5341.jpg"],"caption":"팥빙수야 팥빙수야ㅏㅏ","likes":"5","time":"26.10.13"}],"stories":[]}]};
+if(typeof igData==='undefined'||!igData||!Array.isArray(igData.accounts)||!igData.accounts.length){
+  window.igData={accounts:[{profile:{avatar:'',id:'',name:'',bio:''},posts:[],stories:[]}]};
+}
+
+// 当前正在浏览的账号（0 = 自己）
+let igAccountIndex=0;
+
+// ===== 工具函数 =====
+function igEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function igAvatarStyle(p){
+  return p&&p.avatar?'background-image:url('+igEsc(p.avatar)+');background-size:cover;background-position:center;color:transparent':'';
+}
+// 把 "YY.MM.DD" / "2小时前" 之类转成可排序数字
+function igTimeKey(t){
+  if(!t)return 0;
+  const m=String(t).match(/(\d{2,4})\D+(\d{1,2})\D+(\d{1,2})/);
+  if(m){
+    let y=+m[1]; if(y<100)y+=2000;
+    return y*10000+(+m[2])*100+(+m[3]);
+  }
+  return 0;
+}
+
+// ===== IG 首页 Feed 渲染（汇总所有账号，按时间倒序）=====
+function renderIGFeed(){
+  const feed=$('#feed');
+  if(!feed)return;
+  // 收集所有账号的帖子，带上所属账号索引
+  const all=[];
+  igData.accounts.forEach((a,ai)=>{
+    (a.posts||[]).forEach(p=>all.push({post:p,accIndex:ai}));
+  });
+  all.sort((x,y)=>igTimeKey(y.post.time)-igTimeKey(x.post.time));
+  if(!all.length){
+    feed.innerHTML='<div class="ig-end">还没有帖子</div>';
+    return;
+  }
+  feed.innerHTML=all.map(({post:p,accIndex:ai})=>{
+    const prof=(igData.accounts[ai]||{}).profile||{};
+    const imgs=(p.images||[]).filter(Boolean);
+    let media;
+    if(imgs.length===0){
+      media='<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:12px">暂无图片</div>';
+    }else if(imgs.length===1){
+      media='<img src="'+igEsc(imgs[0])+'" alt="">';
+    }else{
+      const slides=imgs.map(src=>'<img src="'+igEsc(src)+'" alt="">').join('');
+      const dots=imgs.map((_,i)=>'<span class="ig-dot'+(i===0?' on':'')+'"></span>').join('');
+      media='<div class="ig-carousel">'
+        +'<div class="ig-carousel-track" data-carousel>'+slides+'</div>'
+        +'<div class="ig-carousel-dots">'+dots+'</div>'
+        +'<div class="ig-carousel-count">1/'+imgs.length+'</div>'
+        +'</div>';
     }
-  }
-}
-
-function openStory(contactIndex){
-  // 快拍列表：[我的动态(index 0), ...contacts(index 1..)]
-  storyIndex=0;
-  preloadAround(0);
-  $('#storyViewer').classList.remove('hidden');
-  if(contactIndex===0){
-    $('#storyName').textContent='我的动态';
-    $('#storyAvatar').textContent='＋';
-  }else{
-    const c=contacts[contactIndex-1];
-    $('#storyName').textContent=c.name;
-    $('#storyAvatar').textContent=c.icon;
-  }
-  renderStory();
-}
-
-function renderStory(){
-  const s=myStories[storyIndex];
-  if(!s){closeStory();return;}
-  preloadAround(storyIndex);
-  // 进度条
-  $('#storyProgress').innerHTML=myStories.map((_,i)=>{
-    let cls='seg';
-    if(i<storyIndex)cls+=' done';
-    else if(i===storyIndex)cls+=' active';
-    return '<div class="'+cls+'"><div class="fill"></div></div>';
+    const avStyle=igAvatarStyle(prof);
+    const avText=prof.avatar?'':igEsc((prof.id||'?').slice(0,1).toUpperCase());
+    return '<article class="post">'
+      +'<div class="post-head" data-open-acc="'+ai+'">'
+        +'<span class="avatar" style="'+avStyle+'">'+avText+'</span>'
+        +'<b>'+igEsc(prof.id||'account')+'</b>'
+      +'</div>'
+      +media
+      +'<div class="post-actions">'
+        +'<button class="ig-like" aria-label="点赞">♡</button>'
+        +'<button aria-label="评论">💬</button>'
+        +'<button aria-label="分享">➤</button>'
+      +'</div>'
+      +'<p><b>'+igEsc(p.likes||0)+' 次赞</b></p>'
+      +'<p><b>'+igEsc(prof.id||'account')+'</b> '+igEsc(p.caption||'')+'</p>'
+      +(p.time?'<p style="color:#8e8e8e;font-size:11px">'+igEsc(p.time)+'</p>':'')
+      +'</article>';
   }).join('');
-  // 设置当前段动画时长
-  const activeSeg=$('#storyProgress .seg.active');
-  if(activeSeg)activeSeg.style.setProperty('--dur',(s.duration||5)+'s');
-  // 显示日期
-  $('#storyTime').textContent = s.date || '';
+  // 点赞
+  $$('.ig-like').forEach(b=>b.onclick=()=>{const on=b.classList.toggle('liked');b.textContent=on?'♥':'♡';});
+  // 点头像/用户名打开该账号主页
+  $$('[data-open-acc]').forEach(h=>h.onclick=()=>openIGProfile(+h.dataset.openAcc));
+  // 轮播圆点跟随
+  $$('[data-carousel]').forEach(track=>{
+    const dots=track.parentElement.querySelectorAll('.ig-dot');
+    const count=track.parentElement.querySelector('.ig-carousel-count');
+    track.addEventListener('scroll',()=>{
+      const i=Math.round(track.scrollLeft/track.clientWidth);
+      dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+      if(count)count.textContent=(i+1)+'/'+dots.length;
+    },{passive:true});
+  });
+}
+
+// ===== IG 个人主页渲染 =====
+function renderIGProfile(accIndex){
+  const acc=igData.accounts[accIndex!=null?accIndex:igAccountIndex]||{};
+  const prof=acc.profile||{};
+  const posts=acc.posts||[];
+  $('#igProfileName').textContent=prof.id||'我的主页';
+  const av=$('#igProfileAvatar');
+  if(prof.avatar){
+    av.style.backgroundImage='url('+prof.avatar+')';
+    av.style.backgroundSize='cover';
+    av.style.backgroundPosition='center';
+    av.textContent='';
+  }else{
+    av.style.backgroundImage='';
+    av.textContent=(prof.id||'我').slice(0,1).toUpperCase();
+  }
+  $('#igPostCount').textContent=posts.length;
+  $('#igProfileBio').textContent=prof.bio||'还没有简介';
+  const grid=$('#igProfileGrid');
+  if(!posts.length){
+    grid.innerHTML='<div class="empty">还没有帖子</div>';
+    return;
+  }
+  grid.innerHTML=posts.map(p=>{
+    const first=(p.images||[]).filter(Boolean)[0];
+    return '<div class="cell">'+(first?'<img src="'+igEsc(first)+'" alt="">':'')+'</div>';
+  }).join('');
+}
+function openIGProfile(accIndex){
+  renderIGProfile(accIndex);
+  $('#igProfile').classList.remove('hidden');
+}
+
+function toastIG(msg){
+  const t=$('#toast');
+  if(!t)return;
+  t.textContent=msg;
+  t.classList.remove('hidden');
+  clearTimeout(t._igTimer);
+  t._igTimer=setTimeout(()=>t.classList.add('hidden'),1800);
+}
+
+// ===== 当前账号信息 =====
+function igProfile(){ return (igData.accounts[igAccountIndex]||{}).profile||{}; }
+
+// 取某个账号的快拍：优先 storiesByAccount[账号ID]，其次账号自带的 stories 字段，最后回退 DEFAULT_STORIES
+function storiesForAccount(accountId){
+  if(accountId&&storiesByAccount[accountId]&&storiesByAccount[accountId].length){
+    return storiesByAccount[accountId];
+  }
+  const acc=igData.accounts.find(a=>(a.profile||{}).id===accountId);
+  if(acc&&Array.isArray(acc.stories)&&acc.stories.length){
+    // 编辑器导出的快拍没有 type 字段，补上
+    return acc.stories.map(s=>({type:'image',src:s.src,date:s.date,duration:s.duration||5,texts:[]}));
+  }
+  return DEFAULT_STORIES;
+}
+function myStories(){ return storiesForAccount(igProfile().id); }
+
+// ===== 快拍查看器 =====
+let storyList=[], storyIndex=0, storyTimer=null, storyOwner='';
+
+function openStory(n){
+  // n=0 表示当前账号自己的快拍，n>=1 表示联系人（联系人没有真实快拍，用默认图）
+  if(n===0){
+    storyList=myStories();
+    storyOwner=igProfile().id||'我的动态';
+  }else{
+    const c=contacts[n-1];
+    storyList=DEFAULT_STORIES;
+    storyOwner=c?c.name:'动态';
+  }
+  if(!storyList.length)return;
+  storyIndex=0;
+  $('#storyViewer').classList.remove('hidden');
+  showStory();
+}
+
+function showStory(){
+  const s=storyList[storyIndex];
+  if(!s){ closeStory(); return; }
+  // 进度条
+  const prog=$('#storyProgress');
+  prog.innerHTML=storyList.map((_,i)=>{
+    const cls=i<storyIndex?'done':(i===storyIndex?'active':'');
+    const dur=(storyList[i].duration||5)+'s';
+    return '<div class="seg '+cls+'"><div class="fill" style="--dur:'+dur+'"></div></div>';
+  }).join('');
+  // 顶部信息
+  const prof=igProfile();
+  const av=$('#storyAvatar');
+  if(storyIndex===0&&storyOwner===(prof.id||'我的动态')&&prof.avatar){
+    av.style.backgroundImage='url('+prof.avatar+')';
+    av.style.backgroundSize='cover';
+    av.style.backgroundPosition='center';
+    av.textContent='';
+  }else{
+    av.style.backgroundImage='';
+    av.textContent=storyOwner.slice(0,1).toUpperCase();
+  }
+  $('#storyName').textContent=storyOwner;
+  $('#storyTime').textContent=s.date||'刚刚';
   // 内容
   const content=$('#storyContent');
   if(s.type==='image'&&s.src){
-    let html='<img src="'+s.src+'" alt="快拍">';
-    // 渲染文字框
-    (s.texts||[]).forEach(t=>{
-      let bg='';
-      if(t.bg==='dark')bg='background:rgba(0,0,0,.55);';
-      else if(t.bg==='light')bg='background:rgba(255,255,255,.85);color:#111;';
-      html+='<div class="story-text" style="left:'+t.x+'%;top:'+t.y+'%;font-size:'+t.size+'px;color:'+t.color+';'+bg+'">'+(t.content||'').replace(/\n/g,'<br>')+'</div>';
-    });
-    content.innerHTML=html;
+    content.innerHTML='<img src="'+igEsc(s.src)+'" alt="">';
   }else{
-    content.innerHTML='<div class="story-blank">'+((s.text||'').replace(/\n/g,'<br>'))+'</div>';
+    content.innerHTML='<div class="story-blank">'+(s.text?igEsc(s.text):'（空白快拍）')+'</div>';
   }
-  // 自动翻页计时
+  // 文字叠加
+  if(Array.isArray(s.texts)){
+    s.texts.forEach(t=>{
+      if(!t||!t.text)return;
+      const el=document.createElement('div');
+      el.className='story-text';
+      el.textContent=t.text;
+      el.style.left=(t.x!=null?t.x:50)+'%';
+      el.style.top=(t.y!=null?t.y:50)+'%';
+      el.style.color=t.color||'#fff';
+      el.style.fontSize=(t.size||18)+'px';
+      content.appendChild(el);
+    });
+  }
+  // 自动前进
   clearTimeout(storyTimer);
-  storyTimer=setTimeout(()=>nextStory(),(s.duration||5)*1000);
+  const dur=(s.duration||5)*1000;
+  storyTimer=setTimeout(nextStory,dur);
 }
 
 function nextStory(){
-  if(storyIndex<myStories.length-1){storyIndex++;renderStory();}
+  if(storyIndex<storyList.length-1){ storyIndex++; showStory(); }
   else closeStory();
 }
 function prevStory(){
-  if(storyIndex>0){storyIndex--;renderStory();}
-  else {storyIndex=0;renderStory();}
+  if(storyIndex>0){ storyIndex--; showStory(); }
+  else showStory(); // 第一条时重播
 }
 function closeStory(){
   clearTimeout(storyTimer);
+  storyTimer=null;
   $('#storyViewer').classList.add('hidden');
 }
 
+// 快拍查看器按钮
+$('#storyClose').onclick=closeStory;
 $('#storyNext').onclick=nextStory;
 $('#storyPrev').onclick=prevStory;
-$('#storyClose').onclick=closeStory;
-$('#stories').innerHTML=[{name:'我的动态',icon:'＋'}].concat(contacts).map((c,i)=>'<button class="story" data-story="'+i+'"><span class="avatar">'+c.icon+'</span>'+c.name+'</button>').join('');
-$$('[data-story]').forEach(b=>b.onclick=()=>openStory(+b.dataset.story));
-// ===== Instagram 数据（用 ig-editor.html 编辑后生成）=====
-// profile: {avatar:'ig/头像.jpg', id:'账号ID', name:'昵称', bio:'简介'}
-// posts: [{img:'ig/图片.jpg', caption:'文案', likes:'128', time:'2小时前'}]
-const igData={
-  profile:{"avatar":"ig/IMG_1045.jpg","id":"_shotaroo_","name":"쇼타로","bio":"수달은 살짝 닮고..."},
-  posts:[
-    {"images":["ig/IMG_4521.jpg","ig/IMG_4523.jpg"],"caption":"","likes":"18","time":"26.07.11"},
-    {"images":["ig/2058_2.jpg"],"caption":"","likes":"7","time":"25.07.14"},
-    {"images":["ig/IMG_1041.jpg","ig/IMG_1042.jpg","ig/IMG_1043.jpg","ig/IMG_1044.jpg","ig/IMG_1045.jpg","ig/IMG_1046.jpg","ig/IMG_1047.jpg","ig/IMG_1048.jpg","ig/IMG_1049.jpg","ig/IMG_1050.JPG","ig/IMG_1051.JPG"],"caption":"","likes":"16","time":"25.02.28"},
-    {"images":["ig/IMG_4207.jpg","ig/IMG_4208.jpg"],"caption":"올해는 우리의 해가 될까요.","likes":"31","time":"23.01.01"},
-    {"images":["ig/1293.JPG","ig/1295.JPG","ig/3996885810cdf2872b1196a0edde6e8f.JPG"],"caption":"성찬 고마워😭😭@sungchanny","likes":"15","time":"22.12.31"},
-    {"images":["ig/IMG_5647.JPG","ig/IMG_5648.JPG","ig/IMG_5649.JPG","ig/IMG_5650.JPG","ig/IMG_5651.JPG"],"caption":"☃️❄️🤍","likes":"","time":"22.12.23"},
-    {"images":["ig/IMG_5643.JPG","ig/IMG_5644.JPG","ig/IMG_5645.JPG"],"caption":"東京タワー🗼","likes":"31","time":"22.09.27"},
-    {"images":["ig/IMG_5609.JPG"],"caption":"","likes":"8","time":"22.08.05"}
-  ]
-};
-const igPosts=igData.posts;
 
-// 把「我的动态」头像替换为上传的头像
-(function(){
-  const firstStory=document.querySelector('#stories .story .avatar');
-  if(firstStory && igData.profile && igData.profile.avatar){
-    firstStory.style.backgroundImage='url('+igData.profile.avatar+')';
-    firstStory.style.backgroundSize='cover';
-    firstStory.style.backgroundPosition='center';
-    firstStory.style.color='transparent';
+// ===== IG 快拍列表（按账号）=====
+function renderIGStories(){
+  const prof=igProfile();
+  const list=myStories();
+  const avStyle=prof.avatar?'background-image:url('+prof.avatar+');background-size:cover;background-position:center;color:transparent':'';
+  const avText=prof.avatar?'':'＋';
+  // 当前账号有快拍才显示「我的动态」
+  let html='';
+  if(list.length){
+    html+='<button class="story" data-story="0"><span class="avatar" style="'+avStyle+'">'+avText+'</span>'+(prof.id||'我的动态')+'</button>';
   }
-})();
-
-function renderIGFeed(){
-  const feed=$('#feed');
-  if(igPosts.length===0){
-    feed.innerHTML='<div style="text-align:center;color:#8e8e8e;font-size:13px;padding:40px 20px">还没有帖子<br><small>在 igPosts 里添加照片和文案</small></div>';
-    return;
-  }
-  const prof=igData.profile||{};
-  const avStyle=prof.avatar?'background-image:url('+prof.avatar+');background-size:cover;background-position:center':'';
-  const avText=prof.avatar?'':'我';
-  const accName=prof.id||'我的账号';
-  feed.innerHTML=igPosts.map((p,i)=>{
-    // 兼容单图(img)和多图(images)
-    let imgs=[];
-    if(Array.isArray(p.images)&&p.images.length) imgs=p.images;
-    else if(p.img) imgs=[p.img];
-    let imgHtml;
-    if(imgs.length===0){
-      imgHtml='<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:13px">暂无图片</div>';
-    }else if(imgs.length===1){
-      imgHtml='<img src="'+imgs[0]+'" alt="帖子">';
-    }else{
-      // 多图轮播
-      const slides=imgs.map(src=>'<img src="'+src+'" alt="帖子" style="flex:0 0 100%;width:100%;scroll-snap-align:start">').join('');
-      const dots=imgs.map((_,k)=>'<span class="ig-dot'+(k===0?' on':'')+'"></span>').join('');
-      imgHtml='<div class="ig-carousel" data-carousel="'+i+'">'
-        +'<div class="ig-carousel-track">'+slides+'</div>'
-        +'<div class="ig-carousel-dots">'+dots+'</div>'
-        +'<div class="ig-carousel-count"><span class="cur">1</span>/'+imgs.length+'</div>'
-        +'</div>';
-    }
-    return '<article class="post" data-post="'+i+'">'
-      +'<div class="post-head"><span class="avatar" style="'+avStyle+'">'+avText+'</span><b>'+accName+'</b></div>'
-      +imgHtml
-      +'<div class="post-actions">'
-      +'<button data-like aria-label="点赞">♡</button>'
-      +'<button data-comment aria-label="评论">💬</button>'
-      +'</div>'
-      +'<p><b>'+(p.likes||0)+' 次赞</b></p>'
-      +'<p><b>'+accName+'</b> '+(p.caption||'')+'</p>'
-      +'<p style="color:#8e8e8e;font-size:11px">'+(p.time||'')+'</p>'
-      +'</article>';
-  }).join('');
-  // 轮播：滑动时更新圆点和计数
-  $$('.ig-carousel').forEach(car=>{
-    const track=car.querySelector('.ig-carousel-track');
-    const dots=car.querySelectorAll('.ig-dot');
-    const cur=car.querySelector('.cur');
-    track.addEventListener('scroll',()=>{
-      const idx=Math.round(track.scrollLeft/track.clientWidth);
-      dots.forEach((d,k)=>d.classList.toggle('on',k===idx));
-      if(cur)cur.textContent=idx+1;
-    },{passive:true});
-  });
-  // 点赞
-  $$('[data-like]').forEach(b=>b.onclick=()=>{
-    const liked=b.classList.toggle('liked');
-    b.textContent=liked?'♥':'♡';
-    const post=b.closest('.post');
-    const likeP=post.querySelector('p b');
-    const base=igPosts[+post.dataset.post].likes||0;
-    likeP.textContent=(liked?base+1:base)+' 次赞';
-  });
-  // 评论
-  $$('[data-comment]').forEach(b=>b.onclick=()=>{
-    const post=b.closest('.post');
-    let form=post.querySelector('form');
-    if(form){form.querySelector('input').focus();return;}
-    form=document.createElement('form');
-    form.className='composer';
-    form.innerHTML='<input aria-label="评论" placeholder="添加评论…" maxlength="500"><button>发布</button>';
-    form.onsubmit=e=>{
-      e.preventDefault();
-      const field=form.querySelector('input');
-      if(!field.value.trim())return;
-      const p=document.createElement('p');
-      p.innerHTML='<b>我</b> '+field.value.trim();
-      form.before(p);
-      field.value='';
-    };
-    post.append(form);
-    form.querySelector('input').focus();
-  });
+  html+=contacts.map((c,i)=>'<button class="story" data-story="'+(i+1)+'"><span class="avatar">'+c.icon+'</span>'+c.name+'</button>').join('');
+  $('#stories').innerHTML=html;
+  $$('[data-story]').forEach(b=>b.onclick=()=>openStory(+b.dataset.story));
 }
-renderIGFeed();
 
-// ===== IG 底部导航 =====
-$$('.ig-tab').forEach(tab=>{
-  tab.onclick=()=>{
-    const t=tab.dataset.tab;
-    $$('.ig-tab').forEach(x=>x.classList.toggle('active',x===tab));
-    if(t==='profile'){
-      openIGProfile();
-    }else{
-      $('#igProfile').classList.add('hidden');
-      if(t==='home'){ $('#igScroll').scrollTop=0; }
-      else{ /* 其他 tab 暂不实现 */ }
-    }
-  };
+// ===== 个人主页返回 =====
+$('#igProfileBack').onclick=()=>$('#igProfile').classList.add('hidden');
+
+// ===== 底部 tab 切换 =====
+$$('.ig-tab').forEach(tab=>tab.onclick=()=>{
+  const t=tab.dataset.tab;
+  $$('.ig-tab').forEach(x=>x.classList.toggle('active',x===tab));
+  if(t==='home'){
+    $('#igProfile').classList.add('hidden');
+    $('#igScroll').scrollTop=0;
+  }else if(t==='profile'){
+    // 底部 tab 永远打开「我自己」的主页（第一视角账号）
+    openIGProfile(0);
+  }else{
+    // 搜索/发布/Reels 暂未实现，给个提示
+    $('#igProfile').classList.add('hidden');
+    toastIG('这个页面还在建设中');
+  }
 });
 
-// ===== IG 个人主页 =====
-function openIGProfile(){
-  const grid=$('#igProfileGrid');
-  const prof=igData.profile||{};
-  $('#igPostCount').textContent=igPosts.length;
-  // 头像
-  const av=$('#igProfileAvatar');
-  if(prof.avatar){ av.style.backgroundImage='url('+prof.avatar+')'; av.style.backgroundSize='cover'; av.style.backgroundPosition='center'; av.textContent=''; }
-  else { av.style.backgroundImage=''; av.textContent='我'; }
-  // 名字/简介
-  $('#igProfileName').textContent=prof.id||'我的主页';
-  $('#igProfileBio').textContent=prof.bio||'还没有简介';
-  if(igPosts.length===0){
-    grid.innerHTML='<div class="empty">还没有帖子</div>';
-  }else{
-    grid.innerHTML=igPosts.map(p=>{
-      const first=(Array.isArray(p.images)&&p.images[0])||p.img||'';
-      const img=first?'<img src="'+first+'" alt="">':'';
-      return '<div class="cell">'+img+'</div>';
-    }).join('');
-  }
-  $('#igProfile').classList.remove('hidden');
-}
-$('#igProfileBack').onclick=()=>{
-  $('#igProfile').classList.add('hidden');
-  $$('.ig-tab').forEach(x=>x.classList.toggle('active',x.dataset.tab==='home'));
-};
+// ===== 通知 / 消息按钮 =====
+$('#igNotif').onclick=()=>toastIG('暂无新通知');
+$('#igMsg').onclick=()=>toastIG('暂无新消息');
+
 let chatHistory={};try{chatHistory=JSON.parse(localStorage.getItem('galaxy-chats')||'{}')||{}}catch{}let selectedChat=0;
 function saveChats(){try{localStorage.setItem('galaxy-chats',JSON.stringify(chatHistory))}catch{}}
 function renderMessages(){const box=$('#messages');box.replaceChildren();const list=Array.isArray(chatHistory[selectedChat])?chatHistory[selectedChat]:[];[{text:contacts[selectedChat].text,mine:false},...list].forEach(m=>{const b=document.createElement('div');b.className='bubble'+(m.mine?' mine':'');b.textContent=m.text;box.append(b)});box.scrollTop=box.scrollHeight}

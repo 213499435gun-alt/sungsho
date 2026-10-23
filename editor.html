@@ -87,6 +87,15 @@ h1{font-size:22px;margin-bottom:6px}
 
 <div class="layout">
   <div class="sidebar">
+    <h2>账号</h2>
+    <div class="story-list" id="accountList"></div>
+    <button class="btn block" id="addAccount">＋ 添加账号</button>
+    <button class="btn block" id="importIndex" title="从 index.html 读取现有账号">⬇ 从 index.html 导入账号</button>
+    <button class="btn block" id="importIndexFile" title="直接选择 index.html 文件（双击打开时用这个）">📄 选择 index.html 文件</button>
+    <input type="file" id="importIndexFileInput" accept=".html,text/html" style="display:none">
+    <button class="btn block" id="importJson" title="导入之前导出的 stories.json">📂 导入 stories.json</button>
+    <input type="file" id="importJsonInput" accept=".json,application/json" style="display:none">
+    <div style="height:1px;background:#3a3a46;margin:16px 0"></div>
     <h2>快拍列表</h2>
     <div class="story-list" id="storyList"></div>
     <button class="btn block primary" id="batchImport">📥 批量导入照片（多选）</button>
@@ -147,49 +156,209 @@ h1{font-size:22px;margin-bottom:6px}
 </div>
 <div class="toast" id="toast"></div>
 <script>
-let stories = [];
+// ===== 多账号数据 =====
+// accounts: [{ id, name, avatar, stories:[{src,fileName,duration,date,texts}] }]
+let accounts = [];
+let accountIndex = 0;
 let currentIndex = -1;
 let selectedText = null;
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
+function newAccount(id) {
+  return { id: id || '', name: '', avatar: '', stories: [] };
+}
+function acc() { return accounts[accountIndex] || accounts[0]; }
+// getStories() 现在是「当前账号的快拍」，用 getter 保持原有代码兼容
+function getStories() { return acc().stories; }
+
 // ===== 本地持久化（刷新不丢）=====
-const STORAGE_KEY = 'story-editor-data';
+const STORAGE_KEY = 'story-editor-data-v2';
 function saveLocal() {
   try {
-    // 只存元数据 + 文件名，不存 base64（太大），预览图另存
-    const meta = stories.map(s => ({
-      fileName: s.fileName || '',
-      duration: s.duration,
-      date: s.date || '',
-      texts: s.texts
-    }));
+    const meta = {
+      accounts: accounts.map(a => ({
+        id: a.id || '', name: a.name || '', avatar: a.avatar || '',
+        stories: (a.stories || []).map(s => ({
+          fileName: s.fileName || '',
+          duration: s.duration,
+          date: s.date || '',
+          texts: s.texts
+        }))
+      })),
+      accountIndex
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(meta));
   } catch (e) { /* 忽略 */ }
 }
 function loadLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) { accounts = [newAccount()]; return; }
     const meta = JSON.parse(raw);
-    if (!Array.isArray(meta)) return;
-    stories = meta.map(m => ({
-      src: m.fileName ? ('stories/' + m.fileName) : '',
-      fileName: m.fileName || '',
-      duration: m.duration || 5,
-      date: m.date || '',
-      texts: Array.isArray(m.texts) ? m.texts : []
+    if (!meta || !Array.isArray(meta.accounts) || !meta.accounts.length) {
+      accounts = [newAccount()]; return;
+    }
+    accounts = meta.accounts.map(a => ({
+      id: a.id || '', name: a.name || '', avatar: a.avatar || '',
+      stories: (a.stories || []).map(m => ({
+        src: m.fileName ? ('stories/' + m.fileName) : '',
+        fileName: m.fileName || '',
+        duration: m.duration || 5,
+        date: m.date || '',
+        texts: Array.isArray(m.texts) ? m.texts : []
+      }))
     }));
-  } catch (e) { /* 忽略 */ }
+    accountIndex = Math.min(Math.max(0, meta.accountIndex || 0), accounts.length - 1);
+  } catch (e) { accounts = [newAccount()]; }
+}
+
+// ===== 账号列表渲染 =====
+function renderAccountList() {
+  const list = $('#accountList');
+  list.innerHTML = accounts.map((a, i) => {
+    const av = a.avatar ? 'background-image:url(' + a.avatar + ')' : '';
+    return `
+    <div class="story-thumb ${i===accountIndex?'active':''}" data-acc="${i}">
+      <span class="mini" style="border-radius:50%;${av}"></span>
+      <div class="info">
+        <b>${a.id || '（未命名账号）'}</b>
+        <small>${(a.stories||[]).length} 条快拍</small>
+      </div>
+      ${accounts.length>1?`<button class="del" data-delacc="${i}" title="删除账号">✕</button>`:''}
+    </div>`;
+  }).join('');
+  $$('[data-acc]').forEach(el => {
+    el.onclick = e => {
+      if (e.target.dataset.delacc !== undefined) return;
+      switchAccount(+el.dataset.acc);
+    };
+  });
+  $$('[data-delacc]').forEach(b => {
+    b.onclick = e => {
+      e.stopPropagation();
+      const i = +b.dataset.delacc;
+      if (!confirm('删除账号 @' + (accounts[i].id || '') + ' 及其所有快拍？')) return;
+      accounts.splice(i, 1);
+      if (accountIndex >= accounts.length) accountIndex = accounts.length - 1;
+      currentIndex = -1; selectedText = null;
+      saveLocal(); renderAll();
+    };
+  });
+}
+
+function switchAccount(i) {
+  if (i < 0 || i >= accounts.length) return;
+  accountIndex = i;
+  currentIndex = -1;
+  selectedText = null;
+  saveLocal(); renderAll();
+}
+
+// ===== 从外部数据导入 =====
+function importAccountsData(data, mode) {
+  if (!data || !Array.isArray(data.accounts) || !data.accounts.length) {
+    toast('数据里没有账号');
+    return false;
+  }
+  const converted = data.accounts.map(a => {
+    const p = a.profile || {};
+    const avatarFile = p.avatar ? p.avatar.replace(/^.*\//, '') : '';
+    const sts = (a.stories || []).map(st => ({
+      src: st.src || '',
+      fileName: st.src ? st.src.replace(/^.*\//, '') : '',
+      duration: st.duration || 5,
+      date: st.date || '',
+      texts: Array.isArray(st.texts) ? st.texts : []
+    }));
+    return {
+      id: p.id || '',
+      name: p.name || '',
+      avatar: p.avatar || '',
+      stories: sts
+    };
+  });
+  if (mode === 'replace') {
+    accounts = converted;
+    accountIndex = 0;
+  } else {
+    const existing = new Set(accounts.map(a => a.id));
+    converted.forEach(a => { if (!existing.has(a.id)) accounts.push(a); });
+  }
+  currentIndex = -1; selectedText = null;
+  saveLocal(); renderAll();
+  return true;
+}
+
+// 从源码里提取 `const NAME=...;` 的对象字面量（括号配平，兼容单行/多行）
+function extractConst(src, name) {
+  const key = 'const ' + name + '=';
+  const start = src.indexOf(key);
+  if (start < 0) return null;
+  let i = start + key.length;
+  while (i < src.length && /\s/.test(src[i])) i++;
+  if (src[i] !== '{') return null;
+  let depth = 0, inStr = null, esc = false;
+  const begin = i;
+  for (; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) {
+      if (esc) { esc = false; continue; }
+      if (c === '\\') { esc = true; continue; }
+      if (c === inStr) inStr = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') { depth--; if (depth === 0) { i++; break; } }
+  }
+  return src.slice(begin, i);
+}
+
+// 解析 index.html 文本，返回 {accounts:[...]}（含快拍）
+function parseIndexHtml(html) {
+  const src = extractConst(html, 'igData');
+  if (!src) throw new Error('index.html 里没找到 igData');
+  const data = new Function('return (' + src + ')')();
+
+  // 快拍数据在 storiesByAccount 里，不在 igData 里，需要单独读
+  const ssrc = extractConst(html, 'storiesByAccount');
+  if (ssrc) {
+    try {
+      const byAcc = new Function('return (' + ssrc + ')')();
+      data.accounts.forEach(a => {
+        const id = (a.profile || {}).id;
+        if (id && Array.isArray(byAcc[id]) && byAcc[id].length) {
+          a.stories = byAcc[id];
+        }
+      });
+    } catch (e) { console.warn('storiesByAccount 解析失败', e); }
+  }
+  return data;
+}
+
+async function importFromIndex() {
+  try {
+    const res = await fetch('index.html', { cache: 'no-store' });
+    if (!res.ok) throw new Error('读取失败');
+    const html = await res.text();
+    const data = parseIndexHtml(html);
+    if (importAccountsData(data, 'replace')) {
+      const total = data.accounts.reduce((n, a) => n + (a.stories || []).length, 0);
+      toast('已导入 ' + data.accounts.length + ' 个账号 / ' + total + ' 条快拍');
+    }
+  } catch (e) {
+    toast('自动读取失败（双击打开时浏览器会拦截），请点「📄 选择 index.html 文件」');
+  }
 }
 
 function renderList() {
   const list = $('#storyList');
-  if (stories.length === 0) {
+  if (getStories().length === 0) {
     list.innerHTML = '<div style="color:#666;font-size:12px;padding:10px">还没有快拍，点下面添加</div>';
     return;
   }
-  list.innerHTML = stories.map((s, i) => `
+  list.innerHTML = getStories().map((s, i) => `
     <div class="story-thumb ${i===currentIndex?'active':''}" data-idx="${i}" draggable="true">
       <span class="num">${i+1}</span>
       <div class="mini" style="background-image:url('${s.src||''}')"></div>
@@ -200,24 +369,25 @@ function renderList() {
       <button class="del" data-del="${i}" title="删除">✕</button>
     </div>
   `).join('');
-  $$('.story-thumb').forEach(el => {
+  // 注意：只绑定 #storyList 内的项，避免覆盖账号列表的点击事件
+  $$('#storyList .story-thumb').forEach(el => {
     el.onclick = e => {
       if (e.target.dataset.del !== undefined) return;
       selectStory(+el.dataset.idx);
     };
   });
-  $$('[data-del]').forEach(b => {
+  $$('#storyList [data-del]').forEach(b => {
     b.onclick = e => {
       e.stopPropagation();
       const idx = +b.dataset.del;
-      stories.splice(idx, 1);
-      if (currentIndex >= stories.length) currentIndex = stories.length - 1;
+      getStories().splice(idx, 1);
+      if (currentIndex >= getStories().length) currentIndex = getStories().length - 1;
       saveLocal(); renderList(); renderCanvas();
     };
   });
-  // ===== 侧边栏拖拽排序 =====
+  // ===== 侧边栏拖拽排序（只针对 #storyList 内的项）=====
   let dragIdx = -1;
-  $$('.story-thumb').forEach(el => {
+  $$('#storyList .story-thumb').forEach(el => {
     el.addEventListener('dragstart', e => {
       dragIdx = +el.dataset.idx;
       el.classList.add('dragging');
@@ -225,7 +395,7 @@ function renderList() {
     });
     el.addEventListener('dragend', () => {
       el.classList.remove('dragging');
-      $$('.story-thumb').forEach(x => x.classList.remove('drag-over'));
+      $$('#storyList .story-thumb').forEach(x => x.classList.remove('drag-over'));
     });
     el.addEventListener('dragover', e => {
       e.preventDefault();
@@ -241,8 +411,8 @@ function renderList() {
       const to = +el.dataset.idx;
       if (dragIdx < 0 || dragIdx === to) return;
       // 移动数组元素
-      const [moved] = stories.splice(dragIdx, 1);
-      stories.splice(to, 0, moved);
+      const [moved] = getStories().splice(dragIdx, 1);
+      getStories().splice(to, 0, moved);
       // 保持当前选中页跟随
       if (currentIndex === dragIdx) currentIndex = to;
       else if (dragIdx < currentIndex && to >= currentIndex) currentIndex--;
@@ -259,12 +429,12 @@ let dragFrom = -1;
 function renderOverview() {
   const grid = $('#ovGrid');
   const count = $('#ovCount');
-  count.textContent = stories.length ? ('共 ' + stories.length + ' 页') : '';
-  if (stories.length === 0) {
+  count.textContent = getStories().length ? ('共 ' + getStories().length + ' 页') : '';
+  if (getStories().length === 0) {
     grid.innerHTML = '<div class="ov-empty-state" style="grid-column:1/-1">还没有快拍<br>拖照片进画布，或点「＋ 添加一页」</div>';
     return;
   }
-  grid.innerHTML = stories.map((s, i) => `
+  grid.innerHTML = getStories().map((s, i) => `
     <div class="ov-card ${i===currentIndex?'active':''}" data-ov="${i}" draggable="true">
       ${s.src ? `<div class="ov-img" style="background-image:url('${s.src}')"></div>` : '<div class="ov-empty">🖼️</div>'}
       <span class="ov-badge">${i+1}</span>
@@ -309,16 +479,16 @@ function renderOverview() {
     e.stopPropagation();
     const idx = +b.dataset.ovdel;
     if (!confirm('删除第 ' + (idx+1) + ' 页？')) return;
-    stories.splice(idx, 1);
-    if (currentIndex >= stories.length) currentIndex = stories.length - 1;
+    getStories().splice(idx, 1);
+    if (currentIndex >= getStories().length) currentIndex = getStories().length - 1;
     saveLocal(); renderList(); renderCanvas();
   });
 }
 
 // 把 from 位置的快拍移动到 to 位置
 function reorderStory(from, to) {
-  const [item] = stories.splice(from, 1);
-  stories.splice(to, 0, item);
+  const [item] = getStories().splice(from, 1);
+  getStories().splice(to, 0, item);
   // 保持当前选中项跟着走
   if (currentIndex === from) currentIndex = to;
   else if (from < currentIndex && to >= currentIndex) currentIndex--;
@@ -334,9 +504,9 @@ function selectStory(i) {
   updatePanel();
   // 显示页面设置（日期）
   const ps = $('#pageSettings');
-  if (currentIndex >= 0 && stories[currentIndex]) {
+  if (currentIndex >= 0 && getStories()[currentIndex]) {
     ps.style.display = 'block';
-    $('#pageDate').value = stories[currentIndex].date || '';
+    $('#pageDate').value = getStories()[currentIndex].date || '';
   } else {
     ps.style.display = 'none';
   }
@@ -347,12 +517,12 @@ function renderCanvas() {
   const hint = $('#dropHint');
   const canvas = $('#canvas');
   $$('.text-box').forEach(el => el.remove());
-  if (currentIndex < 0 || !stories[currentIndex]) {
+  if (currentIndex < 0 || !getStories()[currentIndex]) {
     bg.style.backgroundImage = '';
     hint.style.display = 'flex';
     return;
   }
-  const s = stories[currentIndex];
+  const s = getStories()[currentIndex];
   if (s.src) {
     bg.style.backgroundImage = `url('${s.src}')`;
     hint.style.display = 'none';
@@ -443,7 +613,7 @@ function updatePanel() {
   $('#propSize').value = selectedText.size;
   $('#sizeVal').textContent = selectedText.size;
   $('#propColor').value = selectedText.color || '#ffffff';
-  $('#propDuration').value = stories[currentIndex].duration || 5;
+  $('#propDuration').value = getStories()[currentIndex].duration || 5;
 }
 
 $('#propText').oninput = e => { if (!selectedText) return; selectedText.content = e.target.value; renderCanvas(); };
@@ -452,7 +622,7 @@ $('#propColor').oninput = e => { if (!selectedText) return; selectedText.color =
 $('#propBgNone').onclick = () => { if(selectedText){selectedText.bg='none';renderCanvas();} };
 $('#propBgDark').onclick = () => { if(selectedText){selectedText.bg='dark';renderCanvas();} };
 $('#propBgLight').onclick = () => { if(selectedText){selectedText.bg='light';renderCanvas();} };
-$('#propDuration').oninput = e => { if (currentIndex < 0) return; stories[currentIndex].duration = +e.target.value; saveLocal(); renderList(); };
+$('#propDuration').oninput = e => { if (currentIndex < 0) return; getStories()[currentIndex].duration = +e.target.value; saveLocal(); renderList(); };
 // 日期自动格式化：输入 6 位数字 → 21.09.06
 function formatDate(raw) {
   const digits = raw.replace(/\D/g, '').slice(0, 6);
@@ -464,22 +634,22 @@ $('#pageDate').oninput = e => {
   if (currentIndex < 0) return;
   const formatted = formatDate(e.target.value);
   e.target.value = formatted;
-  stories[currentIndex].date = formatted;
+  getStories()[currentIndex].date = formatted;
   saveLocal(); renderList();
 };
 $('#deleteText').onclick = () => {
   if (!selectedText || currentIndex < 0) return;
-  const s = stories[currentIndex];
+  const s = getStories()[currentIndex];
   s.texts = s.texts.filter(t => t !== selectedText);
   selectedText = null;
   renderCanvas(); renderList(); updatePanel();
 };
 
-$('#addStory').onclick = () => { stories.push({ src: '', duration: 5, texts: [] }); selectStory(stories.length - 1); };
+$('#addStory').onclick = () => { getStories().push({ src: '', duration: 5, texts: [] }); selectStory(getStories().length - 1); };
 $('#addText').onclick = () => {
   if (currentIndex < 0) { toast('先添加或选中一页'); return; }
   const t = { content: '双击编辑文字', x: 50, y: 50, size: 24, color: '#ffffff', bg: 'none' };
-  stories[currentIndex].texts.push(t);
+  getStories()[currentIndex].texts.push(t);
   selectedText = t;
   renderCanvas(); renderList(); updatePanel();
 };
@@ -498,10 +668,10 @@ canvas.addEventListener('drop', e => {
 });
 
 function loadPhoto(file) {
-  if (currentIndex < 0) { stories.push({ src: '', duration: 5, texts: [] }); currentIndex = stories.length - 1; }
+  if (currentIndex < 0) { getStories().push({ src: '', duration: 5, texts: [] }); currentIndex = getStories().length - 1; }
   const reader = new FileReader();
   reader.onload = ev => {
-    const s = stories[currentIndex];
+    const s = getStories()[currentIndex];
     s.src = ev.target.result;          // 预览用（base64，仅内存）
     s.fileName = file.name;            // 记录原始文件名，导出时用
     saveLocal(); renderCanvas(); renderList();
@@ -529,14 +699,14 @@ $('#batchInput').onchange = async e => {
         const jpg = await heicToJpg(dataUrl, file.name);
         if (jpg) { page.src = jpg.dataUrl; page.fileName = jpg.fileName; }
       }
-      stories.push(page);
+      getStories().push(page);
       added++;
     } catch (err) {
       console.warn('导入失败:', file.name, err);
     }
   }
   if (added) {
-    currentIndex = stories.length - 1;
+    currentIndex = getStories().length - 1;
     saveLocal(); renderList(); renderCanvas(); updatePanel();
     toast('已导入 ' + added + ' 页');
   } else {
@@ -575,8 +745,31 @@ function heicToJpg(dataUrl, originalName) {
 }
 
 // 生成精简数据：src 只写文件名（不含 base64），方便直接贴到聊天框
+// 输出所有账号，格式与 ig-editor 一致：{accounts:[{profile,posts,stories}]}
 function buildData() {
-  return stories.map((s, i) => ({
+  return {
+    accounts: accounts.map(a => ({
+      profile: {
+        avatar: a.avatar || '',
+        id: a.id || '',
+        name: a.name || '',
+        bio: ''
+      },
+      posts: [],
+      stories: (a.stories || []).map(s => ({
+        type: s.src ? 'image' : 'blank',
+        src: s.fileName ? ('stories/' + s.fileName) : '',
+        duration: s.duration,
+        date: s.date || '',
+        texts: (s.texts || []).map(t => ({ content: t.content, x: Math.round(t.x), y: Math.round(t.y), size: t.size, color: t.color, bg: t.bg }))
+      }))
+    }))
+  };
+}
+
+// 当前账号的快拍（用于增量对比和统计）
+function currentStoriesData() {
+  return getStories().map((s, i) => ({
     type: s.src ? 'image' : 'blank',
     src: s.fileName ? ('stories/' + s.fileName) : '',
     duration: s.duration,
@@ -627,22 +820,32 @@ function diffData(oldArr, newArr) {
 }
 
 $('#generate').onclick = () => {
-  if (stories.length === 0) { toast('还没有快拍'); return; }
-  const current = buildData();
-  const info = $('#outputInfo');
-  const missing = stories.filter(s => s.src && !s.fileName).length;
 
-  // 读取上次生成的数据
+
+  const totalStories = accounts.reduce((n, a) => n + (a.stories || []).length, 0);
+  if (totalStories === 0) { toast('还没有快拍'); return; }
+  const full = buildData();                 // 全量（所有账号）
+  const current = currentStoriesData();     // 当前账号，用于增量对比
+  const info = $('#outputInfo');
+  const missing = getStories().filter(s => s.src && !s.fileName).length;
+
+
+  // 读取上次生成的数据（按账号 ID 存）
+  const lastKey = LAST_KEY + ':' + (acc().id || '_default');
   let last = null;
-  try { last = JSON.parse(localStorage.getItem(LAST_KEY) || 'null'); } catch {}
+
+  try { last = JSON.parse(localStorage.getItem(lastKey) || 'null'); } catch {}
 
   if (!last) {
     // 第一次生成：输出全量
-    const json = JSON.stringify(current);
+
+    const json = JSON.stringify(full);
     $('#outputData').value = json;
-    info.innerHTML = '✅ 首次生成，共 ' + current.length + ' 页（全量数据）'
+
+    info.innerHTML = '✅ 首次生成，共 ' + accounts.length + ' 个账号 / ' + totalStories + ' 页（全量数据）'
       + (missing ? '<br>⚠️ 有 ' + missing + ' 张图片缺少文件名，请重新拖入照片' : '');
-    localStorage.setItem(LAST_KEY, JSON.stringify(current));
+
+    localStorage.setItem(lastKey, JSON.stringify(current));
     toast('首次生成全量数据，复制发给我');
     return;
   }
@@ -656,21 +859,26 @@ $('#generate').onclick = () => {
     return;
   }
   const diffObj = {
+    account: acc().id || '',
     total: current.length,
     changed: d.changed,   // [{index, page}]
     removed: d.removed    // [旧索引]
   };
   const json = JSON.stringify(diffObj);
   $('#outputData').value = json;
-  info.innerHTML = '✅ 增量数据：修改/新增 ' + d.changed.length + ' 页，删除 ' + d.removed.length + ' 页（共 ' + current.length + ' 页）'
+
+  info.innerHTML = '✅ 增量数据（@' + (acc().id || '未命名') + '）：修改/新增 ' + d.changed.length + ' 页，删除 ' + d.removed.length + ' 页（共 ' + current.length + ' 页）'
     + (missing ? '<br>⚠️ 有 ' + missing + ' 张图片缺少文件名，请重新拖入照片' : '');
-  localStorage.setItem(LAST_KEY, JSON.stringify(current));
+  localStorage.setItem(lastKey, JSON.stringify(current));
   toast('已生成增量数据，复制发给我');
 };
 
 // 重置对比基准（想重新生成全量时用）
 $('#resetDiff').onclick = () => {
-  localStorage.removeItem(LAST_KEY);
+  // 清掉所有账号的对比基准
+  Object.keys(localStorage).forEach(k => {
+    if (k === LAST_KEY || k.startsWith(LAST_KEY + ':')) localStorage.removeItem(k);
+  });
   toast('已重置，下次生成将输出全量');
 };
 
@@ -684,7 +892,8 @@ $('#copyBtn').onclick = () => {
 
 // 导出为 .json 文件，方便保存/备份
 $('#exportFile').onclick = () => {
-  if (stories.length === 0) { toast('还没有快拍'); return; }
+  const total = accounts.reduce((n, a) => n + (a.stories || []).length, 0);
+  if (total === 0) { toast('还没有快拍'); return; }
   const json = JSON.stringify(buildData(), null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const a = document.createElement('a');
@@ -695,9 +904,10 @@ $('#exportFile').onclick = () => {
   toast('已导出 stories.json');
 };
 
-// 下载图片：把每页照片单独存成文件（放进 stories/ 文件夹即可）
+// 下载图片：把所有账号的照片单独存成文件（放进 stories/ 文件夹即可）
 $('#downloadBtn').onclick = () => {
-  const imgs = stories.filter(s => s.src);
+  const imgs = [];
+  accounts.forEach(a => (a.stories || []).forEach(s => { if (s.src) imgs.push(s); }));
   if (imgs.length === 0) { toast('还没有照片'); return; }
   imgs.forEach((s, i) => {
     const a = document.createElement('a');
@@ -716,11 +926,77 @@ function toast(msg) {
   t._timer = setTimeout(() => t.classList.remove('show'), 2000);
 }
 
+// ===== 账号操作按钮 =====
+$('#addAccount').onclick = () => {
+  const id = prompt('新账号 ID（@后面的名字）：', '');
+  if (id === null) return;
+  accounts.push(newAccount(id.trim()));
+  accountIndex = accounts.length - 1;
+  currentIndex = -1; selectedText = null;
+  saveLocal(); renderAll();
+  toast('已添加账号');
+};
+
+$('#importIndex').onclick = () => {
+  if (accounts.some(a => (a.stories || []).length) && !confirm('导入会替换当前编辑器里的所有账号，继续？')) return;
+  importFromIndex();
+};
+
+// 手动选择 index.html 文件（双击打开时用）
+$('#importIndexFile').onclick = () => $('#importIndexFileInput').click();
+$('#importIndexFileInput').onchange = async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  try {
+    const html = await f.text();
+    const data = parseIndexHtml(html);
+    if (accounts.some(a => (a.stories || []).length) && !confirm('导入会替换当前编辑器里的所有账号，继续？')) return;
+    if (importAccountsData(data, 'replace')) {
+      const total = data.accounts.reduce((n, a) => n + (a.stories || []).length, 0);
+      toast('已导入 ' + data.accounts.length + ' 个账号 / ' + total + ' 条快拍');
+    }
+  } catch (err) {
+    toast('解析失败：' + err.message);
+  }
+};
+
+$('#importJson').onclick = () => $('#importJsonInput').click();
+$('#importJsonInput').onchange = async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  try {
+    const text = await f.text();
+    const data = JSON.parse(text);
+    const normalized = data.accounts ? data : { accounts: [{ profile: { id: 'imported' }, posts: [], stories: data }] };
+    if (accounts.some(a => (a.stories || []).length) && !confirm('导入会替换当前编辑器里的所有账号，继续？')) return;
+    if (importAccountsData(normalized, 'replace')) {
+      toast('已导入 ' + normalized.accounts.length + ' 个账号');
+    }
+  } catch (err) {
+    toast('JSON 解析失败：' + err.message);
+  }
+};
+
+// ===== 统一渲染 =====
+function renderAll() {
+  renderAccountList();
+  renderList();
+  renderCanvas();
+  updatePanel();
+  const ps = $('#pageSettings');
+  if (currentIndex >= 0 && getStories()[currentIndex]) {
+    ps.style.display = 'block';
+    $('#pageDate').value = getStories()[currentIndex].date || '';
+  } else {
+    ps.style.display = 'none';
+  }
+}
+
 loadLocal();
-if (stories.length) currentIndex = 0;
-renderList();
-renderCanvas();
-updatePanel();
+if (getStories().length) currentIndex = 0;
+renderAll();
 </script>
 </body>
 </html>

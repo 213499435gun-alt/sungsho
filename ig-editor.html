@@ -68,10 +68,19 @@ h1{font-size:22px;margin-bottom:6px}
 </head>
 <body>
 <h1>IG 编辑器</h1>
-<p class="sub">编辑头像、ID、简介和每条帖子，拖拽排序，生成数据发给我</p>
+<p class="sub">管理多个账号：每个账号可编辑头像、ID、简介和帖子，拖拽排序，生成数据发给我</p>
 
 <div class="layout">
   <div class="sidebar">
+    <h2>账号列表</h2>
+    <div class="post-list" id="accountList"></div>
+    <button class="btn block" id="addAccount">＋ 添加账号</button>
+    <button class="btn block" id="importIndex" title="从 index.html 读取现有账号">⬇ 从 index.html 导入账号</button>
+    <button class="btn block" id="importIndexFile" title="直接选择 index.html 文件（双击打开时用这个）">📄 选择 index.html 文件</button>
+    <input type="file" id="importIndexFileInput" accept=".html,text/html" style="display:none">
+    <button class="btn block" id="importJson" title="导入之前导出的 ig-data.json">📂 导入 ig-data.json</button>
+    <input type="file" id="importJsonInput" accept=".json,application/json" style="display:none">
+
     <h2>账号信息</h2>
     <div class="card">
       <label>头像</label>
@@ -86,6 +95,7 @@ h1{font-size:22px;margin-bottom:6px}
       <input type="text" id="igName" placeholder="我的名字">
       <label>简介</label>
       <textarea id="igBio" placeholder="写点什么…"></textarea>
+      <button class="btn block danger" id="deleteAccount">删除这个账号</button>
     </div>
 
     <h2>帖子列表</h2>
@@ -93,6 +103,12 @@ h1{font-size:22px;margin-bottom:6px}
     <button class="btn block" id="addPost">＋ 添加帖子</button>
     <button class="btn block" id="batchImport">📷 批量导入照片</button>
     <input type="file" id="batchInput" accept="image/*" multiple style="display:none">
+
+    <h2>快拍列表</h2>
+    <div class="post-list" id="storyList"></div>
+    <button class="btn block" id="addStory">＋ 添加快拍</button>
+    <button class="btn block" id="batchStory">📷 批量导入快拍</button>
+    <input type="file" id="batchStoryInput" accept="image/*" multiple style="display:none">
   </div>
 
   <div class="editor-area">
@@ -107,7 +123,25 @@ h1{font-size:22px;margin-bottom:6px}
   </div>
 
   <div class="panel">
-    <h3>帖子设置</h3>
+    <h3>快拍设置</h3>
+    <div id="storyPanel">
+      <div class="empty" id="storyEmpty">选中一条快拍来编辑</div>
+      <div id="storyProps" style="display:none">
+        <div class="card">
+          <label>快拍图片</label>
+          <div class="img-grid" id="storyImgGrid"></div>
+          <button class="btn block" id="pickStoryImg" style="margin-bottom:10px">＋ 更换图片</button>
+          <input type="file" id="storyImgInput" accept="image/*" style="display:none">
+          <label>日期（显示在右上角）</label>
+          <input type="text" id="storyDate" placeholder="26.09.21">
+          <label>时长（秒）</label>
+          <input type="text" id="storyDuration" placeholder="5" inputmode="numeric">
+          <button class="btn block danger" id="deleteStory">删除这条快拍</button>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:22px">帖子设置</h3>
     <div id="postPanel">
       <div class="empty" id="postEmpty">选中一条帖子来编辑</div>
       <div id="postProps" style="display:none">
@@ -149,18 +183,32 @@ const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
 // ===== 数据 =====
-const STORAGE_KEY = 'ig-editor-data';
-const LAST_KEY = 'ig-editor-last-generated';
+const STORAGE_KEY = 'ig-editor-data-v2';
+const LAST_KEY = 'ig-editor-last-generated-v2';
 
-let profile = { avatar: '', avatarFile: '', id: '', name: '', bio: '' };
-let posts = [];   // {images:[{src,fileName}], caption, likes, time}
+// accounts: [{profile:{avatar,avatarFile,id,name,bio}, posts:[{images:[{src,fileName}],caption,likes,time}]}]
+let accounts = [];
+let accountIndex = 0;
 let currentIndex = -1;
+
+function newAccount(){
+  return { profile: { avatar: '', avatarFile: '', id: '', name: '', bio: '' }, posts: [], stories: [] };
+}
+function acc(){ return accounts[accountIndex] || accounts[0]; }
+function profile(){ return acc().profile; }
+function posts(){ return acc().posts; }
+function stories(){ if(!Array.isArray(acc().stories)) acc().stories=[]; return acc().stories; }
+let currentStoryIndex = -1;
 
 function saveLocal() {
   try {
     const meta = {
-      profile: { avatarFile: profile.avatarFile, id: profile.id, name: profile.name, bio: profile.bio },
-      posts: posts.map(p => ({ images: (p.images||[]).map(im => ({ fileName: im.fileName || '' })), caption: p.caption || '', likes: p.likes || '', time: p.time || '' }))
+      accounts: accounts.map(a => ({
+        profile: { avatarFile: a.profile.avatarFile, id: a.profile.id, name: a.profile.name, bio: a.profile.bio },
+        posts: (a.posts||[]).map(p => ({ images: (p.images||[]).map(im => ({ fileName: im.fileName || '' })), caption: p.caption || '', likes: p.likes || '', time: p.time || '' })),
+        stories: (a.stories||[]).map(st => ({ fileName: st.fileName || '', date: st.date || '', duration: st.duration || 5 }))
+      })),
+      accountIndex
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(meta));
   } catch (e) {}
@@ -169,18 +217,17 @@ function saveLocal() {
 function loadLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) { accounts = [newAccount()]; return; }
     const meta = JSON.parse(raw);
-    if (meta.profile) {
-      profile.avatarFile = meta.profile.avatarFile || '';
-      profile.id = meta.profile.id || '';
-      profile.name = meta.profile.name || '';
-      profile.bio = meta.profile.bio || '';
-      if (profile.avatarFile) profile.avatar = 'ig/' + profile.avatarFile;
-    }
-    if (Array.isArray(meta.posts)) {
-      posts = meta.posts.map(m => {
-        // 兼容旧格式（单图 fileName）和新格式（images 数组）
+    if (!Array.isArray(meta.accounts) || !meta.accounts.length) { accounts = [newAccount()]; return; }
+    accounts = meta.accounts.map(a => {
+      const p = a.profile || {};
+      const prof = {
+        avatar: p.avatarFile ? ('ig/' + p.avatarFile) : '',
+        avatarFile: p.avatarFile || '',
+        id: p.id || '', name: p.name || '', bio: p.bio || ''
+      };
+      const ps = (a.posts || []).map(m => {
         let imgs = [];
         if (Array.isArray(m.images)) {
           imgs = m.images.map(im => ({ src: im.fileName ? ('ig/' + im.fileName) : '', fileName: im.fileName || '' }));
@@ -189,18 +236,185 @@ function loadLocal() {
         }
         return { images: imgs, caption: m.caption || '', likes: m.likes || '', time: m.time || '' };
       });
+      const sts = (a.stories || []).map(m => ({
+        src: m.fileName ? ('ig/' + m.fileName) : '',
+        fileName: m.fileName || '',
+        date: m.date || '',
+        duration: m.duration || 5
+      }));
+      return { profile: prof, posts: ps, stories: sts };
+    });
+    accountIndex = Math.min(Math.max(0, meta.accountIndex || 0), accounts.length - 1);
+  } catch (e) { accounts = [newAccount()]; }
+}
+
+// ===== 从外部数据导入账号 =====
+// 把 {accounts:[{profile,posts,stories}]} 转成编辑器内部结构
+function importAccountsData(data, mode) {
+  if (!data || !Array.isArray(data.accounts) || !data.accounts.length) {
+    toast('数据里没有账号');
+    return false;
+  }
+  const converted = data.accounts.map(a => {
+    const p = a.profile || {};
+    // avatar 形如 "ig/IMG_7384.JPG" -> 文件名 "IMG_7384.JPG"
+    const avatarFile = p.avatar ? p.avatar.replace(/^.*\//, '') : '';
+    const prof = {
+      avatar: p.avatar || '',
+      avatarFile: avatarFile,
+      id: p.id || '', name: p.name || '', bio: p.bio || ''
+    };
+    const ps = (a.posts || []).map(post => ({
+      images: (post.images || []).filter(Boolean).map(src => ({
+        src: src,
+        fileName: src.replace(/^.*\//, '')
+      })),
+      caption: post.caption || '',
+      likes: post.likes || '',
+      time: post.time || ''
+    }));
+    const sts = (a.stories || []).map(st => ({
+      src: st.src || '',
+      fileName: st.src ? st.src.replace(/^.*\//, '') : '',
+      date: st.date || '',
+      duration: st.duration || 5
+    }));
+    return { profile: prof, posts: ps, stories: sts };
+  });
+
+  if (mode === 'replace') {
+    accounts = converted;
+    accountIndex = 0;
+  } else {
+    // 合并：按 id 去重，已存在的跳过
+    const existing = new Set(accounts.map(a => (a.profile || {}).id));
+    converted.forEach(a => {
+      if (!existing.has(a.profile.id)) accounts.push(a);
+    });
+  }
+  currentIndex = -1;
+  currentStoryIndex = -1;
+  saveLocal();
+  renderAll();
+  return true;
+}
+
+// 从源码里提取 `const NAME=...;` 的对象字面量（括号配平，兼容单行/多行）
+function extractConst(src, name) {
+  const key = 'const ' + name + '=';
+  const start = src.indexOf(key);
+  if (start < 0) return null;
+  let i = start + key.length;
+  // 跳过空白
+  while (i < src.length && /\s/.test(src[i])) i++;
+  if (src[i] !== '{') return null;
+  let depth = 0, inStr = null, esc = false;
+  const begin = i;
+  for (; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) {
+      if (esc) { esc = false; continue; }
+      if (c === '\\') { esc = true; continue; }
+      if (c === inStr) inStr = null;
+      continue;
     }
-  } catch (e) {}
+    if (c === '"' || c === "'" || c === '`') { inStr = c; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') { depth--; if (depth === 0) { i++; break; } }
+  }
+  return src.slice(begin, i);
+}
+
+// 解析 index.html 文本，返回 {accounts:[...]}（含快拍）
+function parseIndexHtml(html) {
+  const src = extractConst(html, 'igData');
+  if (!src) throw new Error('index.html 里没找到 igData');
+  const data = new Function('return (' + src + ')')();
+
+  // 快拍数据在 storiesByAccount 里，不在 igData 里，需要单独读
+  const ssrc = extractConst(html, 'storiesByAccount');
+  if (ssrc) {
+    try {
+      const byAcc = new Function('return (' + ssrc + ')')();
+      data.accounts.forEach(a => {
+        const id = (a.profile || {}).id;
+        if (id && Array.isArray(byAcc[id]) && byAcc[id].length) {
+          a.stories = byAcc[id];
+        }
+      });
+    } catch (e) { console.warn('storiesByAccount 解析失败', e); }
+  }
+  return data;
+}
+
+// 从 index.html 读取 igData（fetch 方式）
+async function importFromIndex() {
+  try {
+    const res = await fetch('index.html', { cache: 'no-store' });
+    if (!res.ok) throw new Error('读取失败');
+    const html = await res.text();
+    const data = parseIndexHtml(html);
+    if (importAccountsData(data, 'replace')) {
+      const total = data.accounts.reduce((n, a) => n + (a.stories || []).length, 0);
+      toast('已从 index.html 导入 ' + data.accounts.length + ' 个账号 / ' + total + ' 条快拍');
+    }
+  } catch (e) {
+    toast('自动读取失败（双击打开时浏览器会拦截），请点「📄 选择 index.html 文件」');
+  }
 }
 
 // ===== 渲染 =====
+function renderAccountList() {
+  const list = $('#accountList');
+  list.innerHTML = accounts.map((a, i) => {
+    const p = a.profile || {};
+    const av = p.avatar ? 'background-image:url(' + p.avatar + ')' : '';
+    return `
+    <div class="post-item ${i===accountIndex?'active':''}" data-acc="${i}">
+      <span class="mini" style="border-radius:50%;${av}"></span>
+      <div class="info">
+        <b>${p.id || '（未命名账号）'}</b>
+        <small>${p.name || ''} · ${(a.posts||[]).length} 条帖子</small>
+      </div>
+      ${accounts.length>1?`<button class="del" data-delacc="${i}" title="删除账号">✕</button>`:''}
+    </div>`;
+  }).join('');
+  $$('[data-acc]').forEach(el => {
+    el.onclick = e => {
+      if (e.target.dataset.delacc !== undefined) return;
+      switchAccount(+el.dataset.acc);
+    };
+  });
+  $$('[data-delacc]').forEach(b => {
+    b.onclick = e => {
+      e.stopPropagation();
+      const i = +b.dataset.delacc;
+      if (!confirm('删除账号 @' + ((accounts[i].profile||{}).id || '') + ' 及其所有帖子？')) return;
+      accounts.splice(i, 1);
+      if (accountIndex >= accounts.length) accountIndex = accounts.length - 1;
+      currentIndex = -1;
+      currentStoryIndex = -1;
+      saveLocal(); renderAll();
+    };
+  });
+}
+
+function switchAccount(i) {
+  if (i < 0 || i >= accounts.length) return;
+  accountIndex = i;
+  currentIndex = -1;
+  currentStoryIndex = -1;
+  saveLocal(); renderAll();
+}
+
 function renderProfileFields() {
-  $('#igId').value = profile.id || '';
-  $('#igName').value = profile.name || '';
-  $('#igBio').value = profile.bio || '';
+  const p = profile();
+  $('#igId').value = p.id || '';
+  $('#igName').value = p.name || '';
+  $('#igBio').value = p.bio || '';
   const av = $('#avatarPreview');
-  if (profile.avatar) {
-    av.style.backgroundImage = 'url(' + profile.avatar + ')';
+  if (p.avatar) {
+    av.style.backgroundImage = 'url(' + p.avatar + ')';
     av.textContent = '';
   } else {
     av.style.backgroundImage = '';
@@ -210,11 +424,12 @@ function renderProfileFields() {
 
 function renderList() {
   const list = $('#postList');
-  if (posts.length === 0) {
+  const ps = posts();
+  if (ps.length === 0) {
     list.innerHTML = '<div style="color:#666;font-size:12px;padding:10px">还没有帖子，点下面添加</div>';
     return;
   }
-  list.innerHTML = posts.map((p, i) => `
+  list.innerHTML = ps.map((p, i) => `
     <div class="post-item ${i===currentIndex?'active':''}" data-idx="${i}" draggable="true">
       <span class="num">${i+1}</span>
       <div class="mini" style="background-image:url('${(p.images&&p.images[0]&&p.images[0].src)||''}')"></div>
@@ -225,24 +440,25 @@ function renderList() {
       <button class="del" data-del="${i}" title="删除">✕</button>
     </div>
   `).join('');
-  $$('.post-item').forEach(el => {
+  // 注意：只绑定 #postList 内的项，避免覆盖账号列表的点击事件
+  $$('#postList .post-item').forEach(el => {
     el.onclick = e => {
       if (e.target.dataset.del !== undefined) return;
       selectPost(+el.dataset.idx);
     };
   });
-  $$('[data-del]').forEach(b => {
+  $$('#postList [data-del]').forEach(b => {
     b.onclick = e => {
       e.stopPropagation();
       const idx = +b.dataset.del;
-      posts.splice(idx, 1);
-      if (currentIndex >= posts.length) currentIndex = posts.length - 1;
+      posts().splice(idx, 1);
+      if (currentIndex >= posts().length) currentIndex = posts().length - 1;
       saveLocal(); renderList(); renderPreview(); updatePanel();
     };
   });
-  // 拖拽排序
+  // 拖拽排序（只针对 #postList 内的项）
   let dragIdx = -1;
-  $$('.post-item').forEach(el => {
+  $$('#postList .post-item').forEach(el => {
     el.addEventListener('dragstart', e => {
       dragIdx = +el.dataset.idx;
       el.classList.add('dragging');
@@ -250,7 +466,7 @@ function renderList() {
     });
     el.addEventListener('dragend', () => {
       el.classList.remove('dragging');
-      $$('.post-item').forEach(x => x.classList.remove('drag-over'));
+      $$('#postList .post-item').forEach(x => x.classList.remove('drag-over'));
     });
     el.addEventListener('dragover', e => {
       e.preventDefault();
@@ -263,8 +479,9 @@ function renderList() {
       el.classList.remove('drag-over');
       const to = +el.dataset.idx;
       if (dragIdx < 0 || dragIdx === to) return;
-      const [moved] = posts.splice(dragIdx, 1);
-      posts.splice(to, 0, moved);
+      const ps = posts();
+      const [moved] = ps.splice(dragIdx, 1);
+      ps.splice(to, 0, moved);
       if (currentIndex === dragIdx) currentIndex = to;
       else if (dragIdx < currentIndex && to >= currentIndex) currentIndex--;
       else if (dragIdx > currentIndex && to <= currentIndex) currentIndex++;
@@ -276,13 +493,15 @@ function renderList() {
 
 function renderPreview() {
   const body = $('#previewBody');
-  if (posts.length === 0) {
+  const ps = posts();
+  const prof = profile();
+  if (ps.length === 0) {
     body.innerHTML = '<div class="preview-empty">还没有帖子</div>';
     return;
   }
-  const avStyle = profile.avatar ? 'background-image:url(' + profile.avatar + ')' : '';
-  const avText = profile.avatar ? '' : '我';
-  body.innerHTML = posts.map(p => {
+  const avStyle = prof.avatar ? 'background-image:url(' + prof.avatar + ')' : '';
+  const avText = prof.avatar ? '' : '我';
+  body.innerHTML = ps.map(p => {
     const imgs = p.images || [];
     let imgHtml;
     if (imgs.length === 0) {
@@ -300,14 +519,149 @@ function renderPreview() {
         + '</div>';
     }
     return '<div class="preview-post">'
-      + '<div class="head"><span class="av" style="' + avStyle + '">' + avText + '</span><b>' + (profile.id || '我的账号') + '</b></div>'
+      + '<div class="head"><span class="av" style="' + avStyle + '">' + avText + '</span><b>' + (profile().id || '我的账号') + '</b></div>'
       + imgHtml
       + '<div class="cap"><b>' + (p.likes || 0) + ' 次赞</b></div>'
-      + '<div class="cap"><b>' + (profile.id || '我的账号') + '</b> ' + (p.caption || '') + '</div>'
+      + '<div class="cap"><b>' + (profile().id || '我的账号') + '</b> ' + (p.caption || '') + '</div>'
       + '<div class="meta">' + (p.time || '') + '</div>'
       + '</div>';
   }).join('');
 }
+
+// ===== 快拍 =====
+function renderStoryList(){
+  const list=$('#storyList');
+  const sts=stories();
+  if(sts.length===0){
+    list.innerHTML='<div style="color:#666;font-size:12px;padding:10px">这个账号还没有快拍</div>';
+    return;
+  }
+  list.innerHTML=sts.map((st,i)=>`
+    <div class="post-item ${i===currentStoryIndex?'active':''}" data-sidx="${i}" draggable="true">
+      <span class="num">${i+1}</span>
+      <div class="mini" style="background-image:url('${st.src||''}')"></div>
+      <div class="info">
+        <b>${st.date||'（无日期）'}</b>
+        <small>${st.duration||5} 秒</small>
+      </div>
+      <button class="del" data-delstory="${i}" title="删除">✕</button>
+    </div>
+  `).join('');
+  $$('[data-sidx]').forEach(el=>{
+    el.onclick=e=>{
+      if(e.target.dataset.delstory!==undefined)return;
+      selectStory(+el.dataset.sidx);
+    };
+  });
+  $$('[data-delstory]').forEach(b=>{
+    b.onclick=e=>{
+      e.stopPropagation();
+      const idx=+b.dataset.delstory;
+      stories().splice(idx,1);
+      if(currentStoryIndex>=stories().length) currentStoryIndex=stories().length-1;
+      saveLocal(); renderStoryList(); updateStoryPanel();
+    };
+  });
+  // 拖拽排序
+  let dragIdx=-1;
+  $$('[data-sidx]').forEach(el=>{
+    el.addEventListener('dragstart',e=>{ dragIdx=+el.dataset.sidx; el.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    el.addEventListener('dragend',()=>{ el.classList.remove('dragging'); $$('[data-sidx]').forEach(x=>x.classList.remove('drag-over')); });
+    el.addEventListener('dragover',e=>{ e.preventDefault(); el.classList.add('drag-over'); });
+    el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));
+    el.addEventListener('drop',e=>{
+      e.preventDefault(); el.classList.remove('drag-over');
+      const to=+el.dataset.sidx;
+      if(dragIdx<0||dragIdx===to)return;
+      const sts=stories();
+      const [moved]=sts.splice(dragIdx,1);
+      sts.splice(to,0,moved);
+      if(currentStoryIndex===dragIdx) currentStoryIndex=to;
+      else if(dragIdx<currentStoryIndex&&to>=currentStoryIndex) currentStoryIndex--;
+      else if(dragIdx>currentStoryIndex&&to<=currentStoryIndex) currentStoryIndex++;
+      dragIdx=-1;
+      saveLocal(); renderStoryList();
+    });
+  });
+}
+
+function selectStory(i){
+  currentStoryIndex=i;
+  renderStoryList();
+  updateStoryPanel();
+}
+
+function updateStoryPanel(){
+  const empty=$('#storyEmpty'), props=$('#storyProps');
+  if(currentStoryIndex<0||!stories()[currentStoryIndex]){
+    empty.style.display='block'; props.style.display='none'; return;
+  }
+  empty.style.display='none'; props.style.display='block';
+  const st=stories()[currentStoryIndex];
+  const grid=$('#storyImgGrid');
+  grid.innerHTML=st.src?`<div class="img-cell"><img src="${st.src}" alt=""><span class="idx">1</span></div>`
+    :'<div style="grid-column:1/-1;color:#666;font-size:12px;padding:8px 0">还没有图片</div>';
+  $('#storyDate').value=st.date||'';
+  $('#storyDuration').value=st.duration||5;
+}
+
+$('#addStory').onclick=()=>{
+  stories().push({ src:'', fileName:'', date:'', duration:5 });
+  selectStory(stories().length-1);
+  saveLocal(); renderStoryList();
+};
+
+$('#pickStoryImg').onclick=()=>$('#storyImgInput').click();
+$('#storyImgInput').onchange=async e=>{
+  if(currentStoryIndex<0){ e.target.value=''; return; }
+  const file=e.target.files[0];
+  e.target.value='';
+  if(!file)return;
+  try{
+    const dataUrl=await readAsDataURL(file);
+    let src=dataUrl, fileName=file.name;
+    if(/\.(heic|heif)$/i.test(file.name)){
+      const jpg=await heicToJpg(dataUrl,file.name);
+      if(jpg){ src=jpg.dataUrl; fileName=jpg.fileName; }
+    }
+    const st=stories()[currentStoryIndex];
+    st.src=src; st.fileName=fileName;
+    saveLocal(); renderStoryList(); updateStoryPanel();
+    toast('快拍图片已更新');
+  }catch(err){ toast('图片读取失败'); }
+};
+
+$('#storyDate').oninput=e=>{ if(currentStoryIndex<0)return; stories()[currentStoryIndex].date=e.target.value; saveLocal(); renderStoryList(); };
+$('#storyDuration').oninput=e=>{ if(currentStoryIndex<0)return; stories()[currentStoryIndex].duration=+e.target.value||5; saveLocal(); renderStoryList(); };
+$('#deleteStory').onclick=()=>{
+  if(currentStoryIndex<0)return;
+  stories().splice(currentStoryIndex,1);
+  if(currentStoryIndex>=stories().length) currentStoryIndex=stories().length-1;
+  saveLocal(); renderStoryList(); updateStoryPanel();
+};
+
+// 批量导入快拍：每张图一条快拍
+$('#batchStory').onclick=()=>$('#batchStoryInput').click();
+$('#batchStoryInput').onchange=async e=>{
+  const files=[...e.target.files].filter(f=>f.type.startsWith('image/')||/\.(heic|heif)$/i.test(f.name));
+  e.target.value='';
+  if(!files.length){ toast('没有选择图片'); return; }
+  toast('正在导入 '+files.length+' 条快拍…');
+  for(const file of files){
+    try{
+      const dataUrl=await readAsDataURL(file);
+      let src=dataUrl, fileName=file.name;
+      if(/\.(heic|heif)$/i.test(file.name)){
+        const jpg=await heicToJpg(dataUrl,file.name);
+        if(jpg){ src=jpg.dataUrl; fileName=jpg.fileName; }
+      }
+      stories().push({ src, fileName, date:'', duration:5 });
+    }catch(err){ console.warn('导入失败:',file.name,err); }
+  }
+  currentStoryIndex=stories().length-1;
+  saveLocal(); renderStoryList(); updateStoryPanel();
+  toast('已添加 '+files.length+' 条快拍');
+};
 
 function selectPost(i) {
   currentIndex = i;
@@ -318,14 +672,14 @@ function selectPost(i) {
 function updatePanel() {
   const empty = $('#postEmpty');
   const props = $('#postProps');
-  if (currentIndex < 0 || !posts[currentIndex]) {
+  if (currentIndex < 0 || !posts()[currentIndex]) {
     empty.style.display = 'block';
     props.style.display = 'none';
     return;
   }
   empty.style.display = 'none';
   props.style.display = 'block';
-  const p = posts[currentIndex];
+  const p = posts()[currentIndex];
   // 多图网格
   const grid = $('#postImgGrid');
   const imgs = p.images || [];
@@ -342,7 +696,7 @@ function updatePanel() {
     $$('[data-rm]').forEach(b => {
       b.onclick = () => {
         const idx = +b.dataset.rm;
-        posts[currentIndex].images.splice(idx, 1);
+        posts()[currentIndex].images.splice(idx, 1);
         saveLocal(); renderList(); renderPreview(); updatePanel();
       };
     });
@@ -353,9 +707,9 @@ function updatePanel() {
 }
 
 // ===== 事件 =====
-$('#igId').oninput = e => { profile.id = e.target.value; saveLocal(); renderPreview(); };
-$('#igName').oninput = e => { profile.name = e.target.value; saveLocal(); };
-$('#igBio').oninput = e => { profile.bio = e.target.value; saveLocal(); };
+$('#igId').oninput = e => { profile().id = e.target.value; saveLocal(); renderAccountList(); renderPreview(); };
+$('#igName').oninput = e => { profile().name = e.target.value; saveLocal(); renderAccountList(); };
+$('#igBio').oninput = e => { profile().bio = e.target.value; saveLocal(); };
 
 $('#pickAvatar').onclick = () => $('#avatarInput').click();
 $('#avatarInput').onchange = e => {
@@ -363,9 +717,9 @@ $('#avatarInput').onchange = e => {
   if (!f) return;
   const reader = new FileReader();
   reader.onload = ev => {
-    profile.avatar = ev.target.result;
-    profile.avatarFile = f.name;
-    saveLocal(); renderProfileFields(); renderPreview();
+    profile().avatar = ev.target.result;
+    profile().avatarFile = f.name;
+    saveLocal(); renderProfileFields(); renderAccountList(); renderPreview();
     toast('头像已加载');
   };
   reader.readAsDataURL(f);
@@ -373,8 +727,8 @@ $('#avatarInput').onchange = e => {
 };
 
 $('#addPost').onclick = () => {
-  posts.push({ images: [], caption: '', likes: '', time: '' });
-  selectPost(posts.length - 1);
+  posts().push({ images: [], caption: '', likes: '', time: '' });
+  selectPost(posts().length - 1);
   saveLocal(); renderList(); renderPreview();
 };
 
@@ -385,7 +739,7 @@ $('#postImgInput').onchange = async e => {
   e.target.value = '';
   if (!files.length) return;
   toast('正在添加 ' + files.length + ' 张…');
-  if (!Array.isArray(posts[currentIndex].images)) posts[currentIndex].images = [];
+  if (!Array.isArray(posts()[currentIndex].images)) posts()[currentIndex].images = [];
   for (const file of files) {
     try {
       const dataUrl = await readAsDataURL(file);
@@ -394,21 +748,21 @@ $('#postImgInput').onchange = async e => {
         const jpg = await heicToJpg(dataUrl, file.name);
         if (jpg) { src = jpg.dataUrl; fileName = jpg.fileName; }
       }
-      posts[currentIndex].images.push({ src, fileName });
+      posts()[currentIndex].images.push({ src, fileName });
     } catch (err) { console.warn('添加失败:', file.name, err); }
   }
   saveLocal(); renderList(); renderPreview(); updatePanel();
   toast('已添加 ' + files.length + ' 张');
 };
 
-$('#postCaption').oninput = e => { if (currentIndex < 0) return; posts[currentIndex].caption = e.target.value; saveLocal(); renderList(); renderPreview(); };
-$('#postLikes').oninput = e => { if (currentIndex < 0) return; posts[currentIndex].likes = e.target.value; saveLocal(); renderList(); renderPreview(); };
-$('#postTime').oninput = e => { if (currentIndex < 0) return; posts[currentIndex].time = e.target.value; saveLocal(); renderList(); renderPreview(); };
+$('#postCaption').oninput = e => { if (currentIndex < 0) return; posts()[currentIndex].caption = e.target.value; saveLocal(); renderList(); renderPreview(); };
+$('#postLikes').oninput = e => { if (currentIndex < 0) return; posts()[currentIndex].likes = e.target.value; saveLocal(); renderList(); renderPreview(); };
+$('#postTime').oninput = e => { if (currentIndex < 0) return; posts()[currentIndex].time = e.target.value; saveLocal(); renderList(); renderPreview(); };
 
 $('#deletePost').onclick = () => {
   if (currentIndex < 0) return;
-  posts.splice(currentIndex, 1);
-  if (currentIndex >= posts.length) currentIndex = posts.length - 1;
+  posts().splice(currentIndex, 1);
+  if (currentIndex >= posts().length) currentIndex = posts().length - 1;
   saveLocal(); renderList(); renderPreview(); updatePanel();
 };
 
@@ -432,10 +786,17 @@ $('#batchInput').onchange = async e => {
     } catch (err) { console.warn('导入失败:', file.name, err); }
   }
   if (newPost.images.length) {
-    posts.push(newPost);
-    currentIndex = posts.length - 1;
+    posts().push(newPost);
+    currentIndex = posts().length - 1;
     saveLocal(); renderList(); renderPreview(); updatePanel();
     toast('已创建 1 条帖子，含 ' + newPost.images.length + ' 张图');
+    // 自动下载图片，方便放进 ig/ 文件夹
+    newPost.images.forEach(im => {
+      const a = document.createElement('a');
+      a.href = im.src;
+      a.download = im.fileName || 'image.jpg';
+      a.click();
+    });
   } else toast('导入失败');
 };
 
@@ -467,19 +828,33 @@ function heicToJpg(dataUrl, originalName) {
 // ===== 生成数据 =====
 function buildData() {
   return {
-    profile: {
-      avatar: profile.avatarFile ? ('ig/' + profile.avatarFile) : '',
-      id: profile.id || '',
-      name: profile.name || '',
-      bio: profile.bio || ''
-    },
-    posts: posts.map(p => ({
-      images: (p.images || []).map(im => im.fileName ? ('ig/' + im.fileName) : '').filter(Boolean),
-      caption: p.caption || '',
-      likes: p.likes || '',
-      time: p.time || ''
+    accounts: accounts.map(a => ({
+      profile: {
+        avatar: a.profile.avatarFile ? ('ig/' + a.profile.avatarFile) : '',
+        id: a.profile.id || '',
+        name: a.profile.name || '',
+        bio: a.profile.bio || ''
+      },
+      posts: (a.posts || []).map(p => ({
+        images: (p.images || []).map(im => im.fileName ? ('ig/' + im.fileName) : '').filter(Boolean),
+        caption: p.caption || '',
+        likes: p.likes || '',
+        time: p.time || ''
+      })),
+      stories: (a.stories || []).map(st => ({
+        src: st.fileName ? ('ig/' + st.fileName) : '',
+        date: st.date || '',
+        duration: st.duration || 5
+      }))
     }))
   };
+}
+
+function totalPosts(d) {
+  return (d.accounts || []).reduce((n, a) => n + (a.posts || []).length, 0);
+}
+function totalStories(d) {
+  return (d.accounts || []).reduce((n, a) => n + (a.stories || []).length, 0);
 }
 
 function dataSig(d) {
@@ -495,7 +870,7 @@ $('#generate').onclick = () => {
   if (!last) {
     const json = JSON.stringify(current);
     $('#outputData').value = json;
-    info.innerHTML = '✅ 首次生成，全量数据（' + current.posts.length + ' 条帖子）';
+    info.innerHTML = '✅ 首次生成，全量数据（' + current.accounts.length + ' 个账号，' + totalPosts(current) + ' 条帖子，' + totalStories(current) + ' 条快拍）';
     localStorage.setItem(LAST_KEY, JSON.stringify(current));
     toast('首次生成全量数据');
     return;
@@ -508,7 +883,7 @@ $('#generate').onclick = () => {
   }
   const json = JSON.stringify(current);
   $('#outputData').value = json;
-  info.innerHTML = '✅ 数据有变化，已生成（' + current.posts.length + ' 条帖子）';
+  info.innerHTML = '✅ 数据有变化，已生成（' + current.accounts.length + ' 个账号，' + totalPosts(current) + ' 条帖子，' + totalStories(current) + ' 条快拍）';
   localStorage.setItem(LAST_KEY, JSON.stringify(current));
   toast('已生成数据');
 };
@@ -536,8 +911,11 @@ $('#exportFile').onclick = () => {
 
 $('#downloadBtn').onclick = () => {
   const imgs = [];
-  if (profile.avatar) imgs.push({ src: profile.avatar, fileName: profile.avatarFile || 'avatar.jpg' });
-  posts.forEach(p => (p.images || []).forEach(im => { if (im.src) imgs.push(im); }));
+  accounts.forEach(a => {
+    if (a.profile.avatar) imgs.push({ src: a.profile.avatar, fileName: a.profile.avatarFile || 'avatar.jpg' });
+    (a.posts || []).forEach(p => (p.images || []).forEach(im => { if (im.src) imgs.push(im); }));
+    (a.stories || []).forEach(st => { if (st.src) imgs.push({ src: st.src, fileName: st.fileName || 'story.jpg' }); });
+  });
   if (imgs.length === 0) { toast('还没有图片'); return; }
   imgs.forEach(p => {
     const a = document.createElement('a');
@@ -557,11 +935,84 @@ function toast(msg) {
 }
 
 // ===== 初始化 =====
+function renderAll() {
+  renderAccountList();
+  renderProfileFields();
+  renderList();
+  renderStoryList();
+  renderPreview();
+  updatePanel();
+  updateStoryPanel();
+}
+
+// 从 index.html 导入（fetch）
+$('#importIndex').onclick = () => {
+  if (accounts.length && !confirm('导入会替换当前编辑器里的所有账号，继续？')) return;
+  importFromIndex();
+};
+
+// 从 index.html 导入（手动选文件，双击打开时用）
+$('#importIndexFile').onclick = () => $('#importIndexFileInput').click();
+$('#importIndexFileInput').onchange = async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  try {
+    const html = await f.text();
+    const data = parseIndexHtml(html);
+    if (accounts.length && !confirm('导入会替换当前编辑器里的所有账号，继续？')) return;
+    if (importAccountsData(data, 'replace')) {
+      const total = data.accounts.reduce((n, a) => n + (a.stories || []).length, 0);
+      toast('已导入 ' + data.accounts.length + ' 个账号 / ' + total + ' 条快拍');
+    }
+  } catch (err) {
+    toast('解析失败：' + err.message);
+  }
+};
+
+// 从 ig-data.json 文件导入
+$('#importJson').onclick = () => $('#importJsonInput').click();
+$('#importJsonInput').onchange = async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  try {
+    const text = await f.text();
+    const data = JSON.parse(text);
+    // 兼容旧版单账号格式 {profile,posts}
+    const normalized = data.accounts ? data : { accounts: [data] };
+    if (accounts.length && !confirm('导入会替换当前编辑器里的所有账号，继续？')) return;
+    if (importAccountsData(normalized, 'replace')) {
+      toast('已导入 ' + normalized.accounts.length + ' 个账号');
+    }
+  } catch (err) {
+    toast('JSON 解析失败：' + err.message);
+  }
+};
+
+// 添加账号
+$('#addAccount').onclick = () => {
+  accounts.push(newAccount());
+  accountIndex = accounts.length - 1;
+  currentIndex = -1;
+  currentStoryIndex = -1;
+  saveLocal(); renderAll();
+  toast('已添加新账号');
+};
+// 删除当前账号
+$('#deleteAccount').onclick = () => {
+  if (accounts.length <= 1) { toast('至少保留一个账号'); return; }
+  if (!confirm('删除账号 @' + (profile().id || '') + ' 及其所有帖子？')) return;
+  accounts.splice(accountIndex, 1);
+  if (accountIndex >= accounts.length) accountIndex = accounts.length - 1;
+  currentIndex = -1;
+  currentStoryIndex = -1;
+  saveLocal(); renderAll();
+  toast('已删除账号');
+};
+
 loadLocal();
-renderProfileFields();
-renderList();
-renderPreview();
-updatePanel();
+renderAll();
 </script>
 </body>
 </html>
