@@ -1013,6 +1013,12 @@ $('#deleteAccount').onclick = () => {
 
 loadLocal();
 renderAll();
+// 显式从手机网页载入现有内容；普通打开仍保留本地草稿。
+if (new URLSearchParams(location.search).get('source') === 'index') {
+  importFromIndex().then(() => {
+    history.replaceState(null, '', location.pathname);
+  });
+}
 </script>
 </body>
 </html>
