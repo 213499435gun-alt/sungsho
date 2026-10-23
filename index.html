@@ -11,6 +11,45 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .notes-icon{background:linear-gradient(180deg,#ffe066,#ffd43b)}
 .clock-icon{background:#fff}
 .settings-icon{background:linear-gradient(160deg,#c7ccd4,#8e96a3)}.social-head{display:flex;align-items:center;justify-content:space-between;margin:22px 0;font-size:26px;font-weight:650}.stories{display:flex;gap:15px;overflow:auto;padding:3px 0 18px}.story{background:none;padding:0;font-size:10px;color:#333}.avatar{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:#d6c8e6;color:#56465f;font-size:21px;margin-bottom:6px}.story .avatar{outline:2px solid #e84e8a;outline-offset:3px;border:3px solid white}.post{margin:10px -20px 22px;background:white}.post-head{padding:12px 15px;display:flex;align-items:center;gap:10px;font-size:12px}.post-head .avatar{width:30px;height:30px;margin:0;font-size:15px}.post img{width:100%;height:260px;object-fit:cover;display:block}.post-actions{padding:10px 14px;display:flex;gap:16px}.post-actions button{background:none;font-size:25px;padding:0}.post p{font-size:12px;margin:0;padding:0 15px 12px;line-height:1.7}.liked{color:#eb3861}.chat-list button{background:none;display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:15px 0;color:#222}.chat-list .avatar{margin:0;border-radius:18px;background:#e3d9ec}.chat-info{flex:1}.chat-info b{font-size:14px}.chat-info small{display:block;color:#777;font-size:12px;margin-top:5px}.chat-list time{font-size:10px;color:#999}.conversation{position:absolute;inset:43px 0 25px;display:flex;flex-direction:column;background:#bdd0dd}.chat-header{padding:18px;display:flex;gap:20px;align-items:center;font-size:15px}.chat-header button{font-size:25px;background:none}.messages{flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}.bubble{padding:11px 13px;border-radius:4px 14px 14px;background:white;color:#333;max-width:82%;align-self:flex-start;font-size:13px;line-height:1.6;overflow-wrap:anywhere}.bubble.mine{background:#fee500;align-self:flex-end;border-radius:14px 4px 14px 14px}.composer{display:flex;gap:8px;padding:10px;background:#fff}.composer input{width:0;flex:1;border:1px solid #ddd;border-radius:20px;padding:10px}.composer button{background:#fee500;border-radius:12px;padding:8px 13px}.social-note{font-size:10px;color:#999}.phone .lock-side{top:180px;height:70px}
+/* ===== KakaoTalk 可编辑版 ===== */
+.kakao-toolbar{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}
+.kakao-tool{background:#fee500;color:#392027;font-size:12px;font-weight:600;padding:8px 12px;border-radius:20px}
+.kakao-tool:active{opacity:.7}
+.chat-list button{position:relative}
+.chat-list .chat-del{position:absolute;right:0;top:50%;transform:translateY(-50%);background:#ff4d4f;color:#fff;font-size:11px;padding:5px 9px;border-radius:10px;z-index:2}
+.chat-list .avatar{overflow:hidden;background-size:cover;background-position:center}
+.chat-list .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.chat-header-avatar{width:30px;height:30px;border-radius:50%;background:#e3d9ec;background-size:cover;background-position:center;display:grid;place-items:center;font-size:14px;flex-shrink:0;overflow:hidden}
+.chat-header-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.chat-header{position:relative}
+.chat-header b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chat-edit-btn{background:none;font-size:19px;color:#555;padding:4px 8px}
+.bubble .bubble-del{display:inline-block;margin-left:8px;color:#bbb;font-size:11px;cursor:pointer;vertical-align:middle}
+.bubble.mine .bubble-del{color:#a08a00}
+.bubble .bubble-sender{display:block;font-size:10px;color:#8a7a00;font-weight:600;margin-bottom:3px}
+/* 编辑弹窗 */
+.kakao-modal{position:absolute;inset:0;background:#00000066;z-index:70;display:flex;align-items:center;justify-content:center;padding:20px}
+.kakao-modal-card{background:#fff;border-radius:18px;width:100%;max-width:320px;max-height:80%;overflow-y:auto;padding:20px;box-shadow:0 20px 50px #0005}
+.kakao-modal-card h3{margin:0 0 16px;font-size:18px;color:#222}
+.kakao-field{margin-bottom:14px}
+.kakao-field label{display:block;font-size:12px;color:#888;margin-bottom:6px}
+.kakao-field input,.kakao-field textarea{width:100%;border:1px solid #ddd;border-radius:10px;padding:10px;font-size:14px;background:#fafafa}
+.kakao-field textarea{resize:vertical;min-height:60px;line-height:1.5}
+.kakao-avatar-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.kakao-avatar-preview{width:56px;height:56px;border-radius:50%;background:#e3d9ec;background-size:cover;background-position:center;display:grid;place-items:center;font-size:22px;color:#56465f;flex-shrink:0;overflow:hidden}
+.kakao-avatar-preview img{width:100%;height:100%;object-fit:cover}
+.kakao-avatar-actions{display:flex;flex-direction:column;gap:6px;font-size:12px}
+.kakao-avatar-actions button{background:#eef0f2;color:#333;padding:6px 10px;border-radius:8px;font-size:12px}
+.kakao-modal-actions{display:flex;gap:10px;margin-top:8px}
+.kakao-modal-actions button{flex:1;padding:12px;border-radius:12px;font-size:14px;font-weight:600}
+.kakao-btn-primary{background:#fee500;color:#392027}
+.kakao-btn-ghost{background:#eef0f2;color:#555}
+.kakao-btn-danger{background:#ff4d4f;color:#fff}
+.kakao-member-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.kakao-member-item{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid #eee;border-radius:10px;font-size:13px}
+.kakao-member-item input[type=checkbox]{width:18px;height:18px;accent-color:#fee500}
+.kakao-member-item .avatar{width:32px;height:32px;margin:0;font-size:14px;border-radius:50%}
+.kakao-empty{text-align:center;color:#aaa;font-size:13px;padding:30px 0}
 @media(max-width:600px){.stage{padding:0;background:#171820}.phone{width:min(100vw,420px);height:100svh;max-height:900px;border-radius:0;padding:0;box-shadow:none}.screen{border-radius:0}.home{padding-top:30px}.widget{margin-bottom:40px}.lock-side{display:none}}@media(min-width:601px) and (max-height:820px){.phone{height:calc(100svh - 32px);min-height:620px}.stage{padding:16px}.widget{height:125px;margin-bottom:22px}.home{padding-top:12px}.apps{gap:18px 9px}}
 
 /* ===== 音乐歌单页 ===== */
@@ -215,7 +254,35 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
     <div class="ig-scroll" id="igPostsScroll"><div id="igPostsFeed"></div></div>
   </div>
 </section>
-<section id="kakao" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><div class="social-head"><span>聊天</span><span style="font-size:17px">KakaoTalk</span></div><div class="chat-list" id="chatList"></div><div class="social-note">模拟聊天 · 消息仅保存在当前浏览器</div><div class="conversation hidden" id="conversation"><div class="chat-header"><button id="closeChat" aria-label="返回聊天列表">‹</button><b id="chatName"></b></div><div class="messages" id="messages"></div><form class="composer" id="composer"><input id="chatInput" aria-label="消息" placeholder="输入消息…" autocomplete="off" maxlength="1000"><button>发送</button></form></div></section><div class="story-viewer hidden" id="storyViewer">
+<section id="kakao" class="view app light hidden">
+  <!-- 聊天列表页 -->
+  <div id="kakaoListPage">
+    <button class="back" data-home>‹ 主屏幕</button>
+    <div class="social-head"><span>聊天</span><span style="font-size:17px">KakaoTalk</span></div>
+    <div class="kakao-toolbar">
+      <button class="kakao-tool" id="kakaoEditMe">✎ 我的资料</button>
+      <button class="kakao-tool" id="kakaoAddFriend">＋ 好友</button>
+      <button class="kakao-tool" id="kakaoAddGroup">＋ 群聊</button>
+    </div>
+    <div class="chat-list" id="chatList"></div>
+    <div class="social-note">模拟聊天 · 内容保存在当前浏览器</div>
+  </div>
+  <!-- 会话页 -->
+  <div class="conversation hidden" id="conversation">
+    <div class="chat-header">
+      <button id="closeChat" aria-label="返回聊天列表">‹</button>
+      <span class="chat-header-avatar" id="chatHeaderAvatar"></span>
+      <b id="chatName"></b>
+      <button id="chatEdit" class="chat-edit-btn" aria-label="编辑此聊天">✎</button>
+    </div>
+    <div class="messages" id="messages"></div>
+    <form class="composer" id="composer"><input id="chatInput" aria-label="消息" placeholder="输入消息…" autocomplete="off" maxlength="1000"><button>发送</button></form>
+  </div>
+  <!-- 编辑弹窗 -->
+  <div class="kakao-modal hidden" id="kakaoModal">
+    <div class="kakao-modal-card" id="kakaoModalCard"></div>
+  </div>
+</section><div class="story-viewer hidden" id="storyViewer">
   <div class="story-progress" id="storyProgress"></div>
   <div class="story-topbar">
     <div class="story-user"><span class="story-avatar" id="storyAvatar">＋</span><b id="storyName">我的动态</b><span class="story-time" id="storyTime">刚刚</span></div>
@@ -463,7 +530,25 @@ $('#seek').oninput=e=>audio.currentTime=+e.target.value;
 $('#backToPlaylist').onclick=showPlaylist;
 let running=false,elapsed=0,started=0;$('#startTimer').onclick=()=>{if(running)elapsed+=performance.now()-started;else started=performance.now();running=!running;$('#startTimer').textContent=running?'暂停':'继续'};$('#resetTimer').onclick=()=>{elapsed=0;started=performance.now()};setInterval(()=>{let t=elapsed+(running?performance.now()-started:0);$('#stopwatch').textContent=String(Math.floor(t/60000)).padStart(2,'0')+':'+String(Math.floor(t/1000)%60).padStart(2,'0')+'.'+Math.floor(t/100)%10},100);
 
-const contacts=[{name:'Jiwon',icon:'J',text:'今天一起去喝咖啡吗？'},{name:'Minji',icon:'M',text:'刚刚的照片好好看 ✨'},{name:'周末小分队',icon:'☀',text:'周六见！'}];
+// ===== KakaoTalk 可编辑数据模型 =====
+// me: 我的资料 {name, avatar(图片URL或空), icon(无头像时的首字母)}
+// chats: 会话数组，每个会话：
+//   {id, type:'friend'|'group', name, avatar, icon, members:[名字...], messages:[{text, mine, sender}]}
+// 全部保存在 localStorage('galaxy-kakao')
+const KAKAO_DEFAULT={
+  me:{name:'我', avatar:'', icon:'我'},
+  chats:[
+    {id:'c1', type:'friend', name:'Jiwon', avatar:'', icon:'J', members:[], messages:[{text:'今天一起去喝咖啡吗？', mine:false, sender:'Jiwon'}]},
+    {id:'c2', type:'friend', name:'Minji', avatar:'', icon:'M', members:[], messages:[{text:'刚刚的照片好好看 ✨', mine:false, sender:'Minji'}]},
+    {id:'c3', type:'group', name:'周末小分队', avatar:'', icon:'☀', members:['Jiwon','Minji','我'], messages:[{text:'周六见！', mine:false, sender:'Jiwon'}]}
+  ]
+};
+let kakaoData=null;
+try{kakaoData=JSON.parse(localStorage.getItem('galaxy-kakao')||'null')}catch{}
+if(!kakaoData||!Array.isArray(kakaoData.chats)){kakaoData=JSON.parse(JSON.stringify(KAKAO_DEFAULT))}
+function saveKakao(){try{localStorage.setItem('galaxy-kakao',JSON.stringify(kakaoData))}catch{}}
+// 兼容旧代码里对 contacts 的引用（IG 快拍列表用到了 contacts）
+const contacts=kakaoData.chats.filter(c=>c.type==='friend').map(c=>({name:c.name,icon:c.icon,text:(c.messages[c.messages.length-1]||{}).text||''}));
 
 // ===== Instagram 快拍数据（按账号拆分）=====
 // 每个快拍：{type:'blank'|'image', src:'图片路径', text:'文字', duration:秒, date:'日期', texts:[...]}
@@ -785,13 +870,238 @@ $$('.ig-tab').forEach(tab=>tab.onclick=()=>{
 $('#igNotif').onclick=()=>toastIG('暂无新通知');
 $('#igMsg').onclick=()=>toastIG('暂无新消息');
 
-let chatHistory={};try{chatHistory=JSON.parse(localStorage.getItem('galaxy-chats')||'{}')||{}}catch{}let selectedChat=0;
-function saveChats(){try{localStorage.setItem('galaxy-chats',JSON.stringify(chatHistory))}catch{}}
-function renderMessages(){const box=$('#messages');box.replaceChildren();const list=Array.isArray(chatHistory[selectedChat])?chatHistory[selectedChat]:[];[{text:contacts[selectedChat].text,mine:false},...list].forEach(m=>{const b=document.createElement('div');b.className='bubble'+(m.mine?' mine':'');b.textContent=m.text;box.append(b)});box.scrollTop=box.scrollHeight}
-$('#chatList').innerHTML=contacts.map((c,i)=>'<button data-chat="'+i+'"><span class="avatar">'+c.icon+'</span><span class="chat-info"><b>'+c.name+'</b><small>'+c.text+'</small></span><time>刚刚</time></button>').join('');
-$$('[data-chat]').forEach(b=>b.onclick=()=>{selectedChat=+b.dataset.chat;$('#chatName').textContent=contacts[selectedChat].name;$('#conversation').classList.remove('hidden');renderMessages()});
-$('#closeChat').onclick=()=>$('#conversation').classList.add('hidden');
-$('#composer').onsubmit=e=>{e.preventDefault();const input=$('#chatInput'),text=input.value.trim();if(!text)return;const id=selectedChat;if(!Array.isArray(chatHistory[id]))chatHistory[id]=[];chatHistory[id].push({text,mine:true});input.value='';saveChats();renderMessages();setTimeout(()=>{chatHistory[id].push({text:['好呀！一会儿见 ☕','谢谢！下次一起拍照吧 ✨','好，周六见！'][id],mine:false});saveChats();if(selectedChat===id)renderMessages()},900)};
+// ===== KakaoTalk 渲染与交互 =====
+let selectedChatId=null;
+function kEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function kAvatarInner(item){
+  // 返回头像内部 HTML：有图片用 img，否则用首字母
+  if(item&&item.avatar)return '<img src="'+kEsc(item.avatar)+'" alt="">';
+  return kEsc((item&&item.icon)||((item&&item.name||'?').slice(0,1)));
+}
+function kAvatarStyle(item){
+  return item&&item.avatar?'background-image:url('+kEsc(item.avatar)+');background-size:cover;background-position:center':'';
+}
+function kLastText(c){
+  const m=c.messages&&c.messages.length?c.messages[c.messages.length-1]:null;
+  if(!m)return '暂无消息';
+  return (c.type==='group'&&!m.mine&&m.sender?m.sender+': ':'')+m.text;
+}
+function renderKakaoList(){
+  const list=$('#chatList');
+  if(!kakaoData.chats.length){list.innerHTML='<div class="kakao-empty">还没有聊天，点上方按钮添加好友或群聊</div>';return;}
+  list.innerHTML=kakaoData.chats.map(c=>{
+    const avStyle=kAvatarStyle(c);
+    return '<button data-chat="'+kEsc(c.id)+'">'
+      +'<span class="avatar" style="'+avStyle+'">'+(c.avatar?'':kEsc(c.icon||c.name.slice(0,1)))+'</span>'
+      +'<span class="chat-info"><b>'+kEsc(c.name)+(c.type==='group'?' <span style="font-size:10px;color:#999">群</span>':'')+'</b><small>'+kEsc(kLastText(c))+'</small></span>'
+      +'<time>刚刚</time>'
+      +'<span class="chat-del" data-del-chat="'+kEsc(c.id)+'">删除</span>'
+      +'</button>';
+  }).join('');
+  $$('[data-chat]').forEach(b=>b.onclick=e=>{
+    if(e.target.closest('[data-del-chat]'))return;
+    openChat(b.dataset.chat);
+  });
+  $$('[data-del-chat]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const id=b.dataset.delChat;
+    const c=kakaoData.chats.find(x=>x.id===id);
+    if(c&&confirm('删除聊天「'+c.name+'」？')){kakaoData.chats=kakaoData.chats.filter(x=>x.id!==id);saveKakao();renderKakaoList();}
+  });
+}
+function openChat(id){
+  selectedChatId=id;
+  const c=kakaoData.chats.find(x=>x.id===id);
+  if(!c)return;
+  $('#chatName').textContent=c.name;
+  const ha=$('#chatHeaderAvatar');
+  ha.style.cssText='';
+  if(c.avatar){ha.style.backgroundImage='url('+kEsc(c.avatar)+')';ha.style.backgroundSize='cover';ha.style.backgroundPosition='center';ha.textContent='';}
+  else{ha.textContent=c.icon||c.name.slice(0,1);}
+  $('#conversation').classList.remove('hidden');
+  renderMessages();
+}
+function renderMessages(){
+  const box=$('#messages');box.replaceChildren();
+  const c=kakaoData.chats.find(x=>x.id===selectedChatId);
+  if(!c)return;
+  (c.messages||[]).forEach((m,idx)=>{
+    const b=document.createElement('div');
+    b.className='bubble'+(m.mine?' mine':'');
+    if(c.type==='group'&&!m.mine&&m.sender){
+      const s=document.createElement('span');s.className='bubble-sender';s.textContent=m.sender;b.append(s);
+    }
+    const t=document.createElement('span');t.textContent=m.text;b.append(t);
+    const del=document.createElement('span');del.className='bubble-del';del.textContent='✕';del.title='删除这条';
+    del.onclick=()=>{c.messages.splice(idx,1);saveKakao();renderMessages();renderKakaoList();};
+    b.append(del);
+    box.append(b);
+  });
+  box.scrollTop=box.scrollHeight;
+}
+$('#closeChat').onclick=()=>{$('#conversation').classList.add('hidden');renderKakaoList();};
+$('#composer').onsubmit=e=>{
+  e.preventDefault();
+  const input=$('#chatInput'),text=input.value.trim();
+  if(!text)return;
+  const c=kakaoData.chats.find(x=>x.id===selectedChatId);
+  if(!c)return;
+  c.messages.push({text,mine:true,sender:kakaoData.me.name});
+  input.value='';saveKakao();renderMessages();renderKakaoList();
+};
+// 编辑当前会话（改名/头像/成员）
+$('#chatEdit').onclick=()=>{const c=kakaoData.chats.find(x=>x.id===selectedChatId);if(c)openChatEditor(c);};
+
+// ===== 弹窗工具 =====
+function openModal(html){$('#kakaoModalCard').innerHTML=html;$('#kakaoModal').classList.remove('hidden');}
+function closeModal(){$('#kakaoModal').classList.add('hidden');$('#kakaoModalCard').innerHTML='';}
+$('#kakaoModal').onclick=e=>{if(e.target.id==='kakaoModal')closeModal();};
+
+// 头像选择：读取本地图片转 dataURL
+function pickImage(cb){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='image/*';
+  inp.onchange=()=>{
+    const f=inp.files&&inp.files[0];
+    if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>cb(r.result);
+    r.readAsDataURL(f);
+  };
+  inp.click();
+}
+
+// ===== 编辑我的资料 =====
+$('#kakaoEditMe').onclick=()=>{
+  const me=kakaoData.me;
+  openModal(
+    '<h3>我的资料</h3>'
+    +'<div class="kakao-avatar-row">'
+      +'<div class="kakao-avatar-preview" id="meAvPrev" style="'+kAvatarStyle(me)+'">'+(me.avatar?'':kEsc(me.icon||'我'))+'</div>'
+      +'<div class="kakao-avatar-actions">'
+        +'<button id="meAvPick">选择头像图片</button>'
+        +'<button id="meAvClear">清除头像</button>'
+      +'</div>'
+    +'</div>'
+    +'<div class="kakao-field"><label>昵称 / ID</label><input id="meName" value="'+kEsc(me.name)+'" maxlength="30"></div>'
+    +'<div class="kakao-field"><label>首字母（无头像时显示）</label><input id="meIcon" value="'+kEsc(me.icon||'')+'" maxlength="2"></div>'
+    +'<div class="kakao-modal-actions"><button class="kakao-btn-ghost" id="meCancel">取消</button><button class="kakao-btn-primary" id="meSave">保存</button></div>'
+  );
+  let newAvatar=me.avatar;
+  const prev=$('#meAvPrev');
+  function refreshPrev(){if(newAvatar){prev.style.backgroundImage='url('+newAvatar+')';prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';prev.textContent='';}else{prev.style.backgroundImage='';prev.textContent=$('#meIcon').value||'我';}}
+  $('#meAvPick').onclick=()=>pickImage(d=>{newAvatar=d;refreshPrev();});
+  $('#meAvClear').onclick=()=>{newAvatar='';refreshPrev();};
+  $('#meIcon').oninput=refreshPrev;
+  $('#meCancel').onclick=closeModal;
+  $('#meSave').onclick=()=>{
+    me.name=$('#meName').value.trim()||'我';
+    me.icon=$('#meIcon').value.trim()||me.name.slice(0,1);
+    me.avatar=newAvatar;
+    saveKakao();closeModal();renderKakaoList();
+  };
+};
+
+// ===== 添加好友 =====
+$('#kakaoAddFriend').onclick=()=>{
+  openModal(
+    '<h3>添加好友</h3>'
+    +'<div class="kakao-avatar-row">'
+      +'<div class="kakao-avatar-preview" id="frAvPrev">?</div>'
+      +'<div class="kakao-avatar-actions"><button id="frAvPick">选择头像图片</button><button id="frAvClear">清除头像</button></div>'
+    +'</div>'
+    +'<div class="kakao-field"><label>好友昵称 / ID</label><input id="frName" placeholder="例如 Jiwon" maxlength="30"></div>'
+    +'<div class="kakao-field"><label>首字母（无头像时显示）</label><input id="frIcon" placeholder="J" maxlength="2"></div>'
+    +'<div class="kakao-field"><label>对方的第一条消息（可选）</label><textarea id="frMsg" placeholder="你好呀～"></textarea></div>'
+    +'<div class="kakao-modal-actions"><button class="kakao-btn-ghost" id="frCancel">取消</button><button class="kakao-btn-primary" id="frSave">添加</button></div>'
+  );
+  let newAvatar='';
+  const prev=$('#frAvPrev');
+  function refreshPrev(){if(newAvatar){prev.style.backgroundImage='url('+newAvatar+')';prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';prev.textContent='';}else{prev.style.backgroundImage='';prev.textContent=$('#frIcon').value||'?';}}
+  $('#frAvPick').onclick=()=>pickImage(d=>{newAvatar=d;refreshPrev();});
+  $('#frAvClear').onclick=()=>{newAvatar='';refreshPrev();};
+  $('#frIcon').oninput=refreshPrev;
+  $('#frCancel').onclick=closeModal;
+  $('#frSave').onclick=()=>{
+    const name=$('#frName').value.trim();
+    if(!name){alert('请填写好友昵称');return;}
+    const icon=$('#frIcon').value.trim()||name.slice(0,1);
+    const msg=$('#frMsg').value.trim();
+    const id='c'+Date.now();
+    kakaoData.chats.push({id,type:'friend',name,avatar:newAvatar,icon,members:[],messages:msg?[{text:msg,mine:false,sender:name}]:[]});
+    saveKakao();closeModal();renderKakaoList();
+  };
+};
+
+// ===== 添加群聊 =====
+$('#kakaoAddGroup').onclick=()=>{
+  const friends=kakaoData.chats.filter(c=>c.type==='friend');
+  const memberHtml=friends.length
+    ? friends.map((f,i)=>'<label class="kakao-member-item"><input type="checkbox" data-member="'+i+'" value="'+kEsc(f.name)+'"><span class="avatar" style="'+kAvatarStyle(f)+'">'+(f.avatar?'':kEsc(f.icon||f.name.slice(0,1)))+'</span>'+kEsc(f.name)+'</label>').join('')
+    : '<div class="kakao-empty">还没有好友，先添加好友吧</div>';
+  openModal(
+    '<h3>创建群聊</h3>'
+    +'<div class="kakao-avatar-row">'
+      +'<div class="kakao-avatar-preview" id="gpAvPrev">群</div>'
+      +'<div class="kakao-avatar-actions"><button id="gpAvPick">选择群头像</button><button id="gpAvClear">清除头像</button></div>'
+    +'</div>'
+    +'<div class="kakao-field"><label>群名称</label><input id="gpName" placeholder="例如 周末小分队" maxlength="30"></div>'
+    +'<div class="kakao-field"><label>选择成员</label><div class="kakao-member-list">'+memberHtml+'</div></div>'
+    +'<div class="kakao-modal-actions"><button class="kakao-btn-ghost" id="gpCancel">取消</button><button class="kakao-btn-primary" id="gpSave">创建</button></div>'
+  );
+  let newAvatar='';
+  const prev=$('#gpAvPrev');
+  function refreshPrev(){if(newAvatar){prev.style.backgroundImage='url('+newAvatar+')';prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';prev.textContent='';}else{prev.style.backgroundImage='';prev.textContent='群';}}
+  $('#gpAvPick').onclick=()=>pickImage(d=>{newAvatar=d;refreshPrev();});
+  $('#gpAvClear').onclick=()=>{newAvatar='';refreshPrev();};
+  $('#gpCancel').onclick=closeModal;
+  $('#gpSave').onclick=()=>{
+    const name=$('#gpName').value.trim();
+    if(!name){alert('请填写群名称');return;}
+    const members=[...$$('[data-member]:checked')].map(x=>x.value);
+    members.push(kakaoData.me.name);
+    const id='g'+Date.now();
+    kakaoData.chats.push({id,type:'group',name,avatar:newAvatar,icon:'群',members,messages:[]});
+    saveKakao();closeModal();renderKakaoList();
+  };
+};
+
+// ===== 编辑已有会话（改名/头像/成员）=====
+function openChatEditor(c){
+  const friends=kakaoData.chats.filter(x=>x.type==='friend');
+  const isGroup=c.type==='group';
+  const memberHtml=isGroup
+    ? friends.map((f,i)=>'<label class="kakao-member-item"><input type="checkbox" data-member="'+i+'" value="'+kEsc(f.name)+'"'+(c.members.includes(f.name)?' checked':'')+'><span class="avatar" style="'+kAvatarStyle(f)+'">'+(f.avatar?'':kEsc(f.icon||f.name.slice(0,1)))+'</span>'+kEsc(f.name)+'</label>').join('')
+    : '';
+  openModal(
+    '<h3>编辑'+(isGroup?'群聊':'好友')+'</h3>'
+    +'<div class="kakao-avatar-row">'
+      +'<div class="kakao-avatar-preview" id="edAvPrev" style="'+kAvatarStyle(c)+'">'+(c.avatar?'':kEsc(c.icon||c.name.slice(0,1)))+'</div>'
+      +'<div class="kakao-avatar-actions"><button id="edAvPick">选择头像图片</button><button id="edAvClear">清除头像</button></div>'
+    +'</div>'
+    +'<div class="kakao-field"><label>名称</label><input id="edName" value="'+kEsc(c.name)+'" maxlength="30"></div>'
+    +'<div class="kakao-field"><label>首字母（无头像时显示）</label><input id="edIcon" value="'+kEsc(c.icon||'')+'" maxlength="2"></div>'
+    +(isGroup?'<div class="kakao-field"><label>成员</label><div class="kakao-member-list">'+(memberHtml||'<div class="kakao-empty">没有可选好友</div>')+'</div></div>':'')
+    +'<div class="kakao-modal-actions"><button class="kakao-btn-ghost" id="edCancel">取消</button><button class="kakao-btn-primary" id="edSave">保存</button></div>'
+  );
+  let newAvatar=c.avatar;
+  const prev=$('#edAvPrev');
+  function refreshPrev(){if(newAvatar){prev.style.backgroundImage='url('+newAvatar+')';prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';prev.textContent='';}else{prev.style.backgroundImage='';prev.textContent=$('#edIcon').value||c.name.slice(0,1);}}
+  $('#edAvPick').onclick=()=>pickImage(d=>{newAvatar=d;refreshPrev();});
+  $('#edAvClear').onclick=()=>{newAvatar='';refreshPrev();};
+  $('#edIcon').oninput=refreshPrev;
+  $('#edCancel').onclick=closeModal;
+  $('#edSave').onclick=()=>{
+    c.name=$('#edName').value.trim()||c.name;
+    c.icon=$('#edIcon').value.trim()||c.name.slice(0,1);
+    c.avatar=newAvatar;
+    if(isGroup){const members=[...$$('[data-member]:checked')].map(x=>x.value);members.push(kakaoData.me.name);c.members=members;}
+    saveKakao();closeModal();openChat(c.id);renderKakaoList();
+  };
+}
+
+// 初始化渲染
+renderKakaoList();
 // ===== 全站滑动触控 =====
 // 1) 应用内左右滑动：右滑返回主屏
 (function(){
