@@ -850,13 +850,19 @@ let viewedIGStories={};
 try{viewedIGStories=JSON.parse(localStorage.getItem('ig-viewed-stories-v2')||'{}')||{}}catch{}
 function storyReadKey(st){return JSON.stringify([String(st.src||'').split('?')[0],st.date||'',Number(st.duration)||5,st.texts||[]])}
 function accountStoriesSeen(id){const list=storiesForAccount(id);return list.length>0&&list.every(st=>(viewedIGStories[id]||[]).includes(storyReadKey(st)))}
+function refreshIGStoryRings(){
+ renderIGStories();
+ document.querySelectorAll('[data-story-ring-owner]').forEach(el=>{const seen=accountStoriesSeen(el.dataset.storyRingOwner);el.classList.toggle('stories-seen',seen);el.dataset.storySeen=String(seen)});
+ const avatar=$('#igProfileAvatar'),id=avatar.dataset.storyOwner;
+ if(id){const seen=accountStoriesSeen(id);avatar.classList.toggle('stories-seen',seen);avatar.dataset.storySeen=String(seen);avatar.style.setProperty('--story-ring-color',seen?'#b9b9bf':'conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86)');}
+}
 function recordCurrentStoryRead(){
  if($('#storyViewer').classList.contains('hidden'))return;
  const shown=displayedIGStory;
- if(!shown||shown.owner!==storyOwner||shown.key!==storyReadKey(storyList[storyIndex]||{})||performance.now()-shown.at<600)return;
+ if(!shown||shown.owner!==storyOwner||shown.key!==storyReadKey(storyList[storyIndex]||{}))return;
  const keys=new Set(viewedIGStories[shown.owner]||[]);keys.add(shown.key);viewedIGStories[shown.owner]=[...keys];
  try{localStorage.setItem('ig-viewed-stories-v2',JSON.stringify(viewedIGStories))}catch{}
- renderIGStories();document.querySelectorAll('[data-story-ring-owner]').forEach(el=>el.classList.toggle('stories-seen',accountStoriesSeen(el.dataset.storyRingOwner)));const avatar=$('#igProfileAvatar');if(avatar.dataset.storyOwner===storyOwner){const seen=accountStoriesSeen(storyOwner);avatar.classList.toggle('stories-seen',seen);avatar.style.setProperty('--story-ring-color',seen?'#b9b9bf':'conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86)');}
+ refreshIGStoryRings();
 }
 
 // ===== 快拍查看器 =====
@@ -935,7 +941,7 @@ async function showStory(){
   }
   // Preloading is never a read: count only a displayed frame after visible dwell time.
   displayedIGStory={owner:storyOwner,key:storyReadKey(s),at:performance.now()};
-  storyReadTimer=setTimeout(()=>{if(token===storyLoadToken&&!storyTurning)recordCurrentStoryRead()},650);
+  if(token===storyLoadToken)recordCurrentStoryRead();
   // 自动前进
   clearTimeout(storyTimer);
   const dur=(s.duration||5)*1000;
@@ -992,6 +998,7 @@ function closeStory(){
   clearTimeout(storyTimer);
   storyTimer=null;
   $('#storyViewer').classList.add('hidden');
+  refreshIGStoryRings();
 }
 
 // 快拍查看器按钮
@@ -1009,7 +1016,7 @@ function renderIGStories(){
   let html=igData.accounts.map((a,ai)=>{
     const prof=a.profile||{};
     if(!storiesForAccount(prof.id).length)return '';
-    return '<button class="story" data-story-account="'+ai+'"><span class="avatar story-ring '+(accountStoriesSeen(prof.id)?'stories-seen':'')+'" style="'+igAvatarStyle(prof)+'">'+(prof.avatar?'':igEsc((prof.id||'?')[0]))+'</span>'+igEsc(prof.id||'动态')+'</button>';
+    return '<button class="story" data-story-account="'+ai+'"><span data-story-ring-owner="'+igEsc(prof.id)+'" class="avatar story-ring '+(accountStoriesSeen(prof.id)?'stories-seen':'')+'" style="'+igAvatarStyle(prof)+'">'+(prof.avatar?'':igEsc((prof.id||'?')[0]))+'</span>'+igEsc(prof.id||'动态')+'</button>';
   }).join('');
   $('#stories').innerHTML=html;
   $$('[data-story-account]').forEach(b=>b.onclick=()=>openAccountStory(+b.dataset.storyAccount));
