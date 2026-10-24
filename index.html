@@ -333,7 +333,7 @@ html:not([data-kkt-editor]) #kakao.draft-only .composer{display:flex!important}h
     <div class="reply-icon">➤</div>
   </div>
   </div>
-<div class="photo-view hidden" id="viewer"><button class="back" id="closePhoto">‹ 照片</button><img id="largePhoto" alt="放大的风景"><div class="photo-nav"><button id="photoPrev" aria-label="上一张">‹</button><button id="photoNext" aria-label="下一张">›</button></div></div><button class="homebar hidden" aria-label="返回主屏幕" id="homebar"></button><div class="toast hidden" id="toast" role="status"></div></div></div></main>
+<div class="photo-view hidden" id="viewer"><button class="back" id="closePhoto">‹ 照片</button><div id="largeMedia" class="large-media"></div><div class="photo-nav"><button id="photoPrev" aria-label="上一张">‹</button><button id="photoNext" aria-label="下一张">›</button></div></div><button class="homebar hidden" aria-label="返回主屏幕" id="homebar"></button><div class="toast hidden" id="toast" role="status"></div></div></div></main>
 <script>
 const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);let unlocked=false,pin='',page='lock';function show(id){$$('.view').forEach(e=>e.classList.toggle('hidden',e.id!==id));page=id;if(id==='clock')renderWorldClocks();if(id==='home')scheduleKktNotification();$('#homebar').classList.toggle('hidden',!unlocked);$('.status').style.color=['photos','notes','settings','clock','instagram','kakao'].includes(id)?'#263c39':'white'}let returningHome=false;
 async function home(){
@@ -343,7 +343,7 @@ async function home(){
  if(!app||!button||id==='home'){show('home');return}
  returningHome=true;
  if(launchAnimation){launchAnimation.cancel();launchAnimation=null;}
- closeStory();$('#viewer').classList.add('hidden');document.querySelector('.ig-splash')?.remove();
+ closeStory();if(typeof closeViewer==='function')closeViewer();else $('#viewer').classList.add('hidden');document.querySelector('.ig-splash')?.remove();
  $('#home').classList.remove('hidden');
  const icon=button.querySelector('.icon')||button,from=app.getBoundingClientRect(),to=icon.getBoundingClientRect();
  const dx=to.left+to.width/2-from.left-from.width/2,dy=to.top+to.height/2-from.top-from.height/2;
@@ -377,7 +377,7 @@ async function syncPhoneClock(){
  phoneClockStatus=phoneClockBase===null?'网络校时暂不可用 · 使用设备时间（首尔）':'使用上次网络校准时间';renderWorldClocks();
  }finally{clockSyncPending=false}
 }
-function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=phoneNow(),t=d.toLocaleTimeString(window.phoneSystemLocale||'ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString(window.phoneSystemLocale||'ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:4},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;playPasscodeSound(n);if(n==='del')pin=pin.slice(0,-1);else if(pin.length<4)pin+=n;drawDots();if(pin.length===4){checking=true;setTimeout(()=>{if(pin==='0000'){unlockToHome()}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=goPass;$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);// ===== SVG 图标（精确绘制）=====
+function lock(){unlocked=false;pin='';if(typeof closeViewer==='function')closeViewer();else $('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=phoneNow(),t=d.toLocaleTimeString(window.phoneSystemLocale||'ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString(window.phoneSystemLocale||'ko-KR',{timeZone:'Asia/Seoul',month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:4},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;playPasscodeSound(n);if(n==='del')pin=pin.slice(0,-1);else if(pin.length<4)pin+=n;drawDots();if(pin.length===4){checking=true;setTimeout(()=>{if(pin==='0000'){unlockToHome()}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=goPass;$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);// ===== SVG 图标（精确绘制）=====
 const ICONS={
   // 三星相册：彩色风车花瓣（8 个扇形，彩虹渐变）
   photos:'<svg viewBox="0 0 100 100"><g transform="translate(50 50)">'+
@@ -467,7 +467,7 @@ ICONS.sms='<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 21c-21 0-3
 ICONS.telephone='<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M31 19c-7-3-15 7-13 17 5 24 23 42 47 47 10 2 20-6 17-13L70 57c-3-3-6-2-10 3l-5 4c-10-5-17-12-22-22l4-5c5-4 6-7 3-10Z" fill="white"/></svg>';
 ICONS.weather='<svg viewBox="0 0 100 100"><circle cx="38" cy="35" r="18" fill="#ffe47c"/><path d="M22 72a17 17 0 0 1-1-34 25 25 0 0 1 47 5 15 15 0 0 1 6 29Z" fill="white"/></svg>';
 ICONS.calendar='<svg viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="25" fill="#e95a60"/><path d="M25 50h50M25 65h50M25 80h50M36 37v50M61 37v50" stroke="#55505d" stroke-width="3"/></svg>';
-const apps=[['calendar','','日历','calendar-icon'],['weather','','天气','weather-icon'],['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.sms;$('#dockMusic').innerHTML=ICONS.telephone;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;launchApp(b.dataset.app,b);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){showIGSplash();renderIGFeed();renderIGStories();igData.accounts.forEach((_,i)=>warmIGAccount(i))}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
+const apps=[['calendar','','日历','calendar-icon'],['weather','','天气','weather-icon'],['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.sms;$('#dockMusic').innerHTML=ICONS.telephone;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;launchApp(b.dataset.app,b);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){showIGSplash();renderIGFeed();renderIGStories();igData.accounts.forEach((_,i)=>warmIGAccount(i))}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden')){if(typeof closeViewer==='function')closeViewer();else $('#viewer').classList.add('hidden')}else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
 // ===== 锁屏上滑解锁：内容实时模糊，松手引出密码页 =====
 function goPass(){show('pass');$('#passTitle').textContent='输入密码';}
 (function(){
@@ -511,30 +511,109 @@ function goPass(){show('pass');$('#passTitle').textContent='输入密码';}
   window.addEventListener('mouseup',e=>{if(dragging)onEnd(e.clientY);});
 })();
 // 内置照片：放在 photos_web/ 文件夹里的真实照片，所有人打开都能看到
+// 相册视频支持样式
+(function(){const s=document.createElement('style');s.textContent='.photo.is-video{position:relative}.photo.is-video video{width:100%;height:100%;object-fit:cover;display:block}.photo .video-badge{position:absolute;right:6px;bottom:6px;width:22px;height:22px;border-radius:50%;background:#000000a0;color:#fff;font-size:11px;display:grid;place-items:center;pointer-events:none}.large-media{width:100%;height:100%;display:flex;align-items:center;justify-content:center}.large-media img{width:100%;max-height:80%;object-fit:contain;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}.large-media video{width:100%;max-height:80%;object-fit:contain;background:#000}';document.head.append(s)})();
 const builtinPhotos=[
-  {file:'IMG_4594.jpg',name:'照片 01'},
-  {file:'IMG_4595.jpg',name:'照片 02'},
-  {file:'IMG_8228.jpg',name:'照片 03'},
-  {file:'IMG_8229.jpg',name:'照片 04'},
-  {file:'IMG_8231.jpg',name:'照片 05'},
-  {file:'IMG_8232.jpg',name:'照片 06'},
-  {file:'IMG_8233.jpg',name:'照片 07'},
-  {file:'IMG_8235.jpg',name:'照片 08'},
-  {file:'IMG_8237.jpg',name:'照片 09'},
-  {file:'IMG_8238.jpg',name:'照片 10'},
-  {file:'IMG_8239.jpg',name:'照片 11'},
-  {file:'IMG_8240.jpg',name:'照片 12'},
-  {file:'IMG_8241.jpg',name:'照片 13'},
-  {file:'IMG_8242.jpg',name:'照片 14'},
-  {file:'IMG_8243.jpg',name:'照片 15'},
-  {file:'IMG_8245.jpg',name:'照片 16'},
-  {file:'IMG_8246.jpg',name:'照片 17'},
-  {file:'IMG_8250.jpg',name:'照片 18'},
-  {file:'IMG_8252.jpg',name:'照片 19'},
-  {file:'IMG_8253.jpg',name:'照片 20'},
-  {file:'IMG_9023.jpg',name:'照片 21'}
+  {file:"1291.jpg",name:"照片 01"},
+  {file:"1292.jpg",name:"照片 02"},
+  {file:"129212.jpg",name:"照片 03"},
+  {file:"129213.jpg",name:"照片 04"},
+  {file:"129214.jpg",name:"照片 05"},
+  {file:"129215.jpg",name:"照片 06"},
+  {file:"1293.jpg",name:"照片 07"},
+  {file:"1295.jpg",name:"照片 08"},
+  {file:"62a36cf7b398308ca641611b2817ddbc 2.jpg",name:"照片 09"},
+  {file:"IMG_0144.jpg",name:"照片 10"},
+  {file:"IMG_0145.jpg",name:"照片 11"},
+  {file:"IMG_0155.jpg",name:"照片 12"},
+  {file:"IMG_0157.jpg",name:"照片 13"},
+  {file:"IMG_0160.jpg",name:"照片 14"},
+  {file:"IMG_0161.jpg",name:"照片 15"},
+  {file:"IMG_0162.jpg",name:"照片 16"},
+  {file:"IMG_0163.jpg",name:"照片 17"},
+  {file:"IMG_0175.jpg",name:"照片 18"},
+  {file:"IMG_0246 2.jpg",name:"照片 19"},
+  {file:"IMG_0442.jpg",name:"照片 20"},
+  {file:"IMG_0989.jpg",name:"照片 21"},
+  {file:"IMG_1082.jpg",name:"照片 22"},
+  {file:"IMG_1186.jpg",name:"照片 23"},
+  {file:"IMG_1187.jpg",name:"照片 24"},
+  {file:"IMG_2019.jpg",name:"照片 25"},
+  {file:"IMG_2020.jpg",name:"照片 26"},
+  {file:"IMG_2021.jpg",name:"照片 27"},
+  {file:"IMG_2022.jpg",name:"照片 28"},
+  {file:"IMG_2023.jpg",name:"照片 29"},
+  {file:"IMG_3434.jpg",name:"照片 30"},
+  {file:"IMG_3442.jpg",name:"照片 31"},
+  {file:"IMG_3844.jpg",name:"照片 32"},
+  {file:"IMG_3849.jpg",name:"照片 33"},
+  {file:"IMG_4181.jpg",name:"照片 34"},
+  {file:"IMG_4182.jpg",name:"照片 35"},
+  {file:"IMG_4183.jpg",name:"照片 36"},
+  {file:"IMG_4184.jpg",name:"照片 37"},
+  {file:"IMG_4185.jpg",name:"照片 38"},
+  {file:"IMG_4189.jpg",name:"照片 39"},
+  {file:"IMG_4192.jpg",name:"照片 40"},
+  {file:"IMG_4195.jpg",name:"照片 41"},
+  {file:"IMG_4196.jpg",name:"照片 42"},
+  {file:"IMG_4198.jpg",name:"照片 43"},
+  {file:"IMG_4202.jpg",name:"照片 44"},
+  {file:"IMG_4204 2.jpg",name:"照片 45"},
+  {file:"IMG_4205 2.jpg",name:"照片 46"},
+  {file:"IMG_4207 2.jpg",name:"照片 47"},
+  {file:"IMG_4208 2.jpg",name:"照片 48"},
+  {file:"IMG_4209 2.jpg",name:"照片 49"},
+  {file:"IMG_4210 2.jpg",name:"照片 50"},
+  {file:"IMG_4594 2.jpg",name:"照片 51"},
+  {file:"IMG_4595 2.jpg",name:"照片 52"},
+  {file:"IMG_5341 2.jpg",name:"照片 53"},
+  {file:"IMG_5712.jpg",name:"照片 54"},
+  {file:"IMG_7633.jpg",name:"照片 55"},
+  {file:"IMG_7860.jpg",name:"照片 56"},
+  {file:"IMG_7861.jpg",name:"照片 57"},
+  {file:"IMG_8228 2.jpg",name:"照片 58"},
+  {file:"IMG_8229 2.jpg",name:"照片 59"},
+  {file:"IMG_8231 2.jpg",name:"照片 60"},
+  {file:"IMG_8237 2.jpg",name:"照片 61"},
+  {file:"IMG_8238 2.jpg",name:"照片 62"},
+  {file:"IMG_8239 2.jpg",name:"照片 63"},
+  {file:"IMG_8240 3.jpg",name:"照片 64"},
+  {file:"IMG_8241 2.jpg",name:"照片 65"},
+  {file:"IMG_8242 3.jpg",name:"照片 66"},
+  {file:"IMG_8243 2.jpg",name:"照片 67"},
+  {file:"IMG_8653.jpg",name:"照片 68"},
+  {file:"IMG_8755.jpg",name:"照片 69"},
+  {file:"IMG_9026.jpg",name:"照片 70"},
+  {file:"IMG_9027.jpg",name:"照片 71"},
+  {file:"IMG_9030.jpg",name:"照片 72"},
+  {file:"IMG_9031.jpg",name:"照片 73"},
+  {file:"IMG_9032.jpg",name:"照片 74"},
+  {file:"IMG_9033.jpg",name:"照片 75"},
+  {file:"IMG_9034.jpg",name:"照片 76"},
+  {file:"IMG_9035.jpg",name:"照片 77"},
+  {file:"IMG_9036.jpg",name:"照片 78"},
+  {file:"IMG_9037.jpg",name:"照片 79"},
+  {file:"IMG_9038.jpg",name:"照片 80"},
+  {file:"IMG_9040.jpg",name:"照片 81"},
+  {file:"IMG_9041.jpg",name:"照片 82"},
+  {file:"IMG_9042.jpg",name:"照片 83"},
+  {file:"IMG_9043.jpg",name:"照片 84"},
+  {file:"IMG_9044.jpg",name:"照片 85"},
+  {file:"IMG_9046.jpg",name:"照片 86"},
+  {file:"IMG_9047 2.jpg",name:"照片 87"},
+  {file:"IMG_9048.jpg",name:"照片 88"},
+  {file:"IMG_9062.jpg",name:"照片 89"},
+  {file:"IMG_9101.jpg",name:"照片 90"},
+  {file:"IMG_9323.jpg",name:"照片 91"},
+  {file:"a175dbdbff066e64d30d7f87d22658df.jpg",name:"照片 92"},
+  {file:"a273422990a6b7a26c85fb7db5c565e9 2.jpg",name:"照片 93"},
+  {file:"dc90ad23b257f9aa97b5dd135f3accba.jpg",name:"照片 94"},
+  {file:"0a97fe63b72b8f415ea193cde69eeefb.MP4",name:"视频 95",video:true},
+  {file:"2215.MP4",name:"视频 96",video:true},
+  {file:"53b98101478fafd19f41ce1ecf9d6594.MP4",name:"视频 97",video:true},
+  {file:"file.MP4",name:"视频 98",video:true}
 ];
-let photos=builtinPhotos.map(p=>({src:'photos_web/'+p.file,name:p.name}));function renderPhotos(){$('#gallery').innerHTML=photos.map((p,i)=>'<button class="photo" data-photo="'+i+'"><img src="'+p.src+'" alt="'+p.name+'"></button>').join('');$$('[data-photo]').forEach(b=>b.onclick=()=>viewPhoto(+b.dataset.photo))}let photoIndex=0;function viewPhoto(i){photoIndex=(i+photos.length)%photos.length;$('#largePhoto').src=photos[photoIndex].src;$('#largePhoto').alt=photos[photoIndex].name;$('#viewer').classList.remove('hidden')}renderPhotos();$('#closePhoto').onclick=()=>$('#viewer').classList.add('hidden');$('#photoPrev').onclick=()=>viewPhoto(photoIndex-1);$('#photoNext').onclick=()=>viewPhoto(photoIndex+1);
+let photos=builtinPhotos.map(p=>({src:'photos_web/'+p.file,name:p.name,video:!!p.video})).reverse();function renderPhotos(){$('#gallery').innerHTML=photos.map((p,i)=>'<button class="photo'+(p.video?' is-video':'')+'" data-photo="'+i+'">'+(p.video?'<video src="'+p.src+'" muted playsinline preload="metadata"></video><span class="video-badge">▶</span>':'<img src="'+p.src+'" alt="'+p.name+'" loading="lazy">')+'</button>').join('');$$('[data-photo]').forEach(b=>b.onclick=()=>viewPhoto(+b.dataset.photo))}let photoIndex=0;function viewPhoto(i){photoIndex=(i+photos.length)%photos.length;const p=photos[photoIndex],box=$('#largeMedia');box.innerHTML=p.video?'<video src="'+p.src+'" controls autoplay playsinline></video>':'<img src="'+p.src+'" alt="'+p.name+'">';$('#viewer').classList.remove('hidden')}function closeViewer(){const v=$('#largeMedia').querySelector('video');if(v)v.pause();$('#viewer').classList.add('hidden')}renderPhotos();$('#closePhoto').onclick=closeViewer;$('#photoPrev').onclick=()=>viewPhoto(photoIndex-1);$('#photoNext').onclick=()=>viewPhoto(photoIndex+1);
 function read(k,f){try{return localStorage.getItem(k)||f}catch{return f}}function save(k,v){try{localStorage.setItem(k,v);return true}catch{return false}}$('#note').value=read('pocket-note','周末的小计划\n\n去看看没见过的风景。\n听一首喜欢的歌。\n把平常的日子，过得有趣一点。');$('#note').oninput=()=>$('#saved').textContent=save('pocket-note',$('#note').value)?'已自动保存到此浏览器':'浏览器暂不支持保存，请自行复制内容';$('#theme').onclick=()=>document.body.classList.toggle('night');
 // ===== 音乐歌单数据 =====
 // 每首歌：name 歌名, artist 歌手, album 专辑, cover 封面图, duration 时长(秒), audio 音频文件(可选)
@@ -1469,7 +1548,7 @@ renderKakaoList();
     const dx=Math.abs(e.changedTouches[0].clientX - sx);
     if(dy>50 && dy>dx*1.2){
       // 上滑：关闭浮层或回主屏
-      if(!$('#viewer').classList.contains('hidden')){ $('#viewer').classList.add('hidden'); }
+      if(!$('#viewer').classList.contains('hidden')){ if(typeof closeViewer==='function')closeViewer();else $('#viewer').classList.add('hidden'); }
       else if(!$('#storyViewer').classList.contains('hidden')){ closeStory(); }
       else if(page!=='home' && page!=='lock' && page!=='pass'){ home(); }
     }
