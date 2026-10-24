@@ -181,6 +181,7 @@ function saveLocal() {
         id: a.id || '', name: a.name || '', avatar: a.avatar || '',
         stories: (a.stories || []).map(s => ({
           fileName: s.fileName || '',
+          src: s.src || '',
           duration: s.duration,
           date: s.date || '',
           texts: s.texts
@@ -202,7 +203,7 @@ function loadLocal() {
     accounts = meta.accounts.map(a => ({
       id: a.id || '', name: a.name || '', avatar: a.avatar || '',
       stories: (a.stories || []).map(m => ({
-        src: m.fileName ? ('stories/' + m.fileName) : '',
+        src: m.src || (m.fileName ? ('stories/' + m.fileName) : ''),
         fileName: m.fileName || '',
         duration: m.duration || 5,
         date: m.date || '',
@@ -250,7 +251,7 @@ function renderAccountList() {
 function switchAccount(i) {
   if (i < 0 || i >= accounts.length) return;
   accountIndex = i;
-  currentIndex = -1;
+  currentIndex = getStories().length ? 0 : -1;
   selectedText = null;
   saveLocal(); renderAll();
 }
@@ -285,7 +286,7 @@ function importAccountsData(data, mode) {
     const existing = new Set(accounts.map(a => a.id));
     converted.forEach(a => { if (!existing.has(a.id)) accounts.push(a); });
   }
-  currentIndex = -1; selectedText = null;
+  currentIndex = getStories().length ? 0 : -1; selectedText = null;
   saveLocal(); renderAll();
   return true;
 }
@@ -667,17 +668,12 @@ canvas.addEventListener('drop', e => {
   if (f && f.type.startsWith('image/')) loadPhoto(f);
 });
 
-function loadPhoto(file) {
-  if (currentIndex < 0) { getStories().push({ src: '', duration: 5, texts: [] }); currentIndex = getStories().length - 1; }
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const s = getStories()[currentIndex];
-    s.src = ev.target.result;          // 预览用（base64，仅内存）
-    s.fileName = file.name;            // 记录原始文件名，导出时用
-    saveLocal(); renderCanvas(); renderList();
-    toast('照片已加载');
-  };
-  reader.readAsDataURL(file);
+async function loadPhoto(file) {
+ const list=getStories();
+ if(currentIndex<0){list.push({src:'',duration:5,texts:[]});currentIndex=list.length-1;}
+ const target=list[currentIndex];
+ try{target.src=await readAsDataURL(file);target.fileName=file.name;saveLocal();renderAll();toast('照片已加载');}
+ catch(e){toast(e.message);}
 }
 
 // ===== 批量导入：一次选多张照片，每张自动生成一页 =====
@@ -994,11 +990,50 @@ function renderAll() {
   }
 }
 
+
+// Normalize actual file contents before any importer builds preview/export metadata.
+async function readAsDataURL(file) {
+ const head=new Uint8Array(await file.slice(0,64).arrayBuffer());
+ const signature=String.fromCharCode(...head);
+ const heic=/ftyp(?:heic|heix|hevc|hevx|mif1|msf1|heif)/.test(signature)||/\.hei[cf]$/i.test(file.name||'')||/^image\/hei[cf]/i.test(file.type||'');
+ let blob=file;
+ if(heic){
+  toast('正在将 HEIC 转为 JPG…');
+  const r=await fetch('/convert-heic',{method:'POST',body:file});
+  if(!r.ok)throw Error('HEIC 转换失败，请使用本地 8766 端口的编辑器');
+  blob=await r.blob();
+  const name=(file.name||'story.heic').replace(/\.[^.]+$/,'.jpg');
+  Object.defineProperty(file,'name',{value:name,configurable:true});
+ }
+ return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob)});
+}
+
 loadLocal();
 if (getStories().length) currentIndex = 0;
 renderAll();
+
+// Restore old drafts using actual project assets, including space/underscore and HEIC aliases.
+const storyAssets={"img_7380": "stories/IMG_7380.JPG", "2129": "stories/2129.JPG", "2031_2": "stories/2031_2.jpg", "img_5609": "stories/IMG_5609.JPG", "img_0205": "stories/IMG_0205.JPG", "2030_2": "stories/2030_2.jpg", "2058": "stories/2058.jpg", "2029_2": "stories/2029_2.jpg", "img_9047": "stories/IMG_9047.JPG", "img_8242_2": "stories/IMG_8242 2.JPG", "img_8240_2": "stories/IMG_8240 2.JPG", "2039": "stories/2039.jpg", "2038": "stories/2038.jpg", "img_5255": "stories/IMG_5255.jpg", "img_5677": "stories/IMG_5677.jpg", "2058_2": "stories/2058_2.jpg", "2033": "stories/2033.jpg", "img_9039": "stories/IMG_9039.JPG", "2095": "stories/2095.jpg", "2127": "stories/2127.JPG", "2053": "stories/2053.jpg", "2046": "stories/2046.jpg", "2124": "stories/2124.JPG", "2125": "stories/2125.JPG"};
+async function repairStoryPreviews(){
+ let repaired=0;
+ for(const a of accounts) for(const st of a.stories||[]){
+  let name=st.fileName || (st.src||'').split('/').pop() || '';
+  const key=name.replace(/\.[^.]+$/,'').toLowerCase().replace(/ /g,'_');
+  const asset=storyAssets[key];
+  const original=st.src;
+  if(/\.hei[cf]$/i.test(name) && st.src?.startsWith('data:')){try{const blob=await(await fetch(st.src)).blob();const f=new File([blob],name);st.src=await readAsDataURL(f);st.fileName=f.name;repaired++;continue}catch(e){console.warn(e)}}
+  if(asset){
+   const im=new Image();
+   const ok=await new Promise(resolve=>{im.onload=()=>resolve(true);im.onerror=()=>resolve(false);im.src=st.src||''});
+   if(!ok || /\.hei[cf]$/i.test(name)){st.src=asset+'?preview=2';st.fileName=asset.split('/').pop();repaired++;}
+  }
+ }
+ if(repaired){saveLocal();renderAll();toast('已修复 '+repaired+' 张预览');}
+}
+repairStoryPreviews();
+
 // 显式从手机网页载入现有内容；普通打开仍保留本地草稿。
-if (new URLSearchParams(location.search).get('source') === 'index') {
+if (new URLSearchParams(location.search).get('source') === 'index' || !accounts.some(a => (a.stories || []).length)) {
   importFromIndex().then(() => {
     history.replaceState(null, '', location.pathname);
   });

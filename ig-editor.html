@@ -95,7 +95,7 @@ h1{font-size:22px;margin-bottom:6px}
       <input type="text" id="igName" placeholder="我的名字">
       <label>简介</label>
       <textarea id="igBio" placeholder="写点什么…"></textarea>
-      <button class="btn block danger" id="deleteAccount">删除这个账号</button>
+      <label>粉丝数量</label><input id="igFollowers" type="number" min="0" step="1"><label>关注数量</label><input id="igFollowing" type="number" min="0" step="1"><label>帖子数量（自动计算）</label><input id="igPostTotal" readonly><button class="btn block danger" id="deleteAccount">删除这个账号</button>
     </div>
 
     <h2>帖子列表</h2>
@@ -204,7 +204,7 @@ function saveLocal() {
   try {
     const meta = {
       accounts: accounts.map(a => ({
-        profile: { avatarFile: a.profile.avatarFile, id: a.profile.id, name: a.profile.name, bio: a.profile.bio },
+        profile: { avatarFile: a.profile.avatarFile, id: a.profile.id, name: a.profile.name, followers:a.profile.followers||0, following:a.profile.following||0, bio: a.profile.bio },
         posts: (a.posts||[]).map(p => ({ images: (p.images||[]).map(im => ({ fileName: im.fileName || '' })), caption: p.caption || '', likes: p.likes || '', time: p.time || '' })),
         stories: (a.stories||[]).map(st => ({ fileName: st.fileName || '', date: st.date || '', duration: st.duration || 5 }))
       })),
@@ -225,7 +225,7 @@ function loadLocal() {
       const prof = {
         avatar: p.avatarFile ? ('ig/' + p.avatarFile) : '',
         avatarFile: p.avatarFile || '',
-        id: p.id || '', name: p.name || '', bio: p.bio || ''
+        id: p.id || '', name: p.name || '', bio: p.bio || '', followers:p.followers||0, following:p.following||0
       };
       const ps = (a.posts || []).map(m => {
         let imgs = [];
@@ -262,7 +262,7 @@ function importAccountsData(data, mode) {
     const prof = {
       avatar: p.avatar || '',
       avatarFile: avatarFile,
-      id: p.id || '', name: p.name || '', bio: p.bio || ''
+      id: p.id || '', name: p.name || '', bio: p.bio || '', followers:p.followers||0, following:p.following||0
     };
     const ps = (a.posts || []).map(post => ({
       images: (post.images || []).filter(Boolean).map(src => ({
@@ -412,6 +412,7 @@ function renderProfileFields() {
   $('#igId').value = p.id || '';
   $('#igName').value = p.name || '';
   $('#igBio').value = p.bio || '';
+  $('#igFollowers').value=p.followers||0;$('#igFollowing').value=p.following||0;$('#igPostTotal').value=(acc().posts||[]).length;
   const av = $('#avatarPreview');
   if (p.avatar) {
     av.style.backgroundImage = 'url(' + p.avatar + ')';
@@ -709,6 +710,7 @@ function updatePanel() {
 // ===== 事件 =====
 $('#igId').oninput = e => { profile().id = e.target.value; saveLocal(); renderAccountList(); renderPreview(); };
 $('#igName').oninput = e => { profile().name = e.target.value; saveLocal(); renderAccountList(); };
+for(const [id,key] of [['igFollowers','followers'],['igFollowing','following']])$('#'+id).oninput=e=>{profile()[key]=Math.max(0,Math.floor(Number(e.target.value)||0));saveLocal()};
 $('#igBio').oninput = e => { profile().bio = e.target.value; saveLocal(); };
 
 $('#pickAvatar').onclick = () => $('#avatarInput').click();
@@ -833,7 +835,7 @@ function buildData() {
         avatar: a.profile.avatarFile ? ('ig/' + a.profile.avatarFile) : '',
         id: a.profile.id || '',
         name: a.profile.name || '',
-        bio: a.profile.bio || ''
+        followers:a.profile.followers||0, following:a.profile.following||0, bio: a.profile.bio || ''
       },
       posts: (a.posts || []).map(p => ({
         images: (p.images || []).map(im => im.fileName ? ('ig/' + im.fileName) : '').filter(Boolean),
@@ -1010,6 +1012,24 @@ $('#deleteAccount').onclick = () => {
   saveLocal(); renderAll();
   toast('已删除账号');
 };
+
+
+// Normalize actual file contents before any importer builds preview/export metadata.
+async function readAsDataURL(file) {
+ const head=new Uint8Array(await file.slice(0,64).arrayBuffer());
+ const signature=String.fromCharCode(...head);
+ const heic=/ftyp(?:heic|heix|hevc|hevx|mif1|msf1|heif)/.test(signature)||/\.hei[cf]$/i.test(file.name||'')||/^image\/hei[cf]/i.test(file.type||'');
+ let blob=file;
+ if(heic){
+  toast('正在将 HEIC 转为 JPG…');
+  const r=await fetch('/convert-heic',{method:'POST',body:file});
+  if(!r.ok)throw Error('HEIC 转换失败，请使用本地 8766 端口的编辑器');
+  blob=await r.blob();
+  const name=(file.name||'story.heic').replace(/\.[^.]+$/,'.jpg');
+  Object.defineProperty(file,'name',{value:name,configurable:true});
+ }
+ return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(blob)});
+}
 
 loadLocal();
 renderAll();

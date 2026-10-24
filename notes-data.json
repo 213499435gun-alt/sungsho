@@ -1,0 +1,104 @@
+{
+  "notes": [
+    {
+      "id": "note1792859281162",
+      "title": "",
+      "content": "日本に帰ったらソンチャンにお菓子を買ってあげる。\n\nソンチャンの誕生日プレゼントを忘れずに買う。\n\nソンチャンは干し芋が好き。\n\nソンチャンがかき氷を食べるときは、小さい四角い氷を入れる。",
+      "date": "26.10.13",
+      "language": "ja",
+      "translations": {
+        "ja": {
+          "title": "",
+          "content": "日本に帰ったらソンチャンにお菓子を買ってあげる。\n\nソンチャンの誕生日プレゼントを忘れずに買う。\n\nソンチャンは干し芋が好き。\n\nソンチャンがかき氷を食べるときは、小さい四角い氷を入れる。"
+        },
+        "ko": {
+          "title": "",
+          "content": "일본에 돌아가면 성찬이한테 과자를 사다 줄 것.\n\n성찬이 생일 선물 잊지 말고 살 것.\n\n성찬이는 말린 고구마를 좋아한다.\n\n성찬이가 빙수를 먹을 때는 작은 네모 얼음을 넣을 것."
+        },
+        "zh": {
+          "title": "",
+          "content": "回日本后给成灿买零食。\n\n不要忘记买成灿的生日礼物。\n\n成灿喜欢红薯干。\n\n成灿吃刨冰时，要放入小方冰块。"
+        },
+        "en": {
+          "title": "",
+          "content": "Buy Sungchan snacks when I go back to Japan.\n\nRemember to buy Sungchan a birthday present.\n\nSungchan likes dried sweet potatoes.\n\nPut small square ice cubes in his shaved ice."
+        }
+      }
+    },
+    {
+      "id": "note1792858998158",
+      "title": "",
+      "content": "立ち位置が変わった。今は右側だから、間違えないように。",
+      "date": "26.08.17",
+      "language": "ja",
+      "translations": {
+        "ja": {
+          "title": "",
+          "content": "立ち位置が変わった。今は右側だから、間違えないように。"
+        },
+        "ko": {
+          "title": "",
+          "content": "서는 위치가 바뀌었다. 이제 오른쪽이니까 헷갈리지 말 것."
+        },
+        "zh": {
+          "title": "",
+          "content": "站位变了。现在在右边，注意不要站错。"
+        },
+        "en": {
+          "title": "",
+          "content": "My position has changed. I’m on the right now, so make sure not to mix it up."
+        }
+      }
+    },
+    {
+      "id": "note1792858382465",
+      "title": "韓国語メモ 🇰🇷",
+      "content": "おはよう — 좋은 아침\nこんにちは — 안녕하세요\nありがとう — 고마워\nごめん — 미안해\n大丈夫 — 괜찮아\nおいしい — 맛있어\nかわいい — 귀여워\nかっこいい — 멋있어\n疲れた — 피곤해\n眠い — 졸려\nお腹すいた — 배고파\nおいしいご飯 — 맛있는 밥\n水 — 물\nコーヒー — 커피\nコンビニ — 편의점\n地下鉄 — 지하철\nタクシー — 택시\nトイレ — 화장실\n練習室 — 연습실\n宿舎 — 숙소\n会社 — 회사\nご飯食べた？ — 밥 먹었어?\n何してる？ — 뭐 해?\nどこ？ — 어디야?\n本当？ — 진짜?\nかわいいね — 귀엽네\nありがとう！ — 고마워!\nまたね — 또 봐\nおやすみ — 잘 자",
+      "date": "22.05.18",
+      "language": "ja",
+      "translations": {
+        "ja": {
+          "title": "韓国語メモ 🇰🇷",
+          "content": "おはよう — 좋은 아침\nこんにちは — 안녕하세요\nありがとう — 고마워\nごめん — 미안해\n大丈夫 — 괜찮아\nおいしい — 맛있어\nかわいい — 귀여워\nかっこいい — 멋있어\n疲れた — 피곤해\n眠い — 졸려\nお腹すいた — 배고파\nおいしいご飯 — 맛있는 밥\n水 — 물\nコーヒー — 커피\nコンビニ — 편의점\n地下鉄 — 지하철\nタクシー — 택시\nトイレ — 화장실\n練習室 — 연습실\n宿舎 — 숙소\n会社 — 회사\nご飯食べた？ — 밥 먹었어?\n何してる？ — 뭐 해?\nどこ？ — 어디야?\n本当？ — 진짜?\nかわいいね — 귀엽네\nありがとう！ — 고마워!\nまたね — 또 봐\nおやすみ — 잘 자"
+        },
+        "ko": {
+          "title": "한국어 메모 🇰🇷",
+          "content": "좋은 아침 — 좋은 아침\n안녕하세요 — 안녕하세요\n고마워 — 고마워\n미안해 — 미안해\n괜찮아 — 괜찮아\n맛있어 — 맛있어\n귀여워 — 귀여워\n멋있어 — 멋있어\n피곤해 — 피곤해\n졸려 — 졸려\n배고파 — 배고파\n맛있는 밥 — 맛있는 밥\n물 — 물\n커피 — 커피\n편의점 — 편의점\n지하철 — 지하철\n택시 — 택시\n화장실 — 화장실\n연습실 — 연습실\n숙소 — 숙소\n회사 — 회사\n밥 먹었어? — 밥 먹었어?\n뭐 해? — 뭐 해?\n어디야? — 어디야?\n진짜? — 진짜?\n귀엽네 — 귀엽네\n고마워! — 고마워!\n또 봐 — 또 봐\n잘 자 — 잘 자"
+        },
+        "zh": {
+          "title": "韩语笔记 🇰🇷",
+          "content": "早上好 — 좋은 아침\n你好 — 안녕하세요\n谢谢 — 고마워\n对不起 — 미안해\n没关系 — 괜찮아\n好吃 — 맛있어\n可爱 — 귀여워\n帅气 — 멋있어\n累了 — 피곤해\n困了 — 졸려\n饿了 — 배고파\n好吃的饭 — 맛있는 밥\n水 — 물\n咖啡 — 커피\n便利店 — 편의점\n地铁 — 지하철\n出租车 — 택시\n洗手间 — 화장실\n练习室 — 연습실\n宿舍 — 숙소\n公司 — 회사\n吃饭了吗？ — 밥 먹었어?\n在做什么？ — 뭐 해?\n在哪里？ — 어디야?\n真的吗？ — 진짜?\n好可爱 — 귀엽네\n谢谢！ — 고마워!\n再见 — 또 봐\n晚安 — 잘 자"
+        },
+        "en": {
+          "title": "Korean notes 🇰🇷",
+          "content": "Good morning — 좋은 아침\nHello — 안녕하세요\nThank you — 고마워\nSorry — 미안해\nIt’s okay — 괜찮아\nDelicious — 맛있어\nCute — 귀여워\nCool / handsome — 멋있어\nTired — 피곤해\nSleepy — 졸려\nHungry — 배고파\nA tasty meal — 맛있는 밥\nWater — 물\nCoffee — 커피\nConvenience store — 편의점\nSubway — 지하철\nTaxi — 택시\nRestroom — 화장실\nPractice room — 연습실\nDorm — 숙소\nCompany — 회사\nHave you eaten? — 밥 먹었어?\nWhat are you doing? — 뭐 해?\nWhere are you? — 어디야?\nReally? — 진짜?\nYou’re cute — 귀엽네\nThank you! — 고마워!\nSee you — 또 봐\nGood night — 잘 자"
+        }
+      }
+    },
+    {
+      "id": "note1792858818806",
+      "title": "アイドルになる",
+      "content": "挨拶をちゃんとする\n\n時間を守る\n\n練習をサボらない\n\n分からないことはすぐ聞く\n\nステージでは自信を持つ\n\nファンへの感謝を忘れない\n\nスタッフさんにも礼儀正しくする\n\n言葉に気をつける\n\n体調管理をしっかりする\n\nご飯をちゃんと食べる\n\n疲れたときはちゃんと休む\n\nつらいときは一人で抱え込まない\n\n初心を忘れない\n\n周りの人への感謝を忘れない\n\n長く活動するためには、自分を大切にすることも大事。",
+      "date": "21.06.07",
+      "language": "ja",
+      "translations": {
+        "ja": {
+          "title": "アイドルになる",
+          "content": "挨拶をちゃんとする\n\n時間を守る\n\n練習をサボらない\n\n分からないことはすぐ聞く\n\nステージでは自信を持つ\n\nファンへの感謝を忘れない\n\nスタッフさんにも礼儀正しくする\n\n言葉に気をつける\n\n体調管理をしっかりする\n\nご飯をちゃんと食べる\n\n疲れたときはちゃんと休む\n\nつらいときは一人で抱え込まない\n\n初心を忘れない\n\n周りの人への感謝を忘れない\n\n長く活動するためには、自分を大切にすることも大事。"
+        },
+        "ko": {
+          "title": "아이돌이 되기",
+          "content": "인사를 잘하기\n\n시간 지키기\n\n연습 빼먹지 않기\n\n모르는 건 바로 물어보기\n\n무대에서는 자신감 갖기\n\n팬들에게 감사하는 마음 잊지 않기\n\n스태프분들께도 예의 바르게 대하기\n\n말조심하기\n\n건강 관리 잘하기\n\n밥 잘 챙겨 먹기\n\n피곤할 땐 제대로 쉬기\n\n힘들 땐 혼자 끌어안고 있지 않기\n\n초심 잊지 않기\n\n주변 사람들에게 감사하는 마음 잊지 않기\n\n오래 활동하려면 나 자신을 소중히 여기는 것도 중요하다."
+        },
+        "zh": {
+          "title": "成为偶像",
+          "content": "好好打招呼\n\n遵守时间\n\n不偷懒，要认真练习\n\n不懂的事情马上问\n\n在舞台上保持自信\n\n不忘感谢粉丝\n\n对工作人员也要有礼貌\n\n注意自己的言语\n\n好好管理身体状况\n\n按时好好吃饭\n\n累的时候好好休息\n\n难过时不要独自承担\n\n不忘初心\n\n不忘感谢身边的人\n\n想长久地活动，也要懂得珍惜自己。"
+        },
+        "en": {
+          "title": "Becoming an idol",
+          "content": "Greet people properly\n\nBe on time\n\nDon’t skip practice\n\nAsk right away when I don’t understand\n\nBe confident on stage\n\nRemember to be grateful to fans\n\nBe polite to the staff, too\n\nBe careful with my words\n\nTake care of my health\n\nEat properly\n\nRest when I’m tired\n\nDon’t carry everything alone when things get hard\n\nRemember why I started\n\nBe grateful to the people around me\n\nTo keep doing this for a long time, I need to take care of myself, too."
+        }
+      }
+    }
+  ]
+}
