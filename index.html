@@ -180,6 +180,7 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 #storyAvatar{padding:0;cursor:pointer;flex-shrink:0}#storyAvatar:focus-visible{outline:2px solid white;outline-offset:3px}
 
 #igProfileAvatar{padding:0;position:relative;overflow:visible;border:0}#igProfileAvatar:disabled{cursor:default;opacity:1}#igProfileAvatar.has-stories::after,.story .avatar.story-ring::after{content:'';position:absolute;inset:-5px;border-radius:50%;padding:2.5px;background:conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;pointer-events:none}.story .avatar.story-ring{position:relative;outline:0;border:3px solid white}#igProfileAvatar.stories-seen::after,.story .avatar.story-ring.stories-seen::after{background:#b9b9bf}
+#igProfileAvatar.has-stories::after{background:var(--story-ring-color,conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86))}#igProfileAvatar.has-stories.stories-seen::after,.story .avatar.story-ring.stories-seen::after{background:#b9b9bf}
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
@@ -775,7 +776,7 @@ function renderIGProfile(accIndex){
   const av=$('#igProfileAvatar');
   av.dataset.storyOwner=prof.id||'';
   const hasStories=storiesForAccount(prof.id).length>0;
-  av.disabled=!hasStories;av.classList.toggle('has-stories',hasStories);av.classList.toggle('stories-seen',hasStories&&accountStoriesSeen(prof.id));
+  av.disabled=!hasStories;av.classList.toggle('has-stories',hasStories);av.classList.toggle('stories-seen',hasStories&&accountStoriesSeen(prof.id));av.style.setProperty('--story-ring-color',accountStoriesSeen(prof.id)?'#b9b9bf':'conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86)');
   av.onclick=()=>{if(hasStories)openAccountStory(ai)};
   if(prof.avatar){
     av.style.backgroundImage='url('+prof.avatar+')';
@@ -848,14 +849,14 @@ function myStories(){ return storiesForAccount(igProfile().id); }
 
 let viewedIGStories={};
 try{viewedIGStories=JSON.parse(localStorage.getItem('ig-viewed-stories-v1')||'{}')||{}}catch{}
-function storyReadKey(st){return JSON.stringify([st.src,st.date,st.duration,st.texts||[]])}
+function storyReadKey(st){return JSON.stringify([String(st.src||'').split('?')[0],st.date||'',Number(st.duration)||5,st.texts||[]])}
 function accountStoriesSeen(id){const list=storiesForAccount(id);return list.length>0&&list.every(st=>(viewedIGStories[id]||[]).includes(storyReadKey(st)))}
 function recordCurrentStoryRead(){
  if($('#storyViewer').classList.contains('hidden'))return;
  const st=storyList[storyIndex];if(!st)return;
  const keys=new Set(viewedIGStories[storyOwner]||[]);keys.add(storyReadKey(st));viewedIGStories[storyOwner]=[...keys];
  try{localStorage.setItem('ig-viewed-stories-v1',JSON.stringify(viewedIGStories))}catch{}
- renderIGStories();const avatar=$('#igProfileAvatar');if(avatar.dataset.storyOwner===storyOwner)avatar.classList.toggle('stories-seen',accountStoriesSeen(storyOwner));
+ renderIGStories();const avatar=$('#igProfileAvatar');if(avatar.dataset.storyOwner===storyOwner){const seen=accountStoriesSeen(storyOwner);avatar.classList.toggle('stories-seen',seen);avatar.style.setProperty('--story-ring-color',seen?'#b9b9bf':'conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86)');}
 }
 
 // ===== 快拍查看器 =====
@@ -931,6 +932,8 @@ async function showStory(){
       content.appendChild(el);
     });
   }
+  // Mark a frame only after its image is ready and its content is displayed.
+  recordCurrentStoryRead();
   // 自动前进
   clearTimeout(storyTimer);
   const dur=(s.duration||5)*1000;
