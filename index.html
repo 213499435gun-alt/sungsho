@@ -169,6 +169,17 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 
 
 .ig-splash{position:absolute;inset:0;z-index:85;background:#fff;display:grid;place-items:center;pointer-events:none}.ig-splash .ig-icon{width:78px;height:78px;border-radius:23px}.ig-splash .ig-icon:before{width:39px;height:39px;border-width:4px;border-radius:12px}.ig-splash .ig-icon:after{width:15px;height:15px;border-width:4px}.story-cube-old{pointer-events:none!important;z-index:62!important;backface-visibility:hidden}.story-viewer{backface-visibility:hidden}
+
+#music{isolation:isolate}#music::before{content:'';position:absolute;inset:-45px;background-image:var(--album-background);background-size:cover;background-position:center;filter:blur(32px) brightness(.42) saturate(.85);transform:scale(1.14);opacity:0;z-index:-1;transition:opacity .3s}#music.player-open::before{opacity:1}#music.player-open{background:#211f28}#playerPage{position:relative}#playerPage .controls{gap:24px;justify-content:center;margin-top:27px}#playerPage .controls button{width:58px;height:58px;display:grid;place-items:center;border-radius:50%;transition:background .15s,transform .15s}#playerPage .controls button:active{background:#ffffff20;transform:scale(.92)}#playerPage .controls .play{width:72px;height:72px;background:#ffffff15;border:1px solid #ffffff25;backdrop-filter:blur(10px)}.repeat-row{display:flex;justify-content:center}.repeat-row button{display:flex;align-items:center;gap:8px;background:transparent;color:#ffffffa0;font-size:11px;padding:10px 16px;border-radius:22px}.repeat-row button[aria-pressed=true]{color:#fff;background:#ffffff20}.repeat-row svg{width:22px;height:22px}#music.player-open p,#music.player-open .times{color:#ffffffb8}
+
+/* Legible playlist on its light surface; player retains its dark artwork backdrop. */
+#music:not(.player-open){background:#faf9fc;color:#211d29}#playlistPage .playlist-title,#playlistPage .song-name{color:#211d29}#playlistPage .song-artist,#playlistPage .playlist-meta,#playlistPage .playlist-label,#playlistPage .song-dur{color:#716879}#playlistPage .song-item{color:#211d29;border-bottom-color:#211d290b}#playlistPage .song-item.active{background:#7952a20e}#playlistPage .song-item.active .song-name{color:#8050aa}#playlistPage .song-item.active .song-artist{color:#65576e}#playlistPage .song-item:active{background:#7952a21a}#music:not(.player-open) .back{color:#54455e}#music.player-open{color:white}#music.player-open #songTitle{color:white}
+.icon{overflow:hidden;box-shadow:inset 0 1px 1px #ffffff45,0 3px 7px #00000012}.icon svg{width:100%;height:100%;display:block}.music-icon{background:linear-gradient(145deg,#b666f0,#8550d4 50%,#6756ca)!important}.kakao-icon{background:#fee500!important}.notes-icon{background:linear-gradient(#ffd75a,#ffbe28)!important}.clock-icon{background:linear-gradient(#fff,#ececf1)!important}.settings-icon{background:linear-gradient(145deg,#a9b3c3,#7f8c9f)!important}.photos-icon{background:#fff!important}.ig-icon:before,.ig-icon:after{display:none}.ig-splash .ig-icon:before,.ig-splash .ig-icon:after{display:block}.app-launching{will-change:transform;overflow:hidden!important;z-index:46!important}
+
+.desktop-home{position:absolute;top:46px;left:12px;z-index:95;display:flex;align-items:center;gap:4px;padding:7px 11px;border-radius:18px;background:#ffffffec;color:#292433;box-shadow:0 2px 10px #0002;font-size:12px;font-weight:550;backdrop-filter:blur(12px);pointer-events:auto}.desktop-home svg{width:15px;height:15px}.desktop-home.hidden{display:none}
+#storyAvatar{padding:0;cursor:pointer;flex-shrink:0}#storyAvatar:focus-visible{outline:2px solid white;outline-offset:3px}
+
+#igProfileAvatar{padding:0;position:relative;overflow:visible;border:0}#igProfileAvatar:disabled{cursor:default;opacity:1}#igProfileAvatar.has-stories::after,.story .avatar.story-ring::after{content:'';position:absolute;inset:-5px;border-radius:50%;padding:2.5px;background:conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;pointer-events:none}.story .avatar.story-ring{position:relative;outline:0;border:3px solid white}#igProfileAvatar.stories-seen::after,.story .avatar.story-ring.stories-seen::after{background:#b9b9bf}
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
@@ -196,7 +207,7 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
     <p id="artist">ELO, ZICO</p>
     <input id="seek" type="range" min="0" max="30" value="0" aria-label="播放进度">
     <div class="times"><span id="elapsed">0:00</span><span id="totalTime">0:30</span></div>
-    <div class="controls"><button id="prev" aria-label="上一首">⏮</button><button id="play" class="play" aria-label="播放">▶</button><button id="next" aria-label="下一首">⏭</button></div>
+    <div class="controls"><button id="prev" aria-label="上一首"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7v18M25 7 11 16l14 9Z"/></svg></button><button id="play" class="play" aria-label="播放">▶</button><button id="next" aria-label="下一首"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M25 7v18M7 7l14 9-14 9Z"/></svg></button></div><div class="repeat-row"><button id="repeatOne" aria-label="开启单曲循环" aria-pressed="false"><svg viewBox="0 0 32 32" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m23 4 4 4-4 4M27 8H10a6 6 0 0 0-6 6m5 14-4-4 4-4M5 24h17a6 6 0 0 0 6-6"/><path d="m14 14 2-2v8m-2 0h4"/></svg><span id="repeatLabel">顺序循环</span></button></div>
   </div>
 </section>
 <section id="notes" class="view app light hidden"><button class="back" data-home>‹ 主屏幕</button><h2>备忘录</h2><textarea id="note" class="note" aria-label="备忘录" placeholder="今天有什么值得记住的事？"></textarea><div id="saved" class="hint" aria-live="polite">等待你的第一条灵感</div></section>
@@ -240,11 +251,11 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
       <span style="width:24px"></span>
     </div>
     <div class="ig-profile-info">
-      <div class="ig-profile-avatar" id="igProfileAvatar">我</div>
+      <button type="button" class="ig-profile-avatar" id="igProfileAvatar" aria-label="查看账号快拍">我</button>
       <div class="ig-profile-stats">
         <div><b id="igPostCount">0</b><small>帖子</small></div>
-        <div><b>0</b><small>粉丝</small></div>
-        <div><b>0</b><small>关注</small></div>
+        <div><b id="igFollowerCount">0</b><small>粉丝</small></div>
+        <div><b id="igFollowingCount">0</b><small>关注</small></div>
       </div>
     </div>
     <div class="ig-profile-bio" id="igProfileBio">还没有简介</div>
@@ -287,7 +298,7 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 </section><div class="story-viewer hidden" id="storyViewer">
   <div class="story-progress" id="storyProgress"></div>
   <div class="story-topbar">
-    <div class="story-user"><span class="story-avatar" id="storyAvatar">＋</span><b id="storyName">我的动态</b><span class="story-time" id="storyTime">刚刚</span></div>
+    <div class="story-user"><button type="button" class="story-avatar" id="storyAvatar" aria-label="查看当前快拍账号主页">＋</button><b id="storyName">我的动态</b><span class="story-time" id="storyTime">刚刚</span></div>
     <button class="story-close" id="storyClose" aria-label="关闭">✕</button>
   </div>
   <div class="story-content" id="storyContent"></div>
@@ -301,7 +312,22 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
   </div>
 <div class="photo-view hidden" id="viewer"><button class="back" id="closePhoto">‹ 照片</button><img id="largePhoto" alt="放大的风景"><div class="photo-nav"><button id="photoPrev" aria-label="上一张">‹</button><button id="photoNext" aria-label="下一张">›</button></div></div><button class="homebar hidden" aria-label="返回主屏幕" id="homebar"></button><div class="toast hidden" id="toast" role="status"></div></div></div></main>
 <script>
-const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);let unlocked=false,pin='',page='lock';function show(id){$$('.view').forEach(e=>e.classList.toggle('hidden',e.id!==id));page=id;$('#homebar').classList.toggle('hidden',!unlocked);$('.status').style.color=['photos','notes','settings','clock','instagram','kakao'].includes(id)?'#263c39':'white'}function home(){if(unlocked){$('#viewer').classList.add('hidden');show('home')}}
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);let unlocked=false,pin='',page='lock';function show(id){$$('.view').forEach(e=>e.classList.toggle('hidden',e.id!==id));page=id;updateDesktopHome();$('#homebar').classList.toggle('hidden',!unlocked);$('.status').style.color=['photos','notes','settings','clock','instagram','kakao'].includes(id)?'#263c39':'white'}let returningHome=false;
+async function home(){
+ if(!unlocked||returningHome)return;
+ const id=page,app=document.getElementById(id);
+ const button=lastLaunchButtons.get(id)||document.querySelector('#home [data-app="'+id+'"]');
+ if(!app||!button||id==='home'){show('home');return}
+ returningHome=true;
+ if(launchAnimation){launchAnimation.cancel();launchAnimation=null;}
+ closeStory();$('#viewer').classList.add('hidden');document.querySelector('.ig-splash')?.remove();
+ $('#home').classList.remove('hidden');$('#desktopHome')?.classList.add('hidden');
+ const icon=button.querySelector('.icon')||button,from=app.getBoundingClientRect(),to=icon.getBoundingClientRect();
+ const dx=to.left+to.width/2-from.left-from.width/2,dy=to.top+to.height/2-from.top-from.height/2;
+ app.classList.add('app-launching');
+ try{await app.animate([{transform:'translate(0,0) scale(1,1)',borderRadius:'0px',opacity:1},{transform:'translate('+dx+'px,'+dy+'px) scale('+(to.width/from.width)+','+(to.height/from.height)+')',borderRadius:'24px',opacity:.15}],{duration:350,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'}).finished}
+ finally{app.getAnimations().forEach(a=>a.cancel());app.classList.remove('app-launching');$('#igProfile').classList.add('hidden');$('#igPosts').classList.add('hidden');show('home');returningHome=false;}
+}
 // 带缩小动画回主屏：当前页缩小到对应图标位置
 function animateHome(){
   if(!unlocked)return;
@@ -366,8 +392,36 @@ const ICONS={
 let passcodeAudio;
 function playPasscodeSound(key){try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;passcodeAudio ||= new Audio();const ctx=passcodeAudio;ctx.resume().catch(()=>{});const osc=ctx.createOscillator(),gain=ctx.createGain();const now=ctx.currentTime;osc.type='sine';osc.frequency.setValueAtTime(key==='del'?560:1050,now);osc.frequency.exponentialRampToValueAtTime(420,now+.045);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.09,now+.003);gain.gain.exponentialRampToValueAtTime(.0001,now+.055);osc.connect(gain);gain.connect(ctx.destination);osc.start(now);osc.stop(now+.06)}catch{}}
 let igSplashTimer;
-function showIGSplash(){clearTimeout(igSplashTimer);document.querySelector('.ig-splash')?.remove();const splash=document.createElement('div');splash.className='ig-splash';splash.setAttribute('aria-label','Instagram 正在启动');splash.innerHTML='<span class="ig-icon"></span>';$('#instagram').parentElement.append(splash);igSplashTimer=setTimeout(()=>splash.remove(),500)}
-const apps=[['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.photos;$('#dockMusic').innerHTML=ICONS.music;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;if(b.dataset.app==='settings')return;show(b.dataset.app);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){showIGSplash();renderIGFeed();renderIGStories();igData.accounts.forEach((_,i)=>warmIGAccount(i))}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
+function showIGSplash(){clearTimeout(igSplashTimer);document.querySelector('.ig-splash')?.remove();const splash=document.createElement('div');splash.className='ig-splash';splash.setAttribute('aria-label','Instagram 正在启动');splash.innerHTML='<span class="ig-icon"></span>';$('#instagram').append(splash);igSplashTimer=setTimeout(()=>splash.remove(),500)}
+
+// Vector artwork keeps icon proportions consistent in the grid and dock.
+ICONS.music='<svg viewBox="0 0 100 100" aria-hidden="true"><path fill="white" d="M43 28c0-2 1-3 3-3l27-5c2 0 4 1 4 3v43c0 8-7 14-15 14-7 0-12-4-12-10s6-11 13-11c2 0 4 0 6 1V36l-19 4v32c0 8-7 14-15 14-7 0-12-4-12-10s6-11 13-11c2 0 4 0 7 1Z" transform="translate(0 -5)"/></svg>';
+ICONS.kakao='<svg viewBox="0 0 100 100" aria-hidden="true"><path fill="#371d1e" d="M50 23c-21 0-37 12-37 27 0 10 7 19 19 24l-4 14c-.4 1.5 1 2 2 1l17-12h3c21 0 37-12 37-27S71 23 50 23Z"/><g fill="none" stroke="#fee500" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 44h12m-6 0v14m10 0 5-14 5 14m-8-5h6m7-9v14h8m6-14v14m0-7 8-7m-8 7 8 7"/></g></svg>';
+ICONS.notes='<svg viewBox="0 0 100 100"><rect x="23" y="18" width="54" height="66" rx="7" fill="#fff9e8"/><path d="M34 36h32M34 48h32M34 60h25M34 72h19" stroke="#c49132" stroke-width="3.5" stroke-linecap="round"/></svg>';
+ICONS.clock='<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#fff" stroke="#252731" stroke-width="3"/><g stroke="#606370" stroke-width="2"><path d="M50 19v5m0 52v5M19 50h5m52 0h5M28 28l4 4m36 36 4 4M28 72l4-4m36-36 4-4"/></g><path d="M50 29v23l17 9" fill="none" stroke="#252731" stroke-width="4" stroke-linecap="round"/><path d="M50 50 39 69" stroke="#f15a65" stroke-width="2"/><circle cx="50" cy="50" r="3" fill="#f15a65"/></svg>';
+ICONS.settings='<svg viewBox="0 0 100 100"><g fill="none" stroke="#f5f6fa"><circle cx="50" cy="50" r="26" stroke-width="13" stroke-dasharray="9 5"/><circle cx="50" cy="50" r="23" stroke-width="9"/><circle cx="50" cy="50" r="10" stroke-width="5"/></g></svg>';
+let launchAnimation;
+const lastLaunchButtons=new Map();
+function launchApp(id,button){
+ if(returningHome)return;
+ lastLaunchButtons.set(id,button);
+ const app=document.getElementById(id);if(!app)return;
+ if(launchAnimation)launchAnimation.cancel();
+ const icon=button.querySelector('.icon')||button,from=icon.getBoundingClientRect();show(id);
+ const to=app.getBoundingClientRect(),sx=from.width/to.width,sy=from.height/to.height;
+ const homeView=$('#home');homeView.classList.remove('hidden');
+ app.classList.add('app-launching');
+ const dx=from.left+from.width/2-to.left-to.width/2,dy=from.top+from.height/2-to.top-to.height/2;
+ const animation=app.animate([{transform:'translate('+dx+'px,'+dy+'px) scale('+sx+','+sy+')',borderRadius:'24px',opacity:.7},{transform:'translate(0,0) scale(1,1)',borderRadius:'0px',opacity:1}],{duration:410,easing:'cubic-bezier(.2,.75,.25,1)'});
+ launchAnimation=animation;
+ animation.finished.catch(()=>{}).finally(()=>{app.classList.remove('app-launching');if(page!=='home'&&!returningHome)homeView.classList.add('hidden');if(launchAnimation===animation)launchAnimation=null});
+}
+
+
+function updateDesktopHome(){const b=document.getElementById('desktopHome');if(b)b.classList.toggle('hidden',!unlocked||['home','lock','pass'].includes(page))}
+const desktopHome=document.createElement('button');desktopHome.id='desktopHome';desktopHome.className='desktop-home hidden';desktopHome.setAttribute('aria-label','返回主屏幕');desktopHome.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3Z"/><path d="M9 20v-7h6v7"/></svg>返回主屏幕';$('#home').parentElement.append(desktopHome);desktopHome.onclick=home;updateDesktopHome();
+
+const apps=[['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.photos;$('#dockMusic').innerHTML=ICONS.music;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;launchApp(b.dataset.app,b);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){showIGSplash();renderIGFeed();renderIGStories();igData.accounts.forEach((_,i)=>warmIGAccount(i))}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
 // ===== 锁屏上滑解锁：内容实时模糊，松手引出密码页 =====
 function goPass(){show('pass');$('#passTitle').textContent='输入密码';}
 (function(){
@@ -439,6 +493,7 @@ function read(k,f){try{return localStorage.getItem(k)||f}catch{return f}}functio
 // 每首歌：name 歌名, artist 歌手, album 专辑, cover 封面图, duration 时长(秒), audio 音频文件(可选)
 const playlist=[{"name":"OSAKA","artist":"ELO, ZICO","album":"GRADATION Vol.4","cover":"music/osaka_cover.jpg","duration":205.179841,"audio":"music/audio-6008aba80408efe8.mp3","audioName":"M500001b4gQP1VXNQh.mp3"},{"name":"Text Me","artist":"DPR LIVE","album":"Her","cover":"music/cover-e6b225369625c38a.jpg","duration":177.359433,"audio":"music/audio-a661f2cb21c87c48.mp3","audioName":"M5000048wvwC3DzTY4.mp3"},{"name":"Too Good","artist":"Christian Kuria","album":"Borderline(Explict)","cover":"music/cover-cfe75416a10ca290.jpg","duration":277.5,"audio":"music/audio-e216549686b33131.mp3","audioName":"M500004b2AdR0rQMV7.mp3"},{"name":"Jasmine","artist":"DPRL IVE","album":"Her","cover":"music/cover-e6b225369625c38a.jpg","duration":201.51068,"audio":"music/audio-8c5f018ea47638ad.mp3","audioName":"M500002mNJw82oS4KR.mp3"},{"name":"Apple","artist":"Charlie xcx","album":"brat","cover":"music/cover-3fe04067eb25f98a.jpg","duration":151.739705,"audio":"music/audio-280c1e285efea261.mp3","audioName":"obj_wo3DlMOGwrbDjj7DisKw_36474329983_9937_2a4b_4491_96d6d39750427fc5de86b943ca0fcd5e.mp3"},{"name":"365(Explict)","artist":"Charlie xcx","album":"brat","cover":"music/cover-3fe04067eb25f98a.jpg","duration":203.618299,"audio":"music/audio-55474ff1de34aa9f.mp3","audioName":"M500002XgVix4ZlEHt.mp3"},{"name":"right here","artist":"keshi","album":"bandaids","cover":"music/cover-769b7b029beb9814.jpg","duration":195.092948,"audio":"music/audio-8c962f66511dc353.mp3","audioName":"M500000tcCmd40FcES.mp3"},{"name":"Sugar On My Tongue","artist":"Tylor, The Creator","album":"DON'T TAP THE GLASS","cover":"music/cover-6d9c2b8b38ba5ca3.jpg","duration":153.332812,"audio":"music/audio-97d7feeca4b12812.mp3","audioName":"M500002dIQf33pSjQQ.mp3"},{"name":"Pink Blush(Explict)","artist":"Dolly Babe","album":"Pink Blush(Explict)","cover":"music/cover-1bc1caf26d0f2dc0.jpg","duration":126.686621,"audio":"music/audio-5ee493df44cd76c4.mp3","audioName":"M500000MLAFa3pMYIT.mp3"},{"name":"Be My Next","artist":"RIIZE","album":"Lucky","cover":"music/cover-a2ea8c6510b01744.jpg","duration":167.219841,"audio":"music/audio-df0849e2f53bffce.mp3","audioName":"M500004Z6mqM2OwrWL.mp3"}];
 let song=0, audio=null, currentAudioUrl=null;
+let repeatOne=false;
 
 // 合成旋律（当没有真实音频时使用）
 function makeAudio(index){
@@ -475,20 +530,42 @@ function formatTime(sec){
 
 // 显示播放详情页
 function showPlayer(){
+  $('#music').classList.add('player-open');
   $('#playlistPage').classList.add('hidden');
   $('#playerPage').classList.remove('hidden');
 }
 // 返回歌单
 function showPlaylist(){
+  $('#music').classList.remove('player-open');
   $('#playerPage').classList.add('hidden');
   $('#playlistPage').classList.remove('hidden');
   renderPlaylist();
 }
 
+// Keep audio changes synchronous with the tap while visuals dissolve between tracks.
+let musicVisualAnimations=[],musicVisualLayers=[];
+function transitionMusicVisuals(next){
+ musicVisualAnimations.forEach(a=>a.cancel());musicVisualLayers.forEach(el=>el.remove());musicVisualAnimations=[];musicVisualLayers=[];
+ if($('#playerPage').classList.contains('hidden')||$('#music').classList.contains('hidden'))return;
+ const host=$('#playerPage');
+ for(const selector of ['#coverBox','#songTitle','#artist']){
+  const el=$(selector),rect=el.getBoundingClientRect(),base=host.getBoundingClientRect();
+  const clone=el.cloneNode(true);clone.removeAttribute('id');clone.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));clone.setAttribute('aria-hidden','true');
+  Object.assign(clone.style,{position:'absolute',left:(rect.left-base.left)+'px',top:(rect.top-base.top)+'px',width:rect.width+'px',height:rect.height+'px',margin:'0',pointerEvents:'none',zIndex:'5'});
+  host.append(clone);musicVisualLayers.push(clone);
+  const out=clone.animate([{opacity:1,filter:'blur(0px)'},{opacity:0,filter:'blur(15px)'}],{duration:340,easing:'ease-in',fill:'forwards'});
+  out.finished.then(()=>clone.remove()).catch(()=>{});musicVisualAnimations.push(out);
+  const incoming=el.animate([{opacity:0,filter:'blur(15px)'},{opacity:0,filter:'blur(15px)',offset:.35},{opacity:1,filter:'blur(0px)'}],{duration:620,easing:'ease-out'});musicVisualAnimations.push(incoming);
+ }
+ const oldCover=$('#coverImg').getAttribute('src');
+ if(oldCover){const bg=document.createElement('div');bg.setAttribute('aria-hidden','true');Object.assign(bg.style,{position:'absolute',inset:'-45px',backgroundImage:'url('+JSON.stringify(oldCover)+')',backgroundSize:'cover',backgroundPosition:'center',filter:'blur(32px) brightness(.42)',transform:'scale(1.14)',zIndex:'-1',pointerEvents:'none'});$('#music').append(bg);musicVisualLayers.push(bg);const fade=bg.animate([{opacity:1},{opacity:0}],{duration:650,fill:'forwards'});fade.finished.then(()=>bg.remove()).catch(()=>{});musicVisualAnimations.push(fade)}
+ const img=new Image();img.src=next.cover;
+}
 // 切换歌曲
 function setSong(i,autoplay=false){
   song=(i+playlist.length)%playlist.length;
   const s=playlist[song];
+  if(audio)transitionMusicVisuals(s);
   if(audio){audio.pause();audio.onended=null;}
   if(currentAudioUrl?.startsWith('blob:'))URL.revokeObjectURL(currentAudioUrl);
   // 有真实音频用真实音频，否则用合成旋律
@@ -499,7 +576,7 @@ function setSong(i,autoplay=false){
   }
   if(!audio){audio=document.createElement('audio');audio.id='backgroundMusic';audio.preload='auto';audio.setAttribute('playsinline','');document.body.append(audio);}
   audio.src=currentAudioUrl;
-  audio.loop=false;
+  audio.loop=repeatOne;
   audio.ontimeupdate=()=>{
     $('#seek').value=audio.currentTime;
     $('#elapsed').textContent=formatTime(audio.currentTime);
@@ -510,13 +587,14 @@ function setSong(i,autoplay=false){
       $('#totalTime').textContent=formatTime(audio.duration);
     }
   };
-  audio.onended=()=>setSong((song+1)%playlist.length,true);
+  audio.onended=()=>{if(repeatOne){audio.currentTime=0;playAudio()}else setSong((song+1)%playlist.length,true)};
   audio.onplay=()=>{$('#play').textContent='Ⅱ';$('#play').setAttribute('aria-label','暂停');if('mediaSession' in navigator)navigator.mediaSession.playbackState='playing'};
   audio.onpause=()=>{$('#play').textContent='▶';$('#play').setAttribute('aria-label','播放');if('mediaSession' in navigator)navigator.mediaSession.playbackState='paused'};
   // 更新界面
   $('#songTitle').textContent=s.name;
   $('#artist').textContent=s.artist;
   $('#coverImg').src=s.cover;
+  $('#music').style.setProperty('--album-background', 'url('+JSON.stringify(s.cover)+')');
   $('#coverImg').alt=s.name+' 专辑封面';
   $('#seek').value=0;
   $('#seek').max=s.duration;
@@ -543,6 +621,8 @@ $('#prev').onclick=()=>setSong(song-1,true);
 $('#next').onclick=()=>setSong(song+1,true);
 $('#seek').oninput=e=>audio.currentTime=+e.target.value;
 $('#backToPlaylist').onclick=showPlaylist;
+$('#repeatOne').onclick=()=>{repeatOne=!repeatOne;audio.loop=repeatOne;$('#repeatOne').setAttribute('aria-pressed',String(repeatOne));$('#repeatOne').setAttribute('aria-label',repeatOne?'关闭单曲循环':'开启单曲循环');$('#repeatLabel').textContent=repeatOne?'单曲循环':'顺序循环'};
+
 if('mediaSession' in navigator){
  const controls={play:()=>playAudio(),pause:()=>audio.pause(),previoustrack:()=>setSong(song-1,true),nexttrack:()=>setSong(song+1,true),seekto:e=>{if(Number.isFinite(e.seekTime))audio.currentTime=e.seekTime}};
  for(const [action,handler] of Object.entries(controls)){try{navigator.mediaSession.setActionHandler(action,handler)}catch{}}
@@ -587,7 +667,7 @@ const storiesByAccount={"_shotaroo_":[{"type":"image","src":"stories/2124.JPG","
 // ===== IG 数据（由 apply_ig.py 注入，格式：{accounts:[{profile,posts,stories}]}）=====
 // 兜底：没有注入数据时用空账号，避免报错
 // 注意：这里不能再用 var/let/const 声明 igData，否则会和上面的 const igData 冲突
-const igData={"accounts":[{"profile":{"avatar":"ig/IMG_1045.jpg","id":"_shotaroo_","name":"쇼타로","bio":"수달은 살짝 닮고..."},"posts":[{"images":["ig/IMG_5609.JPG"],"caption":"","likes":"8","time":"22.08.05"},{"images":["ig/IMG_5643.JPG","ig/IMG_5644.JPG","ig/IMG_5645.JPG"],"caption":"東京タワー🗼","likes":"31","time":"22.09.27"},{"images":["ig/IMG_5647.JPG","ig/IMG_5648.JPG","ig/IMG_5649.JPG","ig/IMG_5650.JPG","ig/IMG_5651.JPG"],"caption":"☃️❄️🤍","likes":"","time":"22.12.23"},{"images":["ig/1293.JPG","ig/1295.JPG","ig/3996885810cdf2872b1196a0edde6e8f.JPG"],"caption":"성찬 고마워😭😭@sungchanny","likes":"15","time":"22.12.31"},{"images":["ig/IMG_4207.jpg","ig/IMG_4208.jpg"],"caption":"올해는 우리의 해가 될까요.","likes":"31","time":"23.01.01"},{"images":["ig/IMG_1041.jpg","ig/IMG_1042.jpg","ig/IMG_1043.jpg","ig/IMG_1044.jpg","ig/IMG_1045.jpg","ig/IMG_1046.jpg","ig/IMG_1047.jpg","ig/IMG_1048.jpg","ig/IMG_1049.jpg","ig/IMG_1050.JPG","ig/IMG_1051.JPG"],"caption":"","likes":"16","time":"25.02.28"},{"images":["ig/2058.jpg"],"caption":"성","likes":"7","time":"25.07.14"},{"images":["ig/IMG_4521.jpg","ig/IMG_4523.jpg"],"caption":"","likes":"18","time":"26.07.11"}],"stories":[{"type":"image","src":"stories/2124.JPG","duration":5,"date":"21.09.06","texts":[]},{"type":"image","src":"stories/2125.JPG","duration":5,"date":"21.09.06","texts":[]},{"type":"image","src":"stories/2046.jpg","duration":5,"date":"21.09.13","texts":[]},{"type":"image","src":"stories/2127.JPG","duration":5,"date":"21.09.13","texts":[]},{"type":"image","src":"stories/2129.JPG","duration":5,"date":"22.02.01","texts":[]},{"type":"image","src":"stories/2033.jpg","duration":5,"date":"22.08.21","texts":[]},{"type":"image","src":"stories/2029_2.jpg","duration":5,"date":"22.08.26","texts":[]},{"type":"image","src":"stories/2030_2.jpg","duration":5,"date":"22.08.26","texts":[]},{"type":"image","src":"stories/2038.jpg","duration":5,"date":"22.09.09","texts":[]},{"type":"image","src":"stories/2053.jpg","duration":5,"date":"25.04.18","texts":[]},{"type":"image","src":"stories/2095.jpg","duration":5,"date":"26.09.21","texts":[]}]},{"profile":{"avatar":"ig/IMG_7384.JPG","id":"sungchanny","name":"반피","bio":"윽.."},"posts":[{"images":["ig/IMG_0246.jpg"],"caption":"형 우리 무대 올라가야..","likes":"8","time":"20.10.31"},{"images":["ig/IMG_5645.JPG","ig/IMG_5643.JPG"],"caption":"도쿄 좋아 형이 도 좋아^","likes":"19","time":"22.09.27"},{"images":["ig/IMG_5662.jpg","ig/IMG_5663.jpg","ig/IMG_5664.JPG","ig/IMG_5665.JPG","ig/IMG_4204.JPG","ig/IMG_4205.JPG"],"caption":"사진 진짜 잘 찍는다 ㅋㅋㅋ@_shotaroo_","likes":"28","time":"22.10.21"},{"images":["ig/IMG_4208.jpg","ig/IMG_4209.jpg"],"caption":"성쇼 애~","likes":"31","time":"22.12.31"},{"images":["ig/2058_2.jpg"],"caption":"쇼","likes":"4","time":"25.07.14"},{"images":["ig/IMG_2334.jpg","ig/IMG_2335.jpg"],"caption":"","likes":"7","time":"25.08.12"},{"images":["ig/IMG_0655.jpg","ig/IMG_0656.jpg","ig/IMG_0657.jpg","ig/IMG_0658.jpg"],"caption":"","likes":"6","time":"26.06.28"},{"images":["ig/IMG_4523.jpg","ig/IMG_4522.jpg"],"caption":"아 진짜","likes":"24","time":"26.07.11"},{"images":["ig/IMG_5341.jpg"],"caption":"팥빙수야 팥빙수야ㅏㅏ","likes":"5","time":"26.10.13"}],"stories":[{"type":"image","src":"stories/IMG_8242 2.JPG","duration":5,"date":"20.12.25","texts":[]},{"type":"image","src":"stories/IMG_9039.JPG","duration":5,"date":"21.12.27","texts":[]},{"type":"image","src":"stories/IMG_8240 2.JPG","duration":5,"date":"22.11.16","texts":[]},{"type":"image","src":"stories/IMG_9047.JPG","duration":5,"date":"22.12.31","texts":[]},{"type":"image","src":"stories/IMG_7380.JPG","duration":5,"date":"23.02.21","texts":[]},{"type":"image","src":"stories/IMG_5255.jpg","duration":5,"date":"23.10.12","texts":[]},{"type":"image","src":"stories/IMG_0205.JPG","duration":5,"date":"24.08.25","texts":[]},{"type":"image","src":"stories/IMG_5677.jpg","duration":5,"date":"26.10.21","texts":[]}]}]};
+const igData={"accounts":[{"profile":{"avatar":"ig/IMG_1045.jpg","id":"_shotaroo_","name":"쇼타로","bio":"수달은 살짝 닮고...","followers":55,"following":87},"posts":[{"images":["ig/IMG_5609.JPG"],"caption":"","likes":"8","time":"22.08.05"},{"images":["ig/IMG_5643.JPG","ig/IMG_5644.JPG","ig/IMG_5645.JPG"],"caption":"東京タワー🗼","likes":"31","time":"22.09.27"},{"images":["ig/IMG_5647.JPG","ig/IMG_5648.JPG","ig/IMG_5649.JPG","ig/IMG_5650.JPG","ig/IMG_5651.JPG"],"caption":"☃️❄️🤍","likes":"","time":"22.12.23"},{"images":["ig/1293.JPG","ig/1295.JPG","ig/3996885810cdf2872b1196a0edde6e8f.JPG"],"caption":"성찬 고마워😭😭@sungchanny","likes":"15","time":"22.12.31"},{"images":["ig/IMG_4207.jpg","ig/IMG_4208.jpg"],"caption":"올해는 우리의 해가 될까요.","likes":"31","time":"23.01.01"},{"images":["ig/IMG_1041.jpg","ig/IMG_1042.jpg","ig/IMG_1043.jpg","ig/IMG_1044.jpg","ig/IMG_1045.jpg","ig/IMG_1046.jpg","ig/IMG_1047.jpg","ig/IMG_1048.jpg","ig/IMG_1049.jpg","ig/IMG_1050.JPG","ig/IMG_1051.JPG"],"caption":"","likes":"16","time":"25.02.28"},{"images":["ig/2058.jpg"],"caption":"성","likes":"7","time":"25.07.14"},{"images":["ig/IMG_4521.jpg","ig/IMG_4523.jpg"],"caption":"","likes":"18","time":"26.07.11"}],"stories":[{"type":"image","src":"stories/2124.JPG","duration":5,"date":"21.09.06","texts":[]},{"type":"image","src":"stories/2125.JPG","duration":5,"date":"21.09.06","texts":[]},{"type":"image","src":"stories/2046.jpg","duration":5,"date":"21.09.13","texts":[]},{"type":"image","src":"stories/2127.JPG","duration":5,"date":"21.09.13","texts":[]},{"type":"image","src":"stories/2129.JPG","duration":5,"date":"22.02.01","texts":[]},{"type":"image","src":"stories/2033.jpg","duration":5,"date":"22.08.21","texts":[]},{"type":"image","src":"stories/2029_2.jpg","duration":5,"date":"22.08.26","texts":[]},{"type":"image","src":"stories/2030_2.jpg","duration":5,"date":"22.08.26","texts":[]},{"type":"image","src":"stories/2038.jpg","duration":5,"date":"22.09.09","texts":[]},{"type":"image","src":"stories/2053.jpg","duration":5,"date":"25.04.18","texts":[]},{"type":"image","src":"stories/2095.jpg","duration":5,"date":"26.09.21","texts":[]}]},{"profile":{"avatar":"ig/IMG_7384.JPG","id":"sungchanny","name":"반피","bio":"윽..","followers":109,"following":227},"posts":[{"images":["ig/IMG_0246.jpg"],"caption":"형 우리 무대 올라가야..","likes":"8","time":"20.10.31"},{"images":["ig/IMG_5645.JPG","ig/IMG_5643.JPG"],"caption":"도쿄 좋아 형이 도 좋아^","likes":"19","time":"22.09.27"},{"images":["ig/IMG_5662.jpg","ig/IMG_5663.jpg","ig/IMG_5664.JPG","ig/IMG_5665.JPG","ig/IMG_4204.JPG","ig/IMG_4205.JPG"],"caption":"사진 진짜 잘 찍는다 ㅋㅋㅋ@_shotaroo_","likes":"28","time":"22.10.21"},{"images":["ig/IMG_4208.jpg","ig/IMG_4209.jpg"],"caption":"성쇼 애~","likes":"31","time":"22.12.31"},{"images":["ig/2058_2.jpg"],"caption":"쇼","likes":"4","time":"25.07.14"},{"images":["ig/IMG_2334.jpg","ig/IMG_2335.jpg"],"caption":"","likes":"7","time":"25.08.12"},{"images":["ig/IMG_0655.jpg","ig/IMG_0656.jpg","ig/IMG_0657.jpg","ig/IMG_0658.jpg"],"caption":"","likes":"6","time":"26.06.28"},{"images":["ig/IMG_4523.jpg","ig/IMG_4522.jpg"],"caption":"아 진짜","likes":"24","time":"26.07.11"},{"images":["ig/IMG_5341.jpg"],"caption":"팥빙수야 팥빙수야ㅏㅏ","likes":"5","time":"26.10.13"}],"stories":[{"type":"image","src":"stories/IMG_8242 2.JPG","duration":5,"date":"20.12.25","texts":[]},{"type":"image","src":"stories/IMG_9039.JPG","duration":5,"date":"21.12.27","texts":[]},{"type":"image","src":"stories/IMG_8240 2.JPG","duration":5,"date":"22.11.16","texts":[]},{"type":"image","src":"stories/IMG_9047.JPG","duration":5,"date":"22.12.31","texts":[]},{"type":"image","src":"stories/IMG_7380.JPG","duration":5,"date":"23.02.21","texts":[]},{"type":"image","src":"stories/IMG_5255.jpg","duration":5,"date":"23.10.12","texts":[]},{"type":"image","src":"stories/IMG_0205.JPG","duration":5,"date":"24.08.25","texts":[]},{"type":"image","src":"stories/IMG_5677.jpg","duration":5,"date":"26.10.21","texts":[]}]}]};
 if(typeof igData==='undefined'||!igData||!Array.isArray(igData.accounts)||!igData.accounts.length){
   window.igData={accounts:[{profile:{avatar:'',id:'',name:'',bio:''},posts:[],stories:[]}]};
 }
@@ -619,6 +699,7 @@ const igImageCache=new Map();
 function prepareIGImage(src){src=igWebSrc(src);if(!igImageCache.has(src)){const im=new Image();const done=new Promise(resolve=>{im.onload=()=>resolve(im);im.onerror=()=>resolve(im)});im.src=src;igImageCache.set(src,done)}return igImageCache.get(src)}
 function warmIGAccount(ai){const a=igData.accounts[ai];if(!a)return;for(const p of a.posts||[]){const src=p.images?.[0];if(src)prepareIGImage(igThumbs[src]||src)}for(const st of (a.stories||[]).slice(0,2))prepareIGImage(st.src)}
 
+const igLikedPosts=new Set();
 function renderIGFeed(accountIndex=null,feed=$('#feed')){
   if(!feed)return;
   // 收集所有账号的帖子，带上所属账号索引
@@ -648,6 +729,8 @@ function renderIGFeed(accountIndex=null,feed=$('#feed')){
         +'<div class="ig-carousel-count">1/'+imgs.length+'</div>'
         +'</div>';
     }
+    const likeKey=ai+':'+pi,liked=igLikedPosts.has(likeKey);
+    const likeCount=(Number(String(p.likes||0).replace(/,/g,''))||0)+(liked?1:0);
     const avStyle=igAvatarStyle(prof);
     const avText=prof.avatar?'':igEsc((prof.id||'?').slice(0,1).toUpperCase());
     return '<article class="post" data-post-index="'+pi+'">'
@@ -657,17 +740,17 @@ function renderIGFeed(accountIndex=null,feed=$('#feed')){
       +'</div>'
       +media
       +'<div class="post-actions">'
-        +'<button class="ig-like" aria-label="点赞">♡</button>'
+        +'<button data-like-key="'+likeKey+'" class="ig-like '+(liked?'liked':'')+'" aria-label="'+(liked?'取消点赞':'点赞')+'" aria-pressed="'+liked+'">'+(liked?'♥':'♡')+'</button>'
         +'<button aria-label="评论">💬</button>'
         +'<button aria-label="分享">➤</button>'
       +'</div>'
-      +'<p><b>'+igEsc(p.likes||0)+' 次赞</b></p>'
+      +'<p><b data-like-count="'+likeKey+'" data-base-likes="'+(likeCount-(liked?1:0))+'">'+likeCount+' 次赞</b></p>'
       +'<p><b>'+igEsc(prof.id||'account')+'</b> '+igEsc(p.caption||'')+'</p>'
       +(p.time?'<p style="color:#8e8e8e;font-size:11px">'+igEsc(p.time)+'</p>':'')
       +'</article>';
   }).join('');
   // 点赞
-  feed.querySelectorAll('.ig-like').forEach(b=>b.onclick=()=>{const on=b.classList.toggle('liked');b.textContent=on?'♥':'♡';});
+  feed.querySelectorAll('.ig-like').forEach(b=>b.onclick=()=>{const key=b.dataset.likeKey,on=!igLikedPosts.has(key);if(on)igLikedPosts.add(key);else igLikedPosts.delete(key);document.querySelectorAll('[data-like-key="'+key+'"]').forEach(el=>{el.classList.toggle('liked',on);el.textContent=on?'♥':'♡';el.setAttribute('aria-label',on?'取消点赞':'点赞');el.setAttribute('aria-pressed',String(on))});document.querySelectorAll('[data-like-count="'+key+'"]').forEach(el=>el.textContent=(Number(el.dataset.baseLikes)+(on?1:0))+' 次赞')});
   // 点头像/用户名打开该账号主页
   feed.querySelectorAll('[data-open-acc]').forEach(h=>h.onclick=()=>openIGProfile(+h.dataset.openAcc));
   // 轮播圆点跟随
@@ -690,6 +773,10 @@ function renderIGProfile(accIndex){
   const ai=accIndex!=null?accIndex:igAccountIndex;
   $('#igProfileName').textContent=prof.id||'我的主页';
   const av=$('#igProfileAvatar');
+  av.dataset.storyOwner=prof.id||'';
+  const hasStories=storiesForAccount(prof.id).length>0;
+  av.disabled=!hasStories;av.classList.toggle('has-stories',hasStories);av.classList.toggle('stories-seen',hasStories&&accountStoriesSeen(prof.id));
+  av.onclick=()=>{if(hasStories)openAccountStory(ai)};
   if(prof.avatar){
     av.style.backgroundImage='url('+prof.avatar+')';
     av.style.backgroundSize='cover';
@@ -700,6 +787,8 @@ function renderIGProfile(accIndex){
     av.textContent=(prof.id||'我').slice(0,1).toUpperCase();
   }
   $('#igPostCount').textContent=posts.length;
+  $('#igFollowerCount').textContent=prof.followers??0;
+  $('#igFollowingCount').textContent=prof.following??0;
   $('#igProfileBio').textContent=prof.bio||'还没有简介';
   const grid=$('#igProfileGrid');
   if(!posts.length){
@@ -720,11 +809,15 @@ function openIGPosts(ai,pi){
   $('#igPostsScroll').scrollTop=target.offsetTop-$('#igPostsFeed').offsetTop;
 }
 $('#igPostsBack').onclick=()=>$('#igPosts').classList.add('hidden');
+let igProfileNavigation=0;
 function openIGProfile(accIndex){
+  ++igProfileNavigation;
   warmIGAccount(accIndex);
   $('#igPosts').classList.add('hidden');
   renderIGProfile(accIndex);
-  $('#igProfile').classList.remove('hidden');
+  const profile=$('#igProfile');profile.getAnimations().forEach(a=>a.cancel());profile.classList.remove('hidden');
+  profile.dataset.otherAccount=String(accIndex!==igAccountIndex);
+  if(accIndex!==igAccountIndex)profile.animate([{transform:'translateX(100%)'},{transform:'translateX(0)'}],{duration:340,easing:'cubic-bezier(.22,.7,.25,1)'});
 }
 
 function toastIG(msg){
@@ -752,6 +845,18 @@ function storiesForAccount(accountId){
   return [];
 }
 function myStories(){ return storiesForAccount(igProfile().id); }
+
+let viewedIGStories={};
+try{viewedIGStories=JSON.parse(localStorage.getItem('ig-viewed-stories-v1')||'{}')||{}}catch{}
+function storyReadKey(st){return JSON.stringify([st.src,st.date,st.duration,st.texts||[]])}
+function accountStoriesSeen(id){const list=storiesForAccount(id);return list.length>0&&list.every(st=>(viewedIGStories[id]||[]).includes(storyReadKey(st)))}
+function recordCurrentStoryRead(){
+ if($('#storyViewer').classList.contains('hidden'))return;
+ const st=storyList[storyIndex];if(!st)return;
+ const keys=new Set(viewedIGStories[storyOwner]||[]);keys.add(storyReadKey(st));viewedIGStories[storyOwner]=[...keys];
+ try{localStorage.setItem('ig-viewed-stories-v1',JSON.stringify(viewedIGStories))}catch{}
+ renderIGStories();const avatar=$('#igProfileAvatar');if(avatar.dataset.storyOwner===storyOwner)avatar.classList.toggle('stories-seen',accountStoriesSeen(storyOwner));
+}
 
 // ===== 快拍查看器 =====
 let storyList=[], storyIndex=0, storyTimer=null, storyOwner='';
@@ -855,6 +960,7 @@ async function turnStoryAccount(ai,startIndex=0,direction=1){
 }
 function nextStory(){
   if(storyTurning)return;
+  recordCurrentStoryRead();
   if(storyIndex<storyList.length-1){ storyIndex++; showStory(); }
   else {
     const current=igData.accounts.findIndex(a=>(a.profile||{}).id===storyOwner);
@@ -864,6 +970,7 @@ function nextStory(){
 }
 function prevStory(){
   if(storyTurning)return;
+  recordCurrentStoryRead();
   if(storyIndex>0){ storyIndex--; showStory(); }
   else {
     const current=igData.accounts.findIndex(a=>(a.profile||{}).id===storyOwner);
@@ -874,6 +981,7 @@ function prevStory(){
   }
 }
 function closeStory(){
+  recordCurrentStoryRead();
   ++storyLoadToken;
   clearTimeout(storyTimer);
   storyTimer=null;
@@ -882,6 +990,11 @@ function closeStory(){
 
 // 快拍查看器按钮
 $('#storyClose').onclick=closeStory;
+$('#storyAvatar').onclick=e=>{
+ e.stopPropagation();if(storyTurning)return;
+ const ai=igData.accounts.findIndex(a=>(a.profile||{}).id===storyOwner);
+ if(ai<0)return;closeStory();openIGProfile(ai);
+};
 $('#storyNext').onclick=nextStory;
 $('#storyPrev').onclick=prevStory;
 
@@ -890,14 +1003,21 @@ function renderIGStories(){
   let html=igData.accounts.map((a,ai)=>{
     const prof=a.profile||{};
     if(!storiesForAccount(prof.id).length)return '';
-    return '<button class="story" data-story-account="'+ai+'"><span class="avatar" style="'+igAvatarStyle(prof)+'">'+(prof.avatar?'':igEsc((prof.id||'?')[0]))+'</span>'+igEsc(prof.id||'动态')+'</button>';
+    return '<button class="story" data-story-account="'+ai+'"><span class="avatar story-ring '+(accountStoriesSeen(prof.id)?'stories-seen':'')+'" style="'+igAvatarStyle(prof)+'">'+(prof.avatar?'':igEsc((prof.id||'?')[0]))+'</span>'+igEsc(prof.id||'动态')+'</button>';
   }).join('');
   $('#stories').innerHTML=html;
   $$('[data-story-account]').forEach(b=>b.onclick=()=>openAccountStory(+b.dataset.storyAccount));
 }
 
 // ===== 个人主页返回 =====
-$('#igProfileBack').onclick=()=>$('#igProfile').classList.add('hidden');
+$('#igProfileBack').onclick=async()=>{
+ const profile=$('#igProfile'),token=++igProfileNavigation;
+ profile.getAnimations().forEach(a=>a.cancel());
+ if(profile.dataset.otherAccount==='true'){
+  try{await profile.animate([{transform:'translateX(0)'},{transform:'translateX(100%)'}],{duration:300,easing:'cubic-bezier(.4,0,.2,1)',fill:'forwards'}).finished}catch{}
+ }
+ if(token===igProfileNavigation){profile.classList.add('hidden');profile.getAnimations().forEach(a=>a.cancel());}
+};
 
 // ===== 底部 tab 切换 =====
 $$('.ig-tab').forEach(tab=>tab.onclick=()=>{
