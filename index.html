@@ -181,6 +181,8 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 
 #igProfileAvatar{padding:0;position:relative;overflow:visible;border:0}#igProfileAvatar:disabled{cursor:default;opacity:1}#igProfileAvatar.has-stories::after,.story .avatar.story-ring::after{content:'';position:absolute;inset:-5px;border-radius:50%;padding:2.5px;background:conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;pointer-events:none}.story .avatar.story-ring{position:relative;outline:0;border:3px solid white}#igProfileAvatar.stories-seen::after,.story .avatar.story-ring.stories-seen::after{background:#b9b9bf}
 #igProfileAvatar.has-stories::after{background:var(--story-ring-color,conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86))}#igProfileAvatar.has-stories.stories-seen::after,.story .avatar.story-ring.stories-seen::after{background:#b9b9bf}
+
+.post-head .avatar.feed-story-ring{position:relative;overflow:visible;outline:0}.post-head .avatar.feed-story-ring::after{content:'';position:absolute;inset:-4px;padding:2px;border-radius:50%;background:conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;pointer-events:none}.post-head .avatar.feed-story-ring.stories-seen::after{background:#b9b9bf}
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
@@ -736,7 +738,7 @@ function renderIGFeed(accountIndex=null,feed=$('#feed')){
     const avText=prof.avatar?'':igEsc((prof.id||'?').slice(0,1).toUpperCase());
     return '<article class="post" data-post-index="'+pi+'">'
       +'<div class="post-head" data-open-acc="'+ai+'">'
-        +'<span class="avatar" style="'+avStyle+'">'+avText+'</span>'
+        +'<span data-story-ring-owner="'+igEsc(prof.id)+'" class="avatar '+(storiesForAccount(prof.id).length?'feed-story-ring':'')+' '+(accountStoriesSeen(prof.id)?'stories-seen':'')+'" style="'+avStyle+'">'+avText+'</span>'
         +'<b>'+igEsc(prof.id||'account')+'</b>'
       +'</div>'
       +media
@@ -847,16 +849,18 @@ function storiesForAccount(accountId){
 }
 function myStories(){ return storiesForAccount(igProfile().id); }
 
+let displayedIGStory=null,storyReadTimer=null;
 let viewedIGStories={};
-try{viewedIGStories=JSON.parse(localStorage.getItem('ig-viewed-stories-v1')||'{}')||{}}catch{}
+try{viewedIGStories=JSON.parse(localStorage.getItem('ig-viewed-stories-v2')||'{}')||{}}catch{}
 function storyReadKey(st){return JSON.stringify([String(st.src||'').split('?')[0],st.date||'',Number(st.duration)||5,st.texts||[]])}
 function accountStoriesSeen(id){const list=storiesForAccount(id);return list.length>0&&list.every(st=>(viewedIGStories[id]||[]).includes(storyReadKey(st)))}
 function recordCurrentStoryRead(){
  if($('#storyViewer').classList.contains('hidden'))return;
- const st=storyList[storyIndex];if(!st)return;
- const keys=new Set(viewedIGStories[storyOwner]||[]);keys.add(storyReadKey(st));viewedIGStories[storyOwner]=[...keys];
- try{localStorage.setItem('ig-viewed-stories-v1',JSON.stringify(viewedIGStories))}catch{}
- renderIGStories();const avatar=$('#igProfileAvatar');if(avatar.dataset.storyOwner===storyOwner){const seen=accountStoriesSeen(storyOwner);avatar.classList.toggle('stories-seen',seen);avatar.style.setProperty('--story-ring-color',seen?'#b9b9bf':'conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86)');}
+ const shown=displayedIGStory;
+ if(!shown||shown.owner!==storyOwner||shown.key!==storyReadKey(storyList[storyIndex]||{})||performance.now()-shown.at<600)return;
+ const keys=new Set(viewedIGStories[shown.owner]||[]);keys.add(shown.key);viewedIGStories[shown.owner]=[...keys];
+ try{localStorage.setItem('ig-viewed-stories-v2',JSON.stringify(viewedIGStories))}catch{}
+ renderIGStories();document.querySelectorAll('[data-story-ring-owner]').forEach(el=>el.classList.toggle('stories-seen',accountStoriesSeen(el.dataset.storyRingOwner)));const avatar=$('#igProfileAvatar');if(avatar.dataset.storyOwner===storyOwner){const seen=accountStoriesSeen(storyOwner);avatar.classList.toggle('stories-seen',seen);avatar.style.setProperty('--story-ring-color',seen?'#b9b9bf':'conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86)');}
 }
 
 // ===== 快拍查看器 =====
@@ -879,6 +883,7 @@ function openStory(){ openAccountStory(igAccountIndex); }
 let storyLoadToken=0;
 async function showStory(){
   const token=++storyLoadToken;
+  clearTimeout(storyReadTimer);displayedIGStory=null;
   clearTimeout(storyTimer);
   const requested=storyList[storyIndex];
   if(requested?.src){
@@ -932,8 +937,9 @@ async function showStory(){
       content.appendChild(el);
     });
   }
-  // Mark a frame only after its image is ready and its content is displayed.
-  recordCurrentStoryRead();
+  // Preloading is never a read: count only a displayed frame after visible dwell time.
+  displayedIGStory={owner:storyOwner,key:storyReadKey(s),at:performance.now()};
+  storyReadTimer=setTimeout(()=>{if(token===storyLoadToken&&!storyTurning)recordCurrentStoryRead()},650);
   // 自动前进
   clearTimeout(storyTimer);
   const dur=(s.duration||5)*1000;
@@ -986,6 +992,7 @@ function prevStory(){
 function closeStory(){
   recordCurrentStoryRead();
   ++storyLoadToken;
+  clearTimeout(storyReadTimer);displayedIGStory=null;
   clearTimeout(storyTimer);
   storyTimer=null;
   $('#storyViewer').classList.add('hidden');
