@@ -354,7 +354,7 @@ const ICONS={
   instagram:'<svg viewBox="0 0 100 100"><g fill="none" stroke="#fff" stroke-width="5"><rect x="24" y="24" width="52" height="52" rx="15"/><circle cx="50" cy="50" r="13"/></g><circle cx="68" cy="32" r="3.5" fill="#fff"/></svg>'
 };
 
-const apps=[['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.photos;$('#dockMusic').innerHTML=ICONS.music;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;if(b.dataset.app==='settings')return;show(b.dataset.app);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){renderIGFeed();renderIGStories()}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
+const apps=[['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.photos;$('#dockMusic').innerHTML=ICONS.music;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;if(b.dataset.app==='settings')return;show(b.dataset.app);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){renderIGFeed();renderIGStories();igData.accounts.forEach((_,i)=>warmIGAccount(i))}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
 // ===== 锁屏上滑解锁：内容实时模糊，松手引出密码页 =====
 function goPass(){show('pass');$('#passTitle').textContent='输入密码';}
 (function(){
@@ -593,6 +593,13 @@ function igTimeKey(t){
 }
 
 // ===== IG 首页 Feed 渲染（汇总所有账号，按时间倒序）=====
+
+const igWebImages={"ig/1293.JPG": "media/20da572aeb5b.jpg", "ig/1295.JPG": "media/f22b5cbd4042.jpg", "ig/2058_2.jpg": "media/b0f6367e943c.jpg", "ig/3996885810cdf2872b1196a0edde6e8f.JPG": "media/f1650cd0fdb8.jpg", "ig/IMG_0246.jpg": "media/60e9997e379d.jpg", "ig/IMG_0655.jpg": "media/d665152b3d85.jpg", "ig/IMG_0656.jpg": "media/9842b66800f9.jpg", "ig/IMG_0657.jpg": "media/79fd3cda4c56.jpg", "ig/IMG_0658.jpg": "media/82f63fef160c.jpg", "ig/IMG_1041.jpg": "media/fa6285760d9c.jpg", "ig/IMG_1042.jpg": "media/841330134bbb.jpg", "ig/IMG_1043.jpg": "media/e91454af8f5f.jpg", "ig/IMG_1044.jpg": "media/45e1f4d4e2f6.jpg", "ig/IMG_1045.jpg": "media/814d1f94b37f.jpg", "ig/IMG_1046.jpg": "media/3ae2907d3ab4.jpg", "ig/IMG_1047.jpg": "media/fca143131b81.jpg", "ig/IMG_1048.jpg": "media/0581b17cfd3d.jpg", "ig/IMG_1049.jpg": "media/1ede0dc9653d.jpg", "ig/IMG_1050.JPG": "media/62f7243ee929.jpg", "ig/IMG_1051.JPG": "media/393adebf4bfa.jpg", "ig/IMG_2334.jpg": "media/842d6dc06ca7.jpg", "ig/IMG_2335.jpg": "media/3322dea435b6.jpg", "ig/IMG_4204.JPG": "media/e110025fb4ca.jpg", "ig/IMG_4205.JPG": "media/b39926b2ab8a.jpg", "ig/IMG_4207.jpg": "media/07a8aead9a20.jpg", "ig/IMG_4208.jpg": "media/301162d8259a.jpg", "ig/IMG_4209.jpg": "media/fb626a0309e2.jpg", "ig/IMG_4521.jpg": "media/c5a29b434094.jpg", "ig/IMG_4522.jpg": "media/426e3391838c.jpg", "ig/IMG_4523.jpg": "media/51d5f0a10be1.jpg", "ig/IMG_5341.jpg": "media/130759e9116d.jpg", "ig/IMG_5609.JPG": "media/814304a602ec.jpg", "ig/IMG_5643.JPG": "media/23fac916affc.jpg", "ig/IMG_5644.JPG": "media/75b18acf4a59.jpg", "ig/IMG_5645.JPG": "media/c32e716b5f82.jpg", "ig/IMG_5647.JPG": "media/73f42a3278cd.jpg", "ig/IMG_5648.JPG": "media/de6bfa8bffe9.jpg", "ig/IMG_5649.JPG": "media/ef6c3421e7b3.jpg", "ig/IMG_5650.JPG": "media/8b8d0391ff98.jpg", "ig/IMG_5651.JPG": "media/b62435930d59.jpg", "ig/IMG_5662.jpg": "media/cda797a966ea.jpg", "ig/IMG_5663.jpg": "media/04703fe5b611.jpg", "ig/IMG_5664.JPG": "media/79766eeca5b9.jpg", "ig/IMG_5665.JPG": "media/2902431164d1.jpg", "stories/2029_2.jpg": "media/c2313fd79700.jpg", "stories/2030_2.jpg": "media/7f5dc40c0edf.jpg", "stories/2033.jpg": "media/8d08bceee65b.jpg", "stories/2038.jpg": "media/af0b4f96c903.jpg", "stories/2046.jpg": "media/2b83485f3a25.jpg", "stories/2053.jpg": "media/23cd09c1cfff.jpg", "stories/2095.jpg": "media/cf27460686d2.jpg", "stories/2124.JPG": "media/e44ca5554fc4.jpg", "stories/2125.JPG": "media/239c1dfcaf38.jpg", "stories/2127.JPG": "media/a56519fc7d34.jpg", "stories/2129.JPG": "media/8fbf8e518224.jpg", "stories/IMG_0205.JPG": "media/f11c7952271e.jpg", "stories/IMG_5255.jpg": "media/fa08974a5fb2.jpg", "stories/IMG_5677.jpg": "media/8869b1dea36b.jpg", "stories/IMG_7380.JPG": "media/786bd905cb41.jpg", "stories/IMG_8240 2.JPG": "media/1a3cfa0d35f3.jpg", "stories/IMG_8242 2.JPG": "media/3147caff30c6.jpg", "stories/IMG_9039.JPG": "media/4a8bc67fc2a8.jpg", "stories/IMG_9047.JPG": "media/c05c81b3662a.jpg"},igThumbs={"ig/1293.JPG": "media/20da572aeb5b-thumb.jpg", "ig/1295.JPG": "media/f22b5cbd4042-thumb.jpg", "ig/2058_2.jpg": "media/b0f6367e943c-thumb.jpg", "ig/3996885810cdf2872b1196a0edde6e8f.JPG": "media/f1650cd0fdb8-thumb.jpg", "ig/IMG_0246.jpg": "media/60e9997e379d-thumb.jpg", "ig/IMG_0655.jpg": "media/d665152b3d85-thumb.jpg", "ig/IMG_0656.jpg": "media/9842b66800f9-thumb.jpg", "ig/IMG_0657.jpg": "media/79fd3cda4c56-thumb.jpg", "ig/IMG_0658.jpg": "media/82f63fef160c-thumb.jpg", "ig/IMG_1041.jpg": "media/fa6285760d9c-thumb.jpg", "ig/IMG_1042.jpg": "media/841330134bbb-thumb.jpg", "ig/IMG_1043.jpg": "media/e91454af8f5f-thumb.jpg", "ig/IMG_1044.jpg": "media/45e1f4d4e2f6-thumb.jpg", "ig/IMG_1045.jpg": "media/814d1f94b37f-thumb.jpg", "ig/IMG_1046.jpg": "media/3ae2907d3ab4-thumb.jpg", "ig/IMG_1047.jpg": "media/fca143131b81-thumb.jpg", "ig/IMG_1048.jpg": "media/0581b17cfd3d-thumb.jpg", "ig/IMG_1049.jpg": "media/1ede0dc9653d-thumb.jpg", "ig/IMG_1050.JPG": "media/62f7243ee929-thumb.jpg", "ig/IMG_1051.JPG": "media/393adebf4bfa-thumb.jpg", "ig/IMG_2334.jpg": "media/842d6dc06ca7-thumb.jpg", "ig/IMG_2335.jpg": "media/3322dea435b6-thumb.jpg", "ig/IMG_4204.JPG": "media/e110025fb4ca-thumb.jpg", "ig/IMG_4205.JPG": "media/b39926b2ab8a-thumb.jpg", "ig/IMG_4207.jpg": "media/07a8aead9a20-thumb.jpg", "ig/IMG_4208.jpg": "media/301162d8259a-thumb.jpg", "ig/IMG_4209.jpg": "media/fb626a0309e2-thumb.jpg", "ig/IMG_4521.jpg": "media/c5a29b434094-thumb.jpg", "ig/IMG_4522.jpg": "media/426e3391838c-thumb.jpg", "ig/IMG_4523.jpg": "media/51d5f0a10be1-thumb.jpg", "ig/IMG_5341.jpg": "media/130759e9116d-thumb.jpg", "ig/IMG_5609.JPG": "media/814304a602ec-thumb.jpg", "ig/IMG_5643.JPG": "media/23fac916affc-thumb.jpg", "ig/IMG_5644.JPG": "media/75b18acf4a59-thumb.jpg", "ig/IMG_5645.JPG": "media/c32e716b5f82-thumb.jpg", "ig/IMG_5647.JPG": "media/73f42a3278cd-thumb.jpg", "ig/IMG_5648.JPG": "media/de6bfa8bffe9-thumb.jpg", "ig/IMG_5649.JPG": "media/ef6c3421e7b3-thumb.jpg", "ig/IMG_5650.JPG": "media/8b8d0391ff98-thumb.jpg", "ig/IMG_5651.JPG": "media/b62435930d59-thumb.jpg", "ig/IMG_5662.jpg": "media/cda797a966ea-thumb.jpg", "ig/IMG_5663.jpg": "media/04703fe5b611-thumb.jpg", "ig/IMG_5664.JPG": "media/79766eeca5b9-thumb.jpg", "ig/IMG_5665.JPG": "media/2902431164d1-thumb.jpg"};
+function igWebSrc(src){return igWebImages[src]||src}
+const igImageCache=new Map();
+function prepareIGImage(src){src=igWebSrc(src);if(!igImageCache.has(src)){const im=new Image();const done=new Promise(resolve=>{im.onload=()=>resolve(im);im.onerror=()=>resolve(im)});im.src=src;igImageCache.set(src,done)}return igImageCache.get(src)}
+function warmIGAccount(ai){const a=igData.accounts[ai];if(!a)return;for(const p of a.posts||[]){const src=p.images?.[0];if(src)prepareIGImage(igThumbs[src]||src)}for(const st of (a.stories||[]).slice(0,2))prepareIGImage(st.src)}
+
 function renderIGFeed(accountIndex=null,feed=$('#feed')){
   if(!feed)return;
   // 收集所有账号的帖子，带上所属账号索引
@@ -607,7 +614,7 @@ function renderIGFeed(accountIndex=null,feed=$('#feed')){
   }
   feed.innerHTML=all.map(({post:p,accIndex:ai,postIndex:pi})=>{
     const prof=(igData.accounts[ai]||{}).profile||{};
-    const imgs=(p.images||[]).filter(Boolean);
+    const imgs=(p.images||[]).filter(Boolean).map(igWebSrc);
     let media;
     if(imgs.length===0){
       media='<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:12px">暂无图片</div>';
@@ -682,7 +689,7 @@ function renderIGProfile(accIndex){
   }
   grid.innerHTML=posts.map((p,i)=>({post:p,index:i})).sort((a,b)=>igTimeKey(b.post.time)-igTimeKey(a.post.time)).map(({post:p,index:i})=>{
     const first=(p.images||[]).filter(Boolean)[0];
-    return '<button class="cell" data-post-index="'+i+'" aria-label="查看帖子 '+igEsc(p.time||i+1)+'">'+(first?'<img src="'+igEsc(first)+'" alt="">':'')+'</button>';
+    return '<button class="cell" data-post-index="'+i+'" aria-label="查看帖子 '+igEsc(p.time||i+1)+'">'+(first?'<img src="'+igEsc(igThumbs[first]||igWebSrc(first))+'" alt="">':'')+'</button>';
   }).join('');
   grid.querySelectorAll('[data-post-index]').forEach(b=>b.onclick=()=>openIGPosts(ai,+b.dataset.postIndex));
 }
@@ -695,6 +702,7 @@ function openIGPosts(ai,pi){
 }
 $('#igPostsBack').onclick=()=>$('#igPosts').classList.add('hidden');
 function openIGProfile(accIndex){
+  warmIGAccount(accIndex);
   $('#igPosts').classList.add('hidden');
   renderIGProfile(accIndex);
   $('#igProfile').classList.remove('hidden');
@@ -755,7 +763,18 @@ function openStory(n){
   showStory();
 }
 
-function showStory(){
+let storyLoadToken=0;
+async function showStory(){
+  const token=++storyLoadToken;
+  clearTimeout(storyTimer);
+  const requested=storyList[storyIndex];
+  if(requested?.src){
+    const content=$('#storyContent');
+    if(!content.querySelector('img'))content.innerHTML='<div class="story-blank">正在加载照片…</div>';
+    await prepareIGImage(requested.src);
+    if(token!==storyLoadToken)return;
+  }
+  for(const next of storyList.slice(storyIndex+1,storyIndex+3))if(next.src)prepareIGImage(next.src);
   const s=storyList[storyIndex];
   if(!s){ closeStory(); return; }
   // 进度条
@@ -782,7 +801,7 @@ function showStory(){
   // 内容
   const content=$('#storyContent');
   if(s.type==='image'&&s.src){
-    content.innerHTML='<img src="'+igEsc(s.src)+'" alt="">';
+    content.innerHTML='<img src="'+igEsc(igWebSrc(s.src))+'" alt="">';
   }else{
     content.innerHTML='<div class="story-blank">'+(s.text?igEsc(s.text):'（空白快拍）')+'</div>';
   }
@@ -815,6 +834,7 @@ function prevStory(){
   else showStory(); // 第一条时重播
 }
 function closeStory(){
+  ++storyLoadToken;
   clearTimeout(storyTimer);
   storyTimer=null;
   $('#storyViewer').classList.add('hidden');
