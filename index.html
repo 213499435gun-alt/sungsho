@@ -534,19 +534,12 @@ let running=false,elapsed=0,started=0;$('#startTimer').onclick=()=>{if(running)e
 // me: 我的资料 {name, avatar(图片URL或空), icon(无头像时的首字母)}
 // chats: 会话数组，每个会话：
 //   {id, type:'friend'|'group', name, avatar, icon, members:[名字...], messages:[{text, mine, sender}]}
-// 全部保存在 localStorage('galaxy-kakao')
-const KAKAO_DEFAULT={
-  me:{name:'我', avatar:'', icon:'我'},
-  chats:[
-    {id:'c1', type:'friend', name:'Jiwon', avatar:'', icon:'J', members:[], messages:[{text:'今天一起去喝咖啡吗？', mine:false, sender:'Jiwon'}]},
-    {id:'c2', type:'friend', name:'Minji', avatar:'', icon:'M', members:[], messages:[{text:'刚刚的照片好好看 ✨', mine:false, sender:'Minji'}]},
-    {id:'c3', type:'group', name:'周末小分队', avatar:'', icon:'☀', members:['Jiwon','Minji','我'], messages:[{text:'周六见！', mine:false, sender:'Jiwon'}]}
-  ]
-};
+// 全部保存在 localStorage('galaxy-kakao-1d975dfa3712')
+const KAKAO_DEFAULT={"me":{"name":"taro","avatar":"","icon":"我"},"chats":[{"id":"c1","type":"friend","name":"숑차니","avatar":"","icon":"J","members":[],"messages":[{"text":"今天一起去喝咖啡吗？","mine":false,"sender":"Jiwon"}]},{"id":"c2","type":"friend","name":"Minji","avatar":"","icon":"M","members":[],"messages":[{"text":"刚刚的照片好好看 ✨","mine":false,"sender":"Minji"}]},{"id":"c3","type":"group","name":"周末小分队","avatar":"","icon":"☀","members":["Jiwon","Minji","我"],"messages":[{"text":"周六见！","mine":false,"sender":"Jiwon"}]}]};
 let kakaoData=null;
-try{kakaoData=JSON.parse(localStorage.getItem('galaxy-kakao')||'null')}catch{}
+try{kakaoData=JSON.parse(localStorage.getItem('galaxy-kakao-1d975dfa3712')||'null')}catch{}
 if(!kakaoData||!Array.isArray(kakaoData.chats)){kakaoData=JSON.parse(JSON.stringify(KAKAO_DEFAULT))}
-function saveKakao(){try{localStorage.setItem('galaxy-kakao',JSON.stringify(kakaoData))}catch{}}
+function saveKakao(){try{localStorage.setItem('galaxy-kakao-1d975dfa3712',JSON.stringify(kakaoData))}catch{}}
 // 兼容旧代码里对 contacts 的引用（IG 快拍列表用到了 contacts）
 const contacts=kakaoData.chats.filter(c=>c.type==='friend').map(c=>({name:c.name,icon:c.icon,text:(c.messages[c.messages.length-1]||{}).text||''}));
 
@@ -926,6 +919,7 @@ function renderMessages(){
   const c=kakaoData.chats.find(x=>x.id===selectedChatId);
   if(!c)return;
   (c.messages||[]).forEach((m,idx)=>{
+    if(m.type==='divider'){const d=document.createElement('div');d.style.cssText='align-self:center;text-align:center;background:#8da3b5;color:white;border-radius:12px;padding:5px 14px;margin:12px auto;font-size:12px';d.textContent=[m.date,m.time].filter(Boolean).join(' · ');box.append(d);return;}
     const b=document.createElement('div');
     b.className='bubble'+(m.mine?' mine':'');
     if(c.type==='group'&&!m.mine&&m.sender){
