@@ -1153,10 +1153,12 @@ function kAvatarInner(item){
 function kAvatarStyle(item){
   return item&&item.avatar?'background-image:url('+kEsc(item.avatar)+');background-size:cover;background-position:center':'';
 }
+function chineseMessageMode(){return typeof systemLanguage==='string'&&systemLanguage==='zh'&&!document.documentElement.hasAttribute('data-kkt-editor')}
+function displayedMessageText(m){return chineseMessageMode()?(m.originalText??m.translations?.zh??m.text):m.text}
 function kLastText(c){
   const m=c.messages&&c.messages.length?c.messages[c.messages.length-1]:null;
   if(!m)return '暂无消息';
-  return (c.type==='group'&&!m.mine&&m.sender?m.sender+': ':'')+m.text;
+  return (c.type==='group'&&!m.mine&&m.sender?m.sender+': ':'')+displayedMessageText(m);
 }
 function renderKakaoList(){
   const list=$('#chatList');
@@ -1212,8 +1214,8 @@ function renderMessages(){
     if(c.type==='group'&&!m.mine&&m.sender){
       const s=document.createElement('span');s.className='bubble-sender';s.textContent=m.sender;b.append(s);
     }
-    const t=document.createElement('span');t.textContent=m.text;b.append(t);
-    if(m.originalText){
+    const t=document.createElement('span');t.textContent=displayedMessageText(m);t.lang=chineseMessageMode()?'zh-CN':m.language||'ko';b.append(t);
+    if(m.originalText&&!chineseMessageMode()){
       const translate=document.createElement('button');translate.type='button';translate.className='bubble-translate';translate.setAttribute('aria-label','显示中文原文');translate.setAttribute('aria-expanded','false');translate.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 15 3-7 3 7m-5-2h4M4 9a8.5 8.5 0 0 1 14-4l2 2m0-4v4h-4M20 15a8.5 8.5 0 0 1-14 4l-2-2m0 4v-4h4"/></svg>';
       const original=document.createElement('div');original.className='bubble-original';original.textContent=m.originalText;original.hidden=true;original.lang='zh-CN';t.lang=m.language||'ko';
       translate.onclick=async e=>{e.stopPropagation();if(!original.hidden){original.hidden=true;translate.setAttribute('aria-expanded','false');return}original.hidden=false;translate.setAttribute('aria-expanded','true');const target=typeof translationLanguage==='string'?translationLanguage:'zh';original.lang=target;if(target==='zh'&&typeof m.originalText==='string'){original.textContent=m.originalText;return}original.textContent=typeof uiText==='function'?uiText('翻译中…'):'翻译中…';translate.disabled=true;try{original.textContent=typeof translateChatMessage==='function'?await translateChatMessage(m,target):m.originalText}catch{original.textContent=typeof uiText==='function'?uiText('翻译暂不可用，请稍后再试'):'翻译暂不可用，请稍后再试'}finally{translate.disabled=false}};
