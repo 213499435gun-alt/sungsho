@@ -401,17 +401,14 @@ const ICONS={
 };
 
 let passcodeAudio;
-const kktNativeAudio=new Audio('sounds/kakao-notification.mp3');kktNativeAudio.preload='auto';kktNativeAudio.volume=1;let kktAudioPrimed=false;
-function primeKktNative(){if(kktAudioPrimed)return;kktNativeAudio.muted=true;const attempt=kktNativeAudio.play();if(attempt)attempt.then(()=>{kktNativeAudio.pause();kktNativeAudio.currentTime=0;kktNativeAudio.muted=false;kktAudioPrimed=true}).catch(()=>{kktNativeAudio.muted=false})}
-
 function primePhoneAudio(){
  try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return Promise.resolve(null);passcodeAudio ||= new Context();const ctx=passcodeAudio;
  const silent=ctx.createBufferSource();silent.buffer=ctx.createBuffer(1,1,ctx.sampleRate);silent.connect(ctx.destination);silent.start();
- return ctx.resume().then(()=>ctx).catch(()=>null)}catch{return Promise.resolve(null)}
+ return (ctx.state==='running'?Promise.resolve():ctx.resume()).then(()=>ctx).catch(()=>null)}catch{return Promise.resolve(null)}
 }
 // Unlock audio on an actual gesture, before the delayed notification fires.
-document.addEventListener('pointerdown',()=>{primePhoneAudio();primeKktNative()},{passive:true});
-document.addEventListener('keydown',()=>{primePhoneAudio();primeKktNative()});
+document.addEventListener('pointerdown',()=>{primePhoneAudio().then(ctx=>{if(ctx)prepareKktAlert(ctx).catch(()=>{})})},{passive:true});
+document.addEventListener('keydown',()=>{primePhoneAudio().then(ctx=>{if(ctx)prepareKktAlert(ctx).catch(()=>{})})});
 async function playPasscodeSound(key){try{const ctx=await primePhoneAudio();if(!ctx||ctx.state!=='running')return;const osc=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime+.005;osc.type='sine';osc.frequency.setValueAtTime(key==='del'?560:1050,now);osc.frequency.exponentialRampToValueAtTime(420,now+.065);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.48,now+.004);gain.gain.exponentialRampToValueAtTime(.0001,now+.085);osc.connect(gain);gain.connect(ctx.destination);osc.onended=()=>{osc.disconnect();gain.disconnect()};osc.start(now);osc.stop(now+.09)}catch{}}
 let igSplashTimer;
 function showIGSplash(){clearTimeout(igSplashTimer);document.querySelector('.ig-splash')?.remove();const splash=document.createElement('div');splash.className='ig-splash';splash.setAttribute('aria-label','Instagram 正在启动');splash.innerHTML='<span class="ig-icon"></span>';$('#instagram').append(splash);igSplashTimer=setTimeout(()=>splash.remove(),500)}
@@ -1153,8 +1150,11 @@ function renderMessages(){
 let closingKktChat=false;
 async function closeKktChat(){
  const conversation=$('#conversation');if(closingKktChat||conversation.classList.contains('hidden'))return;closingKktChat=true;
- try{await conversation.animate([{transform:'translateX(0)',opacity:1},{transform:'translateX(105%)',opacity:.9}],{duration:300,easing:'cubic-bezier(.3,0,.2,1)',fill:'forwards'}).finished}
- finally{conversation.classList.add('hidden');conversation.getAnimations().forEach(a=>a.cancel());renderKakaoList();closingKktChat=false;}
+ const snapshot=conversation.cloneNode(true);snapshot.removeAttribute('id');snapshot.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));snapshot.setAttribute('aria-hidden','true');snapshot.inert=true;snapshot.style.cssText='position:absolute;inset:43px 0 25px;z-index:80;pointer-events:none;background:#bdd0dd;display:flex;flex-direction:column';
+ conversation.getAnimations().forEach(a=>a.cancel());conversation.style.transform='';conversation.classList.add('hidden');
+ show('kakao');$('#kakaoListPage').classList.remove('hidden');renderKakaoList();$('#kakao').append(snapshot);
+ try{await snapshot.animate([{transform:'translateX(0)'},{transform:'translateX(105%)'}],{duration:300,easing:'cubic-bezier(.3,0,.2,1)'}).finished}catch{}
+ finally{snapshot.remove();closingKktChat=false;}
 }
 $('#closeChat').onclick=closeKktChat;
 (function(){
@@ -1392,11 +1392,20 @@ let kktNotificationScheduled=false,kktNotificationTimer;
 const deliveredKktNotifications=new Set();
 const kktAlertBytes=fetch('sounds/kakao-notification.mp3').then(r=>{if(!r.ok)throw Error('notification audio unavailable');return r.arrayBuffer()});
 kktAlertBytes.catch(()=>{});
-let kktAlertBuffer;
+let kktAlertBuffer,kktAlertDecode;
+async function prepareKktAlert(ctx){
+ if(kktAlertBuffer)return kktAlertBuffer;
+ if(!kktAlertDecode)kktAlertDecode=kktAlertBytes.then(bytes=>ctx.decodeAudioData(bytes.slice(0))).then(buffer=>{
+ let first=buffer.length;for(let ch=0;ch<buffer.numberOfChannels;ch++){const samples=buffer.getChannelData(ch);let i=0;while(i<samples.length&&Math.abs(samples[i])<.003)i++;first=Math.min(first,i)}
+ first=Math.max(0,first-Math.round(buffer.sampleRate*.008));
+ if(first>0&&first<buffer.length){const trimmed=ctx.createBuffer(buffer.numberOfChannels,buffer.length-first,buffer.sampleRate);for(let ch=0;ch<buffer.numberOfChannels;ch++)trimmed.copyToChannel(buffer.getChannelData(ch).subarray(first),ch);buffer=trimmed}
+ kktAlertBuffer=buffer;return buffer;});
+ return kktAlertDecode;
+}
 async function playKktAlert(){
  try{const ctx=await primePhoneAudio();if(!ctx||ctx.state!=='running')return;
  try{
-  kktAlertBuffer ||= await ctx.decodeAudioData((await kktAlertBytes).slice(0));
+  await prepareKktAlert(ctx);
   const source=ctx.createBufferSource(),volume=ctx.createGain();source.buffer=kktAlertBuffer;volume.gain.value=1.8;source.connect(volume);const limiter=ctx.createDynamicsCompressor();limiter.threshold.value=-3;limiter.knee.value=3;limiter.ratio.value=12;limiter.attack.value=.002;limiter.release.value=.12;volume.connect(limiter);limiter.connect(ctx.destination);source.onended=()=>{source.disconnect();volume.disconnect()};source.start();return;
  }catch{}
  const start=ctx.currentTime+.02;
