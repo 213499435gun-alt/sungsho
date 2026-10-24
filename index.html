@@ -692,11 +692,16 @@ function igTimeKey(t){
 
 // ===== IG 首页 Feed 渲染（汇总所有账号，按时间倒序）=====
 
-const igWebImages={"ig/1293.JPG": "media/20da572aeb5b.jpg", "ig/1295.JPG": "media/f22b5cbd4042.jpg", "ig/2058_2.jpg": "media/b0f6367e943c.jpg", "ig/3996885810cdf2872b1196a0edde6e8f.JPG": "media/f1650cd0fdb8.jpg", "ig/IMG_0246.jpg": "media/60e9997e379d.jpg", "ig/IMG_0655.jpg": "media/d665152b3d85.jpg", "ig/IMG_0656.jpg": "media/9842b66800f9.jpg", "ig/IMG_0657.jpg": "media/79fd3cda4c56.jpg", "ig/IMG_0658.jpg": "media/82f63fef160c.jpg", "ig/IMG_1041.jpg": "media/fa6285760d9c.jpg", "ig/IMG_1042.jpg": "media/841330134bbb.jpg", "ig/IMG_1043.jpg": "media/e91454af8f5f.jpg", "ig/IMG_1044.jpg": "media/45e1f4d4e2f6.jpg", "ig/IMG_1045.jpg": "media/814d1f94b37f.jpg", "ig/IMG_1046.jpg": "media/3ae2907d3ab4.jpg", "ig/IMG_1047.jpg": "media/fca143131b81.jpg", "ig/IMG_1048.jpg": "media/0581b17cfd3d.jpg", "ig/IMG_1049.jpg": "media/1ede0dc9653d.jpg", "ig/IMG_1050.JPG": "media/62f7243ee929.jpg", "ig/IMG_1051.JPG": "media/393adebf4bfa.jpg", "ig/IMG_2334.jpg": "media/842d6dc06ca7.jpg", "ig/IMG_2335.jpg": "media/3322dea435b6.jpg", "ig/IMG_4204.JPG": "media/e110025fb4ca.jpg", "ig/IMG_4205.JPG": "media/b39926b2ab8a.jpg", "ig/IMG_4207.jpg": "media/07a8aead9a20.jpg", "ig/IMG_4208.jpg": "media/301162d8259a.jpg", "ig/IMG_4209.jpg": "media/fb626a0309e2.jpg", "ig/IMG_4521.jpg": "media/c5a29b434094.jpg", "ig/IMG_4522.jpg": "media/426e3391838c.jpg", "ig/IMG_4523.jpg": "media/51d5f0a10be1.jpg", "ig/IMG_5341.jpg": "media/130759e9116d.jpg", "ig/IMG_5609.JPG": "media/814304a602ec.jpg", "ig/IMG_5643.JPG": "media/23fac916affc.jpg", "ig/IMG_5644.JPG": "media/75b18acf4a59.jpg", "ig/IMG_5645.JPG": "media/c32e716b5f82.jpg", "ig/IMG_5647.JPG": "media/73f42a3278cd.jpg", "ig/IMG_5648.JPG": "media/de6bfa8bffe9.jpg", "ig/IMG_5649.JPG": "media/ef6c3421e7b3.jpg", "ig/IMG_5650.JPG": "media/8b8d0391ff98.jpg", "ig/IMG_5651.JPG": "media/b62435930d59.jpg", "ig/IMG_5662.jpg": "media/cda797a966ea.jpg", "ig/IMG_5663.jpg": "media/04703fe5b611.jpg", "ig/IMG_5664.JPG": "media/79766eeca5b9.jpg", "ig/IMG_5665.JPG": "media/2902431164d1.jpg", "stories/2029_2.jpg": "media/c2313fd79700.jpg", "stories/2030_2.jpg": "media/7f5dc40c0edf.jpg", "stories/2033.jpg": "media/8d08bceee65b.jpg", "stories/2038.jpg": "media/af0b4f96c903.jpg", "stories/2046.jpg": "media/2b83485f3a25.jpg", "stories/2053.jpg": "media/23cd09c1cfff.jpg", "stories/2095.jpg": "media/cf27460686d2.jpg", "stories/2124.JPG": "media/e44ca5554fc4.jpg", "stories/2125.JPG": "media/239c1dfcaf38.jpg", "stories/2127.JPG": "media/a56519fc7d34.jpg", "stories/2129.JPG": "media/8fbf8e518224.jpg", "stories/IMG_0205.JPG": "media/f11c7952271e.jpg", "stories/IMG_5255.jpg": "media/fa08974a5fb2.jpg", "stories/IMG_5677.jpg": "media/8869b1dea36b.jpg", "stories/IMG_7380.JPG": "media/786bd905cb41.jpg", "stories/IMG_8240 2.JPG": "media/1a3cfa0d35f3.jpg", "stories/IMG_8242 2.JPG": "media/3147caff30c6.jpg", "stories/IMG_9039.JPG": "media/4a8bc67fc2a8.jpg", "stories/IMG_9047.JPG": "media/c05c81b3662a.jpg", "ig/2058.jpg": "media/6643cad2f517.jpg"},igThumbs={"ig/1293.JPG": "media/20da572aeb5b-thumb.jpg", "ig/1295.JPG": "media/f22b5cbd4042-thumb.jpg", "ig/2058_2.jpg": "media/b0f6367e943c-thumb.jpg", "ig/3996885810cdf2872b1196a0edde6e8f.JPG": "media/f1650cd0fdb8-thumb.jpg", "ig/IMG_0246.jpg": "media/60e9997e379d-thumb.jpg", "ig/IMG_0655.jpg": "media/d665152b3d85-thumb.jpg", "ig/IMG_0656.jpg": "media/9842b66800f9-thumb.jpg", "ig/IMG_0657.jpg": "media/79fd3cda4c56-thumb.jpg", "ig/IMG_0658.jpg": "media/82f63fef160c-thumb.jpg", "ig/IMG_1041.jpg": "media/fa6285760d9c-thumb.jpg", "ig/IMG_1042.jpg": "media/841330134bbb-thumb.jpg", "ig/IMG_1043.jpg": "media/e91454af8f5f-thumb.jpg", "ig/IMG_1044.jpg": "media/45e1f4d4e2f6-thumb.jpg", "ig/IMG_1045.jpg": "media/814d1f94b37f-thumb.jpg", "ig/IMG_1046.jpg": "media/3ae2907d3ab4-thumb.jpg", "ig/IMG_1047.jpg": "media/fca143131b81-thumb.jpg", "ig/IMG_1048.jpg": "media/0581b17cfd3d-thumb.jpg", "ig/IMG_1049.jpg": "media/1ede0dc9653d-thumb.jpg", "ig/IMG_1050.JPG": "media/62f7243ee929-thumb.jpg", "ig/IMG_1051.JPG": "media/393adebf4bfa-thumb.jpg", "ig/IMG_2334.jpg": "media/842d6dc06ca7-thumb.jpg", "ig/IMG_2335.jpg": "media/3322dea435b6-thumb.jpg", "ig/IMG_4204.JPG": "media/e110025fb4ca-thumb.jpg", "ig/IMG_4205.JPG": "media/b39926b2ab8a-thumb.jpg", "ig/IMG_4207.jpg": "media/07a8aead9a20-thumb.jpg", "ig/IMG_4208.jpg": "media/301162d8259a-thumb.jpg", "ig/IMG_4209.jpg": "media/fb626a0309e2-thumb.jpg", "ig/IMG_4521.jpg": "media/c5a29b434094-thumb.jpg", "ig/IMG_4522.jpg": "media/426e3391838c-thumb.jpg", "ig/IMG_4523.jpg": "media/51d5f0a10be1-thumb.jpg", "ig/IMG_5341.jpg": "media/130759e9116d-thumb.jpg", "ig/IMG_5609.JPG": "media/814304a602ec-thumb.jpg", "ig/IMG_5643.JPG": "media/23fac916affc-thumb.jpg", "ig/IMG_5644.JPG": "media/75b18acf4a59-thumb.jpg", "ig/IMG_5645.JPG": "media/c32e716b5f82-thumb.jpg", "ig/IMG_5647.JPG": "media/73f42a3278cd-thumb.jpg", "ig/IMG_5648.JPG": "media/de6bfa8bffe9-thumb.jpg", "ig/IMG_5649.JPG": "media/ef6c3421e7b3-thumb.jpg", "ig/IMG_5650.JPG": "media/8b8d0391ff98-thumb.jpg", "ig/IMG_5651.JPG": "media/b62435930d59-thumb.jpg", "ig/IMG_5662.jpg": "media/cda797a966ea-thumb.jpg", "ig/IMG_5663.jpg": "media/04703fe5b611-thumb.jpg", "ig/IMG_5664.JPG": "media/79766eeca5b9-thumb.jpg", "ig/IMG_5665.JPG": "media/2902431164d1-thumb.jpg", "ig/2058.jpg": "media/6643cad2f517-thumb.jpg"};
+const igWebImages={"ig/1293.JPG": "media/20da572aeb5b-small.jpg", "ig/1295.JPG": "media/f22b5cbd4042-small.jpg", "ig/2058_2.jpg": "media/b0f6367e943c-small.jpg", "ig/3996885810cdf2872b1196a0edde6e8f.JPG": "media/f1650cd0fdb8-small.jpg", "ig/IMG_0246.jpg": "media/60e9997e379d-small.jpg", "ig/IMG_0655.jpg": "media/d665152b3d85-small.jpg", "ig/IMG_0656.jpg": "media/9842b66800f9-small.jpg", "ig/IMG_0657.jpg": "media/79fd3cda4c56-small.jpg", "ig/IMG_0658.jpg": "media/82f63fef160c-small.jpg", "ig/IMG_1041.jpg": "media/fa6285760d9c-small.jpg", "ig/IMG_1042.jpg": "media/841330134bbb-small.jpg", "ig/IMG_1043.jpg": "media/e91454af8f5f-small.jpg", "ig/IMG_1044.jpg": "media/45e1f4d4e2f6-small.jpg", "ig/IMG_1045.jpg": "media/814d1f94b37f-small.jpg", "ig/IMG_1046.jpg": "media/3ae2907d3ab4-small.jpg", "ig/IMG_1047.jpg": "media/fca143131b81-small.jpg", "ig/IMG_1048.jpg": "media/0581b17cfd3d-small.jpg", "ig/IMG_1049.jpg": "media/1ede0dc9653d-small.jpg", "ig/IMG_1050.JPG": "media/62f7243ee929-small.jpg", "ig/IMG_1051.JPG": "media/393adebf4bfa-small.jpg", "ig/IMG_2334.jpg": "media/842d6dc06ca7-small.jpg", "ig/IMG_2335.jpg": "media/3322dea435b6-small.jpg", "ig/IMG_4204.JPG": "media/e110025fb4ca-small.jpg", "ig/IMG_4205.JPG": "media/b39926b2ab8a-small.jpg", "ig/IMG_4207.jpg": "media/07a8aead9a20-small.jpg", "ig/IMG_4208.jpg": "media/301162d8259a-small.jpg", "ig/IMG_4209.jpg": "media/fb626a0309e2-small.jpg", "ig/IMG_4521.jpg": "media/c5a29b434094-small.jpg", "ig/IMG_4522.jpg": "media/426e3391838c-small.jpg", "ig/IMG_4523.jpg": "media/51d5f0a10be1-small.jpg", "ig/IMG_5341.jpg": "media/130759e9116d-small.jpg", "ig/IMG_5609.JPG": "media/814304a602ec-small.jpg", "ig/IMG_5643.JPG": "media/23fac916affc-small.jpg", "ig/IMG_5644.JPG": "media/75b18acf4a59-small.jpg", "ig/IMG_5645.JPG": "media/c32e716b5f82-small.jpg", "ig/IMG_5647.JPG": "media/73f42a3278cd-small.jpg", "ig/IMG_5648.JPG": "media/de6bfa8bffe9-small.jpg", "ig/IMG_5649.JPG": "media/ef6c3421e7b3-small.jpg", "ig/IMG_5650.JPG": "media/8b8d0391ff98-small.jpg", "ig/IMG_5651.JPG": "media/b62435930d59-small.jpg", "ig/IMG_5662.jpg": "media/cda797a966ea-small.jpg", "ig/IMG_5663.jpg": "media/04703fe5b611-small.jpg", "ig/IMG_5664.JPG": "media/79766eeca5b9-small.jpg", "ig/IMG_5665.JPG": "media/2902431164d1-small.jpg", "stories/2029_2.jpg": "media/c2313fd79700-small.jpg", "stories/2030_2.jpg": "media/7f5dc40c0edf-small.jpg", "stories/2033.jpg": "media/8d08bceee65b-small.jpg", "stories/2038.jpg": "media/af0b4f96c903-small.jpg", "stories/2046.jpg": "media/2b83485f3a25-small.jpg", "stories/2053.jpg": "media/23cd09c1cfff-small.jpg", "stories/2095.jpg": "media/cf27460686d2-small.jpg", "stories/2124.JPG": "media/e44ca5554fc4-small.jpg", "stories/2125.JPG": "media/239c1dfcaf38-small.jpg", "stories/2127.JPG": "media/a56519fc7d34-small.jpg", "stories/2129.JPG": "media/8fbf8e518224-small.jpg", "stories/IMG_0205.JPG": "media/f11c7952271e-small.jpg", "stories/IMG_5255.jpg": "media/fa08974a5fb2-small.jpg", "stories/IMG_5677.jpg": "media/8869b1dea36b-small.jpg", "stories/IMG_7380.JPG": "media/786bd905cb41-small.jpg", "stories/IMG_8240 2.JPG": "media/1a3cfa0d35f3-small.jpg", "stories/IMG_8242 2.JPG": "media/3147caff30c6-small.jpg", "stories/IMG_9039.JPG": "media/4a8bc67fc2a8-small.jpg", "stories/IMG_9047.JPG": "media/c05c81b3662a-small.jpg", "ig/2058.jpg": "media/6643cad2f517-small.jpg"},igThumbs={"ig/1293.JPG": "media/20da572aeb5b-thumb-small.jpg", "ig/1295.JPG": "media/f22b5cbd4042-thumb-small.jpg", "ig/2058_2.jpg": "media/b0f6367e943c-thumb-small.jpg", "ig/3996885810cdf2872b1196a0edde6e8f.JPG": "media/f1650cd0fdb8-thumb-small.jpg", "ig/IMG_0246.jpg": "media/60e9997e379d-thumb-small.jpg", "ig/IMG_0655.jpg": "media/d665152b3d85-thumb-small.jpg", "ig/IMG_0656.jpg": "media/9842b66800f9-thumb-small.jpg", "ig/IMG_0657.jpg": "media/79fd3cda4c56-thumb-small.jpg", "ig/IMG_0658.jpg": "media/82f63fef160c-thumb-small.jpg", "ig/IMG_1041.jpg": "media/fa6285760d9c-thumb-small.jpg", "ig/IMG_1042.jpg": "media/841330134bbb-thumb-small.jpg", "ig/IMG_1043.jpg": "media/e91454af8f5f-thumb-small.jpg", "ig/IMG_1044.jpg": "media/45e1f4d4e2f6-thumb-small.jpg", "ig/IMG_1045.jpg": "media/814d1f94b37f-thumb-small.jpg", "ig/IMG_1046.jpg": "media/3ae2907d3ab4-thumb-small.jpg", "ig/IMG_1047.jpg": "media/fca143131b81-thumb-small.jpg", "ig/IMG_1048.jpg": "media/0581b17cfd3d-thumb-small.jpg", "ig/IMG_1049.jpg": "media/1ede0dc9653d-thumb-small.jpg", "ig/IMG_1050.JPG": "media/62f7243ee929-thumb-small.jpg", "ig/IMG_1051.JPG": "media/393adebf4bfa-thumb-small.jpg", "ig/IMG_2334.jpg": "media/842d6dc06ca7-thumb-small.jpg", "ig/IMG_2335.jpg": "media/3322dea435b6-thumb-small.jpg", "ig/IMG_4204.JPG": "media/e110025fb4ca-thumb-small.jpg", "ig/IMG_4205.JPG": "media/b39926b2ab8a-thumb-small.jpg", "ig/IMG_4207.jpg": "media/07a8aead9a20-thumb-small.jpg", "ig/IMG_4208.jpg": "media/301162d8259a-thumb-small.jpg", "ig/IMG_4209.jpg": "media/fb626a0309e2-thumb-small.jpg", "ig/IMG_4521.jpg": "media/c5a29b434094-thumb-small.jpg", "ig/IMG_4522.jpg": "media/426e3391838c-thumb-small.jpg", "ig/IMG_4523.jpg": "media/51d5f0a10be1-thumb-small.jpg", "ig/IMG_5341.jpg": "media/130759e9116d-thumb-small.jpg", "ig/IMG_5609.JPG": "media/814304a602ec-thumb-small.jpg", "ig/IMG_5643.JPG": "media/23fac916affc-thumb-small.jpg", "ig/IMG_5644.JPG": "media/75b18acf4a59-thumb-small.jpg", "ig/IMG_5645.JPG": "media/c32e716b5f82-thumb-small.jpg", "ig/IMG_5647.JPG": "media/73f42a3278cd-thumb-small.jpg", "ig/IMG_5648.JPG": "media/de6bfa8bffe9-thumb-small.jpg", "ig/IMG_5649.JPG": "media/ef6c3421e7b3-thumb-small.jpg", "ig/IMG_5650.JPG": "media/8b8d0391ff98-thumb-small.jpg", "ig/IMG_5651.JPG": "media/b62435930d59-thumb-small.jpg", "ig/IMG_5662.jpg": "media/cda797a966ea-thumb-small.jpg", "ig/IMG_5663.jpg": "media/04703fe5b611-thumb-small.jpg", "ig/IMG_5664.JPG": "media/79766eeca5b9-thumb-small.jpg", "ig/IMG_5665.JPG": "media/2902431164d1-thumb-small.jpg", "ig/2058.jpg": "media/6643cad2f517-thumb-small.jpg"};
 function igWebSrc(src){return igWebImages[src]||src}
 const igImageCache=new Map();
-function prepareIGImage(src){src=igWebSrc(src);if(!igImageCache.has(src)){const im=new Image();const done=new Promise(resolve=>{im.onload=()=>resolve(im);im.onerror=()=>resolve(im)});im.src=src;igImageCache.set(src,done)}return igImageCache.get(src)}
-function warmIGAccount(ai){const a=igData.accounts[ai];if(!a)return;for(const p of a.posts||[]){const src=p.images?.[0];if(src)prepareIGImage(igThumbs[src]||src)}for(const st of (a.stories||[]).slice(0,2))prepareIGImage(st.src)}
+function prepareIGImage(src){src=igWebSrc(src);if(!igImageCache.has(src)){const im=new Image();im.decoding='async';const done=new Promise(resolve=>{im.onload=async()=>{try{await im.decode()}catch{}resolve(im)};im.onerror=()=>{igImageCache.delete(src);resolve(im)}});im.src=src;igImageCache.set(src,done)}return igImageCache.get(src)}
+const igWarmQueue=[],igWarmQueued=new Set();let igWarmRunning=0;
+function queueIGImage(src){if(!src||igWarmQueued.has(src))return;igWarmQueued.add(src);igWarmQueue.push(src);pumpIGWarmQueue()}
+function pumpIGWarmQueue(){while(igWarmRunning<2&&igWarmQueue.length){const src=igWarmQueue.shift();igWarmRunning++;prepareIGImage(src).finally(()=>{igWarmRunning--;pumpIGWarmQueue()})}}
+function warmIGAccount(ai){const a=igData.accounts[ai];if(!a)return;for(const p of a.posts||[]){const src=p.images?.[0];if(src)queueIGImage(igThumbs[src]||src)}for(const st of (a.stories||[]).slice(0,1))queueIGImage(st.src)}
+window.addEventListener('load',()=>{igData.accounts.forEach((_,i)=>warmIGAccount(i));});
+
 
 const igLikedPosts=new Set();
 function renderIGFeed(accountIndex=null,feed=$('#feed')){
@@ -711,16 +716,16 @@ function renderIGFeed(accountIndex=null,feed=$('#feed')){
     feed.innerHTML='<div class="ig-end">还没有帖子</div>';
     return;
   }
-  feed.innerHTML=all.map(({post:p,accIndex:ai,postIndex:pi})=>{
+  feed.innerHTML=all.map(({post:p,accIndex:ai,postIndex:pi},feedIndex)=>{
     const prof=(igData.accounts[ai]||{}).profile||{};
     const imgs=(p.images||[]).filter(Boolean).map(igWebSrc);
     let media;
     if(imgs.length===0){
       media='<div style="aspect-ratio:1;background:#efefef;display:grid;place-items:center;color:#bbb;font-size:12px">暂无图片</div>';
     }else if(imgs.length===1){
-      media='<img src="'+igEsc(imgs[0])+'" alt="">';
+      media='<img src="'+igEsc(imgs[0])+'" loading="'+(feedIndex<2?'eager':'lazy')+'" decoding="async" fetchpriority="'+(feedIndex===0?'high':'low')+'" alt="">';
     }else{
-      const slides=imgs.map(src=>'<img src="'+igEsc(src)+'" alt="">').join('');
+      const slides=imgs.map((src,slideIndex)=>'<img src="'+igEsc(src)+'" loading="'+(feedIndex<2&&slideIndex===0?'eager':'lazy')+'" decoding="async" fetchpriority="'+(feedIndex===0&&slideIndex===0?'high':'low')+'" alt="">').join('');
       const dots=imgs.map((_,i)=>'<span class="ig-dot'+(i===0?' on':'')+'"></span>').join('');
       media='<div class="ig-carousel">'
         +'<div class="ig-carousel-track" data-carousel>'+slides+'</div>'
@@ -882,11 +887,18 @@ async function openAccountStory(ai,startIndex=0){
 
 function openStory(){ openAccountStory(igAccountIndex); }
 
+function storyNeighbors(owner,index){
+ const timeline=igData.accounts.flatMap(a=>storiesForAccount(a.profile.id).map((story,i)=>({owner:a.profile.id,index:i,story})));
+ const at=timeline.findIndex(item=>item.owner===owner&&item.index===index);
+ if(at<0)return [];
+ return timeline.slice(Math.max(0,at-2),at).concat(timeline.slice(at+1,at+3)).map(item=>item.story).filter(st=>st.src);
+}
 let storyLoadToken=0;
 async function showStory(){
   const token=++storyLoadToken;
   clearTimeout(storyReadTimer);displayedIGStory=null;
   clearTimeout(storyTimer);
+  const neighborLoads=storyNeighbors(storyOwner,storyIndex).map(st=>prepareIGImage(st.src));
   const requested=storyList[storyIndex];
   if(requested?.src){
     const content=$('#storyContent');
@@ -894,7 +906,7 @@ async function showStory(){
     await prepareIGImage(requested.src);
     if(token!==storyLoadToken)return;
   }
-  for(const next of storyList.slice(storyIndex+1,storyIndex+3))if(next.src)prepareIGImage(next.src);
+
   const s=storyList[storyIndex];
   if(!s){ closeStory(); return; }
   // 进度条
@@ -942,6 +954,9 @@ async function showStory(){
   // Preloading is never a read: count only a displayed frame after visible dwell time.
   displayedIGStory={owner:storyOwner,key:storyReadKey(s),at:performance.now()};
   if(token===storyLoadToken)recordCurrentStoryRead();
+  // Keep the current frame visible while both adjacent pairs download and decode.
+  await Promise.all(neighborLoads);
+  if(token!==storyLoadToken)return;
   // 自动前进
   clearTimeout(storyTimer);
   const dur=(s.duration||5)*1000;
@@ -1399,5 +1414,6 @@ function showKktNotification(config=kakaoData.notification){
  const close=document.createElement('button');close.className='notify-close';close.textContent='×';close.setAttribute('aria-label','关闭通知');close.onclick=()=>banner.remove();banner.append(open,close);$('#home').parentElement.append(banner);banner.animate([{transform:'translateY(-140%)',opacity:0},{transform:'translateY(0)',opacity:1}],{duration:420,easing:'cubic-bezier(.2,.8,.2,1)'});if(config.sound)playKktAlert();setTimeout(()=>{if(banner.isConnected)banner.remove()},7000);
 }
 
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('image-cache-sw.js').catch(()=>{}));
 show('lock');
 </script></body></html>
