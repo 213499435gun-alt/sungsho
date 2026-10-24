@@ -1,6 +1,15 @@
 const weatherSection=document.createElement('section');weatherSection.id='weather';weatherSection.className='view app light hidden';$('#home').parentElement.append(weatherSection);
 const weatherCities=[{name:'神奈川',lat:35.4478,lon:139.6425},{name:'首尔',lat:37.5665,lon:126.978},{name:'东京',lat:35.6762,lon:139.6503}];let weatherRequest=0;const weatherCache=new Map();
-function weatherDescription(code){if(code===0)return ['☀️','晴'];if(code<=3)return ['⛅','多云'];if(code<=48)return ['🌫️','雾'];if(code<=67)return ['🌧️','雨'];if(code<=77)return ['❄️','雪'];if(code<=82)return ['🌦️','阵雨'];if(code<=86)return ['🌨️','阵雪'];return ['⛈️','雷雨']}
+const weatherConditions={
+0:['☀️','晴','Clear sky','맑음','快晴'],1:['🌤️','晴间多云','Mainly clear','대체로 맑음','晴れ時々曇り'],2:['⛅','局部多云','Partly cloudy','구름 조금','晴れ時々曇り'],3:['☁️','阴天','Overcast','흐림','曇り'],
+45:['🌫️','雾','Fog','안개','霧'],48:['🌫️','冻雾','Freezing fog','착빙 안개','着氷性の霧'],
+51:['🌦️','小毛毛雨','Light drizzle','약한 이슬비','弱い霧雨'],53:['🌦️','毛毛雨','Drizzle','이슬비','霧雨'],55:['🌧️','强毛毛雨','Heavy drizzle','강한 이슬비','強い霧雨'],56:['🌧️','小冻毛毛雨','Light freezing drizzle','약한 어는 이슬비','弱い着氷性の霧雨'],57:['🌧️','冻毛毛雨','Freezing drizzle','어는 이슬비','着氷性の霧雨'],
+61:['🌧️','小雨','Light rain','약한 비','小雨'],63:['🌧️','中雨','Moderate rain','비','雨'],65:['🌧️','大雨','Heavy rain','강한 비','大雨'],66:['🌧️','小冻雨','Light freezing rain','약한 어는 비','弱い着氷性の雨'],67:['🌧️','冻雨','Freezing rain','어는 비','着氷性の雨'],
+71:['❄️','小雪','Light snow','약한 눈','小雪'],73:['❄️','中雪','Moderate snow','눈','雪'],75:['❄️','大雪','Heavy snow','강한 눈','大雪'],77:['❄️','雪粒','Snow grains','싸락눈','霧雪'],
+80:['🌦️','小阵雨','Light rain showers','약한 소나기','弱いにわか雨'],81:['🌦️','阵雨','Rain showers','소나기','にわか雨'],82:['🌧️','强阵雨','Heavy rain showers','강한 소나기','激しいにわか雨'],85:['🌨️','小阵雪','Light snow showers','약한 눈 소나기','弱いにわか雪'],86:['🌨️','强阵雪','Heavy snow showers','강한 눈 소나기','強いにわか雪'],
+95:['⛈️','雷雨','Thunderstorm','뇌우','雷雨'],96:['⛈️','雷雨伴小冰雹','Thunderstorm with light hail','우박을 동반한 뇌우','雷雨・弱いひょう'],99:['⛈️','雷雨伴强冰雹','Thunderstorm with heavy hail','강한 우박을 동반한 뇌우','雷雨・強いひょう']};
+function weatherDescription(code){const condition=weatherConditions[code]||['🌡️','天气情况未知','Unknown conditions','날씨 정보 없음','天気情報なし'];const language=typeof systemLanguage==='string'?systemLanguage:'ko';return [condition[0],condition[({zh:1,en:2,ko:3,ja:4})[language]||3]]}
+
 const weatherLabels={
 zh:['天气','城市','神奈川','首尔','东京','晴','多云','雾','雨','雪','阵雨','阵雪','雷雨','最高','最低','湿度','风速','当地更新时间','神奈川使用横滨位置','暂时无法获取天气，请检查网络后重试。','重试','收起 ‹','天气数据：Open-Meteo','主屏幕','正在获取天气…','切换天气城市'],
 en:['Weather','Cities','Kanagawa','Seoul','Tokyo','Clear','Cloudy','Fog','Rain','Snow','Rain showers','Snow showers','Thunderstorms','High','Low','Humidity','Wind','Local update','Yokohama location used for Kanagawa','Weather unavailable. Check your connection and try again.','Retry','Close ‹','Weather data: Open-Meteo','Home','Loading weather…','Choose weather city'],
