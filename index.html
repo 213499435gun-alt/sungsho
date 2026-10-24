@@ -167,6 +167,8 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 .ig-carousel-count{position:absolute;top:10px;right:10px;background:#000a;color:#fff;font-size:11px;padding:2px 8px;border-radius:10px}
 
 
+
+.ig-splash{position:absolute;inset:0;z-index:85;background:#fff;display:grid;place-items:center;pointer-events:none}.ig-splash .ig-icon{width:78px;height:78px;border-radius:23px}.ig-splash .ig-icon:before{width:39px;height:39px;border-width:4px;border-radius:12px}.ig-splash .ig-icon:after{width:15px;height:15px;border-width:4px}.story-cube-old{pointer-events:none!important;z-index:62!important;backface-visibility:hidden}.story-viewer{backface-visibility:hidden}
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
@@ -329,7 +331,7 @@ function animateHome(){
     show('home');
   },320);
 }
-function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:4},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;if(n==='del')pin=pin.slice(0,-1);else if(pin.length<4)pin+=n;drawDots();if(pin.length===4){checking=true;setTimeout(()=>{if(pin==='0000'){unlocked=true;show('home')}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=goPass;$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);// ===== SVG 图标（精确绘制）=====
+function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:4},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;playPasscodeSound(n);if(n==='del')pin=pin.slice(0,-1);else if(pin.length<4)pin+=n;drawDots();if(pin.length===4){checking=true;setTimeout(()=>{if(pin==='0000'){unlocked=true;show('home')}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=goPass;$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);// ===== SVG 图标（精确绘制）=====
 const ICONS={
   // 三星相册：彩色风车花瓣（8 个扇形，彩虹渐变）
   photos:'<svg viewBox="0 0 100 100"><g transform="translate(50 50)">'+
@@ -354,7 +356,11 @@ const ICONS={
   instagram:'<svg viewBox="0 0 100 100"><g fill="none" stroke="#fff" stroke-width="5"><rect x="24" y="24" width="52" height="52" rx="15"/><circle cx="50" cy="50" r="13"/></g><circle cx="68" cy="32" r="3.5" fill="#fff"/></svg>'
 };
 
-const apps=[['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.photos;$('#dockMusic').innerHTML=ICONS.music;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;if(b.dataset.app==='settings')return;show(b.dataset.app);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){renderIGFeed();renderIGStories();igData.accounts.forEach((_,i)=>warmIGAccount(i))}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
+let passcodeAudio;
+function playPasscodeSound(key){try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;passcodeAudio ||= new Audio();const ctx=passcodeAudio;ctx.resume().catch(()=>{});const osc=ctx.createOscillator(),gain=ctx.createGain();const now=ctx.currentTime;osc.type='sine';osc.frequency.setValueAtTime(key==='del'?560:1050,now);osc.frequency.exponentialRampToValueAtTime(420,now+.045);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.09,now+.003);gain.gain.exponentialRampToValueAtTime(.0001,now+.055);osc.connect(gain);gain.connect(ctx.destination);osc.start(now);osc.stop(now+.06)}catch{}}
+let igSplashTimer;
+function showIGSplash(){clearTimeout(igSplashTimer);document.querySelector('.ig-splash')?.remove();const splash=document.createElement('div');splash.className='ig-splash';splash.setAttribute('aria-label','Instagram 正在启动');splash.innerHTML='<span class="ig-icon"></span>';$('#instagram').parentElement.append(splash);igSplashTimer=setTimeout(()=>splash.remove(),500)}
+const apps=[['photos','','相册','photos-icon'],['music','','音乐','music-icon'],['notes','','备忘录','notes-icon'],['settings','','设置','settings-icon'],['clock','','时钟','clock-icon'],['instagram','','Instagram','ig-icon'],['kakao','TALK','KakaoTalk','kakao-icon']];$('#apps').innerHTML=apps.map(a=>'<button class="app-icon" data-app="'+a[0]+'"><span class="icon '+a[3]+'">'+(ICONS[a[0]]||a[1])+'</span>'+a[2]+'</button>').join('');$('#dockPhotos').innerHTML=ICONS.photos;$('#dockMusic').innerHTML=ICONS.music;$('#dockNotes').innerHTML=ICONS.notes;$$('[data-app]').forEach(b=>b.onclick=()=>{if(!unlocked)return;if(b.dataset.app==='settings')return;show(b.dataset.app);if(b.dataset.app==='music')showPlaylist();if(b.dataset.app==='instagram'){showIGSplash();renderIGFeed();renderIGStories();igData.accounts.forEach((_,i)=>warmIGAccount(i))}});document.addEventListener('keydown',e=>{if(page==='pass'){if(/^\d$/.test(e.key))digit(e.key);if(e.key==='Backspace'){e.preventDefault();digit('del')}}if(e.key==='Escape'){if(!$('#viewer').classList.contains('hidden'))$('#viewer').classList.add('hidden');else if(unlocked)home();else lock()}if(e.key==='ArrowRight'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex+1);if(e.key==='ArrowLeft'&&!$('#viewer').classList.contains('hidden'))viewPhoto(photoIndex-1)});// 锁屏上滑解锁：检测到上滑就跳转密码页（不整屏滑动）
 // ===== 锁屏上滑解锁：内容实时模糊，松手引出密码页 =====
 function goPass(){show('pass');$('#passTitle').textContent='输入密码';}
 (function(){
@@ -736,7 +742,7 @@ function myStories(){ return storiesForAccount(igProfile().id); }
 // ===== 快拍查看器 =====
 let storyList=[], storyIndex=0, storyTimer=null, storyOwner='';
 
-function openAccountStory(ai){
+async function openAccountStory(ai){
   const prof=(igData.accounts[ai]||{}).profile||{};
   storyList=storiesForAccount(prof.id);
   storyOwner=prof.id||'动态';
@@ -745,7 +751,7 @@ function openAccountStory(ai){
   const nextAccount=igData.accounts.slice(ai+1).find(a=>storiesForAccount((a.profile||{}).id).length);
   if(nextAccount)prepareIGImage(storiesForAccount(nextAccount.profile.id)[0].src);
   $('#storyViewer').classList.remove('hidden');
-  showStory();
+  await showStory();
 }
 
 function openStory(){ openAccountStory(igAccountIndex); }
@@ -812,15 +818,35 @@ async function showStory(){
   storyTimer=setTimeout(nextStory,dur);
 }
 
+let storyTurning=false;
+async function turnStoryAccount(ai){
+ if(storyTurning)return;storyTurning=true;clearTimeout(storyTimer);
+ const viewer=$('#storyViewer'),parent=viewer.parentElement;
+ const old=viewer.cloneNode(true);old.removeAttribute('id');old.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));old.classList.add('story-cube-old');old.setAttribute('aria-hidden','true');old.inert=true;
+ parent.append(old);
+ try{
+  const target=igData.accounts[ai];await prepareIGImage(storiesForAccount(target.profile.id)[0].src);
+  if(viewer.classList.contains('hidden'))return;
+  await openAccountStory(ai);clearTimeout(storyTimer);
+  const half=viewer.clientWidth/2;const options={duration:460,easing:'cubic-bezier(.22,.65,.3,1)',fill:'none'};
+  await Promise.all([
+   old.animate([{transform:'perspective(1000px) translateZ(-'+half+'px) rotateY(0deg) translateZ('+half+'px)',filter:'brightness(1)'},{transform:'perspective(1000px) translateZ(-'+half+'px) rotateY(-90deg) translateZ('+half+'px)',filter:'brightness(.55)'}],options).finished,
+   viewer.animate([{transform:'perspective(1000px) translateZ(-'+half+'px) rotateY(90deg) translateZ('+half+'px)',filter:'brightness(.55)'},{transform:'perspective(1000px) translateZ(-'+half+'px) rotateY(0deg) translateZ('+half+'px)',filter:'brightness(1)'}],options).finished
+  ]);
+  if(!viewer.classList.contains('hidden'))storyTimer=setTimeout(nextStory,(storyList[storyIndex].duration||5)*1000);
+ }finally{old.remove();storyTurning=false;}
+}
 function nextStory(){
+  if(storyTurning)return;
   if(storyIndex<storyList.length-1){ storyIndex++; showStory(); }
   else {
     const current=igData.accounts.findIndex(a=>(a.profile||{}).id===storyOwner);
     const next=igData.accounts.findIndex((a,i)=>i>current && storiesForAccount((a.profile||{}).id).length);
-    if(next>=0)openAccountStory(next);else closeStory();
+    if(next>=0)turnStoryAccount(next);else closeStory();
   }
 }
 function prevStory(){
+  if(storyTurning)return;
   if(storyIndex>0){ storyIndex--; showStory(); }
   else showStory(); // 第一条时重播
 }
