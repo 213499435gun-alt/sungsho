@@ -399,7 +399,15 @@ const ICONS={
 };
 
 let passcodeAudio;
-function playPasscodeSound(key){try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;passcodeAudio ||= new Audio();const ctx=passcodeAudio;ctx.resume().catch(()=>{});const osc=ctx.createOscillator(),gain=ctx.createGain();const now=ctx.currentTime;osc.type='sine';osc.frequency.setValueAtTime(key==='del'?560:1050,now);osc.frequency.exponentialRampToValueAtTime(420,now+.045);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.09,now+.003);gain.gain.exponentialRampToValueAtTime(.0001,now+.055);osc.connect(gain);gain.connect(ctx.destination);osc.start(now);osc.stop(now+.06)}catch{}}
+function primePhoneAudio(){
+ try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return Promise.resolve(null);passcodeAudio ||= new Context();const ctx=passcodeAudio;
+ const silent=ctx.createBufferSource();silent.buffer=ctx.createBuffer(1,1,ctx.sampleRate);silent.connect(ctx.destination);silent.start();
+ return ctx.resume().then(()=>ctx).catch(()=>null)}catch{return Promise.resolve(null)}
+}
+// Unlock audio on an actual gesture, before the delayed notification fires.
+document.addEventListener('pointerdown',()=>{primePhoneAudio()},{passive:true});
+document.addEventListener('keydown',()=>{primePhoneAudio()});
+async function playPasscodeSound(key){try{const ctx=await primePhoneAudio();if(!ctx||ctx.state!=='running')return;const osc=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime+.005;osc.type='sine';osc.frequency.setValueAtTime(key==='del'?560:1050,now);osc.frequency.exponentialRampToValueAtTime(420,now+.065);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.28,now+.004);gain.gain.exponentialRampToValueAtTime(.0001,now+.085);osc.connect(gain);gain.connect(ctx.destination);osc.onended=()=>{osc.disconnect();gain.disconnect()};osc.start(now);osc.stop(now+.09)}catch{}}
 let igSplashTimer;
 function showIGSplash(){clearTimeout(igSplashTimer);document.querySelector('.ig-splash')?.remove();const splash=document.createElement('div');splash.className='ig-splash';splash.setAttribute('aria-label','Instagram 正在启动');splash.innerHTML='<span class="ig-icon"></span>';$('#instagram').append(splash);igSplashTimer=setTimeout(()=>splash.remove(),500)}
 
@@ -1136,7 +1144,20 @@ function renderMessages(){
   });
   box.scrollTop=box.scrollHeight;
 }
-$('#closeChat').onclick=()=>{$('#conversation').classList.add('hidden');renderKakaoList();};
+let closingKktChat=false;
+async function closeKktChat(){
+ const conversation=$('#conversation');if(closingKktChat||conversation.classList.contains('hidden'))return;closingKktChat=true;
+ try{await conversation.animate([{transform:'translateX(0)',opacity:1},{transform:'translateX(105%)',opacity:.9}],{duration:300,easing:'cubic-bezier(.3,0,.2,1)',fill:'forwards'}).finished}
+ finally{conversation.classList.add('hidden');conversation.getAnimations().forEach(a=>a.cancel());renderKakaoList();closingKktChat=false;}
+}
+$('#closeChat').onclick=closeKktChat;
+(function(){
+ const conversation=$('#conversation');let start=null;
+ conversation.style.touchAction='pan-y';
+ conversation.addEventListener('pointerdown',e=>{if(e.isPrimary&&e.button===0&&!e.target.closest('input,textarea,select,button'))start={x:e.clientX,y:e.clientY,id:e.pointerId};else start=null});
+ conversation.addEventListener('pointerup',e=>{if(!start||start.id!==e.pointerId)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;start=null;if(dx < -60&&Math.abs(dx)>Math.abs(dy)*1.5){e.stopPropagation();closeKktChat()}});
+ conversation.addEventListener('pointercancel',()=>{start=null});
+})();
 $('#composer').onsubmit=e=>{
   e.preventDefault();if(!document.documentElement.hasAttribute('data-kkt-editor'))return;
   const input=$('#chatInput'),text=input.value.trim();
@@ -1380,7 +1401,21 @@ renderKakaoList();
 
 let kktNotificationScheduled=false,kktNotificationTimer;
 const deliveredKktNotifications=new Set();
-function playKktAlert(){try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;passcodeAudio ||= new Context();const ctx=passcodeAudio;ctx.resume().catch(()=>{});[[659,0,.12],[880,.15,.2]].forEach(([frequency,offset,duration])=>{const osc=ctx.createOscillator(),gain=ctx.createGain(),at=ctx.currentTime+offset;osc.type='triangle';osc.frequency.setValueAtTime(frequency,at);gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(.16,at+.012);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(gain);gain.connect(ctx.destination);osc.start(at);osc.stop(at+duration+.01)})}catch{}}
+const kktAlertBytes=fetch('sounds/kakao-notification.mp3').then(r=>{if(!r.ok)throw Error('notification audio unavailable');return r.arrayBuffer()});
+kktAlertBytes.catch(()=>{});
+let kktAlertBuffer;
+async function playKktAlert(){
+ try{const ctx=await primePhoneAudio();if(!ctx||ctx.state!=='running')return;
+ try{
+  kktAlertBuffer ||= await ctx.decodeAudioData((await kktAlertBytes).slice(0));
+  const source=ctx.createBufferSource(),volume=ctx.createGain();source.buffer=kktAlertBuffer;volume.gain.value=1;source.connect(volume);volume.connect(ctx.destination);source.onended=()=>{source.disconnect();volume.disconnect()};source.start();return;
+ }catch{}
+ const start=ctx.currentTime+.02;
+ [[659,0,.19],[880,.22,.3]].forEach(([frequency,offset,duration])=>{
+ const osc=ctx.createOscillator(),gain=ctx.createGain(),at=start+offset;
+ osc.type='triangle';osc.frequency.setValueAtTime(frequency,at);gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.38,at+.015);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(gain);gain.connect(ctx.destination);osc.onended=()=>{osc.disconnect();gain.disconnect()};osc.start(at);osc.stop(at+duration+.02);
+ });}catch{}
+}
 function scheduleKktNotification(){
  if(kktNotificationScheduled||!unlocked||document.documentElement.hasAttribute('data-kkt-editor'))return;
  const config=kakaoData.notification;if(!config?.enabled||!config.text)return;kktNotificationScheduled=true;
