@@ -176,7 +176,7 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 #music:not(.player-open){background:#faf9fc;color:#211d29}#playlistPage .playlist-title,#playlistPage .song-name{color:#211d29}#playlistPage .song-artist,#playlistPage .playlist-meta,#playlistPage .playlist-label,#playlistPage .song-dur{color:#716879}#playlistPage .song-item{color:#211d29;border-bottom-color:#211d290b}#playlistPage .song-item.active{background:#7952a20e}#playlistPage .song-item.active .song-name{color:#8050aa}#playlistPage .song-item.active .song-artist{color:#65576e}#playlistPage .song-item:active{background:#7952a21a}#music:not(.player-open) .back{color:#54455e}#music.player-open{color:white}#music.player-open #songTitle{color:white}
 .icon{overflow:hidden;box-shadow:inset 0 1px 1px #ffffff45,0 3px 7px #00000012}.icon svg{width:100%;height:100%;display:block}.music-icon{background:linear-gradient(145deg,#b666f0,#8550d4 50%,#6756ca)!important}.kakao-icon{background:#fee500!important}.notes-icon{background:linear-gradient(#ffd75a,#ffbe28)!important}.clock-icon{background:linear-gradient(#fff,#ececf1)!important}.settings-icon{background:linear-gradient(145deg,#a9b3c3,#7f8c9f)!important}.photos-icon{background:#fff!important}.ig-icon:before,.ig-icon:after{display:none}.ig-splash .ig-icon:before,.ig-splash .ig-icon:after{display:block}.app-launching{will-change:transform;overflow:hidden!important;z-index:46!important}
 
-.desktop-home{position:absolute;top:46px;left:12px;z-index:95;display:flex;align-items:center;gap:4px;padding:7px 11px;border-radius:18px;background:#ffffffec;color:#292433;box-shadow:0 2px 10px #0002;font-size:12px;font-weight:550;backdrop-filter:blur(12px);pointer-events:auto}.desktop-home svg{width:15px;height:15px}.desktop-home.hidden{display:none}
+.desktop-home{position:absolute;top:32px;left:12px;z-index:95;display:flex;align-items:center;gap:4px;padding:7px 11px;border-radius:18px;background:#ffffffec;color:#292433;box-shadow:0 2px 10px #0002;font-size:12px;font-weight:550;backdrop-filter:blur(12px);pointer-events:auto}.desktop-home svg{width:15px;height:15px}.desktop-home.hidden{display:none}
 #storyAvatar{padding:0;cursor:pointer;flex-shrink:0}#storyAvatar:focus-visible{outline:2px solid white;outline-offset:3px}
 
 #igProfileAvatar{padding:0;position:relative;overflow:visible;border:0}#igProfileAvatar:disabled{cursor:default;opacity:1}#igProfileAvatar.has-stories::after,.story .avatar.story-ring::after{content:'';position:absolute;inset:-5px;border-radius:50%;padding:2.5px;background:conic-gradient(#d62e86,#913fd0,#e84472,#ffb34a,#ffc84d,#d62e86);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;pointer-events:none}.story .avatar.story-ring{position:relative;outline:0;border:3px solid white}#igProfileAvatar.stories-seen::after,.story .avatar.story-ring.stories-seen::after{background:#b9b9bf}
@@ -189,6 +189,8 @@ body{background:#171820;color:#fff}.stage{padding:24px;min-height:100svh;backgro
 html:not([data-kkt-editor]) #kakao .kakao-toolbar,html:not([data-kkt-editor]) #chatEdit,html:not([data-kkt-editor]) #kakao .composer,html:not([data-kkt-editor]) #kakao .chat-del,html:not([data-kkt-editor]) #kakao .bubble-del,html:not([data-kkt-editor]) #kakao .social-note{display:none!important}
 
 .kkt-notification{position:absolute;left:12px;right:12px;top:42px;z-index:120;background:#fffffff2;color:#25202a;border-radius:20px;padding:14px;box-shadow:0 7px 28px #0003;backdrop-filter:blur(22px);display:flex;align-items:center;gap:12px;text-align:left;cursor:pointer}.kkt-notification .notify-icon{width:40px;height:40px;border-radius:12px;flex-shrink:0;background:#fee500;overflow:hidden}.kkt-notification svg{width:100%;height:100%}.notify-body{min-width:0;flex:1}.notify-body small{display:block;font-size:10px;color:#817a85;margin-bottom:4px}.notify-body b{font-size:13px}.notify-body p{margin:3px 0 0;font-size:12px;line-height:1.4;white-space:pre-wrap}.notify-close{align-self:flex-start;background:transparent;color:#837b89;padding:4px;font-size:17px}
+#kakao{overflow:hidden}#conversation{touch-action:pan-y;user-select:none}
+html,body,.screen{overscroll-behavior-x:none}.screen{touch-action:pan-y}.ig-carousel-track{touch-action:pan-x pan-y}
 </style></head><body><main class="stage"><div class="phone"><button class="lock-side" aria-label="锁屏" title="锁屏"></button><div class="screen"><div class="wallpaper"></div><div class="status"><span id="statusTime">9:41</span><span>▮▮▮ &nbsp; Wi-Fi &nbsp; ▰</span></div><div class="island"></div>
 <section id="lock" class="view lock hidden"><div class="lock-icon">♙</div><div class="date" id="date"></div><div class="time" id="lockTime"></div><button class="unlock" id="unlock"><span>⌃</span>轻点或向上滑动解锁</button></section>
 <section id="pass" class="view pass hidden"><div>♙</div><h2 id="passTitle" aria-live="polite">输入密码</h2><div class="dots" aria-label="已输入0位密码"></div><div class="keypad"></div><div class="pass-footer"><button class="text-btn" id="cancel">取消</button><button class="text-btn" id="del">删除</button></div></section>
@@ -399,15 +401,18 @@ const ICONS={
 };
 
 let passcodeAudio;
+const kktNativeAudio=new Audio('sounds/kakao-notification.mp3');kktNativeAudio.preload='auto';kktNativeAudio.volume=1;let kktAudioPrimed=false;
+function primeKktNative(){if(kktAudioPrimed)return;kktNativeAudio.muted=true;const attempt=kktNativeAudio.play();if(attempt)attempt.then(()=>{kktNativeAudio.pause();kktNativeAudio.currentTime=0;kktNativeAudio.muted=false;kktAudioPrimed=true}).catch(()=>{kktNativeAudio.muted=false})}
+
 function primePhoneAudio(){
  try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return Promise.resolve(null);passcodeAudio ||= new Context();const ctx=passcodeAudio;
  const silent=ctx.createBufferSource();silent.buffer=ctx.createBuffer(1,1,ctx.sampleRate);silent.connect(ctx.destination);silent.start();
  return ctx.resume().then(()=>ctx).catch(()=>null)}catch{return Promise.resolve(null)}
 }
 // Unlock audio on an actual gesture, before the delayed notification fires.
-document.addEventListener('pointerdown',()=>{primePhoneAudio()},{passive:true});
-document.addEventListener('keydown',()=>{primePhoneAudio()});
-async function playPasscodeSound(key){try{const ctx=await primePhoneAudio();if(!ctx||ctx.state!=='running')return;const osc=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime+.005;osc.type='sine';osc.frequency.setValueAtTime(key==='del'?560:1050,now);osc.frequency.exponentialRampToValueAtTime(420,now+.065);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.28,now+.004);gain.gain.exponentialRampToValueAtTime(.0001,now+.085);osc.connect(gain);gain.connect(ctx.destination);osc.onended=()=>{osc.disconnect();gain.disconnect()};osc.start(now);osc.stop(now+.09)}catch{}}
+document.addEventListener('pointerdown',()=>{primePhoneAudio();primeKktNative()},{passive:true});
+document.addEventListener('keydown',()=>{primePhoneAudio();primeKktNative()});
+async function playPasscodeSound(key){try{const ctx=await primePhoneAudio();if(!ctx||ctx.state!=='running')return;const osc=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime+.005;osc.type='sine';osc.frequency.setValueAtTime(key==='del'?560:1050,now);osc.frequency.exponentialRampToValueAtTime(420,now+.065);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.48,now+.004);gain.gain.exponentialRampToValueAtTime(.0001,now+.085);osc.connect(gain);gain.connect(ctx.destination);osc.onended=()=>{osc.disconnect();gain.disconnect()};osc.start(now);osc.stop(now+.09)}catch{}}
 let igSplashTimer;
 function showIGSplash(){clearTimeout(igSplashTimer);document.querySelector('.ig-splash')?.remove();const splash=document.createElement('div');splash.className='ig-splash';splash.setAttribute('aria-label','Instagram 正在启动');splash.innerHTML='<span class="ig-icon"></span>';$('#instagram').append(splash);igSplashTimer=setTimeout(()=>splash.remove(),500)}
 
@@ -457,7 +462,7 @@ function goPass(){show('pass');$('#passTitle').textContent='输入密码';}
   function resetBlur(){
     wp.style.filter='';lockEl.style.filter='';lockEl.style.opacity='';
   }
-  function onStart(y){startY=y;dragging=true;}
+  function onStart(y){if(page!=='lock'||unlocked)return;startY=y;dragging=true;}
   function onMove(y){
     if(!dragging||startY===null)return;
     const dy=startY-y;  // 上滑为正
@@ -465,6 +470,7 @@ function goPass(){show('pass');$('#passTitle').textContent='输入密码';}
     else{setBlur(0);}
   }
   function onEnd(y){
+    if(page!=='lock'||unlocked){dragging=false;startY=null;resetBlur();return;}
     if(!dragging||startY===null){dragging=false;return;}
     const dy=startY-y;
     dragging=false;startY=null;
@@ -1152,11 +1158,14 @@ async function closeKktChat(){
 }
 $('#closeChat').onclick=closeKktChat;
 (function(){
- const conversation=$('#conversation');let start=null;
- conversation.style.touchAction='pan-y';
- conversation.addEventListener('pointerdown',e=>{if(e.isPrimary&&e.button===0&&!e.target.closest('input,textarea,select,button'))start={x:e.clientX,y:e.clientY,id:e.pointerId};else start=null});
- conversation.addEventListener('pointerup',e=>{if(!start||start.id!==e.pointerId)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;start=null;if(dx < -60&&Math.abs(dx)>Math.abs(dy)*1.5){e.stopPropagation();closeKktChat()}});
- conversation.addEventListener('pointercancel',()=>{start=null});
+ const conversation=$('#conversation');let touchStart=null,mouseStart=null;
+ const ignored=e=>!!e.target.closest('input,textarea,select');
+ function finish(start,x,y){if(!start)return;const dx=x-start.x,dy=y-start.y;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4)closeKktChat();}
+ conversation.addEventListener('touchstart',e=>{if(e.touches.length===1&&!ignored(e)){touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};e.stopPropagation()}},{passive:true});
+ conversation.addEventListener('touchend',e=>{if(touchStart){e.stopPropagation();finish(touchStart,e.changedTouches[0].clientX,e.changedTouches[0].clientY);touchStart=null}},{passive:true});
+ conversation.addEventListener('touchcancel',()=>{touchStart=null},{passive:true});
+ conversation.addEventListener('mousedown',e=>{if(e.button===0&&!ignored(e)){mouseStart={x:e.clientX,y:e.clientY};e.preventDefault()}});
+ document.addEventListener('mouseup',e=>{finish(mouseStart,e.clientX,e.clientY);mouseStart=null});
 })();
 $('#composer').onsubmit=e=>{
   e.preventDefault();if(!document.documentElement.hasAttribute('data-kkt-editor'))return;
@@ -1321,27 +1330,7 @@ function openChatEditor(c){
 // 初始化渲染
 renderKakaoList();
 // ===== 全站滑动触控 =====
-// 1) 应用内左右滑动：右滑返回主屏
-(function(){
-  let sx=null,sy=null;
-  const screen=document.querySelector('.screen');
-  screen.addEventListener('touchstart',e=>{
-    if(e.touches.length!==1)return;
-    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
-  },{passive:true});
-  screen.addEventListener('touchend',e=>{
-    if(sx===null)return;
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
-    // 右滑超过 80px 且水平位移大于垂直 -> 返回
-    if(dx>80 && Math.abs(dx)>Math.abs(dy)*1.5){
-      if(!$('#viewer').classList.contains('hidden')){ $('#viewer').classList.add('hidden'); }
-      else if(!$('#storyViewer').classList.contains('hidden')){ closeStory(); }
-      else if(page!=='home' && page!=='lock' && page!=='pass'){ home(); }
-    }
-    sx=null; sy=null;
-  },{passive:true});
-})();
+// 普通应用不绑定全局横滑导航，仅由具体页面处理自己的手势。
 
 // 2) 快拍查看器：左右滑动切换
 (function(){
@@ -1349,7 +1338,7 @@ renderKakaoList();
   const sv=$('#storyViewer');
   sv.addEventListener('touchstart',e=>{ if(e.touches.length===1) sx=e.touches[0].clientX; },{passive:true});
   sv.addEventListener('touchend',e=>{
-    if(sx===null)return;
+    if(sx===null||sv.classList.contains('hidden')){sx=null;return;}
     const dx=e.changedTouches[0].clientX-sx;
     if(dx<-50) nextStory();
     else if(dx>50) prevStory();
@@ -1363,7 +1352,7 @@ renderKakaoList();
   const v=$('#viewer');
   v.addEventListener('touchstart',e=>{ if(e.touches.length===1) sx=e.touches[0].clientX; },{passive:true});
   v.addEventListener('touchend',e=>{
-    if(sx===null)return;
+    if(sx===null||v.classList.contains('hidden')){sx=null;return;}
     const dx=e.changedTouches[0].clientX-sx;
     if(dx<-50) viewPhoto(photoIndex+1);
     else if(dx>50) viewPhoto(photoIndex-1);
@@ -1408,12 +1397,12 @@ async function playKktAlert(){
  try{const ctx=await primePhoneAudio();if(!ctx||ctx.state!=='running')return;
  try{
   kktAlertBuffer ||= await ctx.decodeAudioData((await kktAlertBytes).slice(0));
-  const source=ctx.createBufferSource(),volume=ctx.createGain();source.buffer=kktAlertBuffer;volume.gain.value=1;source.connect(volume);volume.connect(ctx.destination);source.onended=()=>{source.disconnect();volume.disconnect()};source.start();return;
+  const source=ctx.createBufferSource(),volume=ctx.createGain();source.buffer=kktAlertBuffer;volume.gain.value=1.8;source.connect(volume);const limiter=ctx.createDynamicsCompressor();limiter.threshold.value=-3;limiter.knee.value=3;limiter.ratio.value=12;limiter.attack.value=.002;limiter.release.value=.12;volume.connect(limiter);limiter.connect(ctx.destination);source.onended=()=>{source.disconnect();volume.disconnect()};source.start();return;
  }catch{}
  const start=ctx.currentTime+.02;
  [[659,0,.19],[880,.22,.3]].forEach(([frequency,offset,duration])=>{
  const osc=ctx.createOscillator(),gain=ctx.createGain(),at=start+offset;
- osc.type='triangle';osc.frequency.setValueAtTime(frequency,at);gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.38,at+.015);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(gain);gain.connect(ctx.destination);osc.onended=()=>{osc.disconnect();gain.disconnect()};osc.start(at);osc.stop(at+duration+.02);
+ osc.type='triangle';osc.frequency.setValueAtTime(frequency,at);gain.gain.setValueAtTime(.0001,at);gain.gain.exponentialRampToValueAtTime(.55,at+.015);gain.gain.exponentialRampToValueAtTime(.0001,at+duration);osc.connect(gain);gain.connect(ctx.destination);osc.onended=()=>{osc.disconnect();gain.disconnect()};osc.start(at);osc.stop(at+duration+.02);
  });}catch{}
 }
 function scheduleKktNotification(){
