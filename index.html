@@ -331,7 +331,14 @@ function animateHome(){
     show('home');
   },320);
 }
-function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:4},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;playPasscodeSound(n);if(n==='del')pin=pin.slice(0,-1);else if(pin.length<4)pin+=n;drawDots();if(pin.length===4){checking=true;setTimeout(()=>{if(pin==='0000'){unlocked=true;show('home')}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=goPass;$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);// ===== SVG 图标（精确绘制）=====
+function unlockToHome(){
+ const pass=$('#pass');unlocked=true;show('home');
+ if(!pass)return;
+ pass.classList.remove('hidden');pass.style.zIndex='45';pass.style.pointerEvents='none';
+ const animation=pass.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-105%)',opacity:.25}],{duration:480,easing:'cubic-bezier(.22,.7,.25,1)'});
+ animation.finished.finally(()=>{pass.classList.add('hidden');pass.style.zIndex='';pass.style.pointerEvents='';});
+}
+function lock(){unlocked=false;pin='';$('#viewer').classList.add('hidden');show('lock');drawDots()}function tick(){let d=new Date(),t=d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('#statusTime').textContent=t;$('#lockTime').textContent=t;$('#date').textContent=d.toLocaleDateString('zh-CN',{month:'long',day:'numeric',weekday:'long'})}tick();setInterval(tick,1000);function drawDots(){$('.dots').innerHTML=Array.from({length:4},(_,i)=>'<i class="'+(i<pin.length?'on':'')+'"></i>').join('');$('.dots').setAttribute('aria-label','已输入'+pin.length+'位密码')}drawDots();let checking=false;function digit(n){if(checking||page!=='pass')return;playPasscodeSound(n);if(n==='del')pin=pin.slice(0,-1);else if(pin.length<4)pin+=n;drawDots();if(pin.length===4){checking=true;setTimeout(()=>{if(pin==='0000'){unlockToHome()}else{$('#passTitle').textContent='密码不正确，再试一次';$('.dots').classList.add('shake');setTimeout(()=>$('.dots').classList.remove('shake'),350)}pin='';drawDots();checking=false},220)}}let letters=['','','ABC','DEF','GHI','JKL','MNO','PQRS','TUV','WXYZ'];$('.keypad').innerHTML=[1,2,3,4,5,6,7,8,9,'',0].map(n=>'<button class="key '+(n===''?'empty':'')+'" data-digit="'+n+'">'+n+'<small>'+(letters[n]||' ')+'</small></button>').join('');$$('[data-digit]').forEach(b=>b.onclick=()=>digit(b.dataset.digit));$('#unlock').onclick=goPass;$('#cancel').onclick=lock;$('#del').onclick=()=>digit('del');$('.lock-side').onclick=lock;$('#relock').onclick=lock;$('#homebar').onclick=home;$$('[data-home]').forEach(b=>b.onclick=home);// ===== SVG 图标（精确绘制）=====
 const ICONS={
   // 三星相册：彩色风车花瓣（8 个扇形，彩虹渐变）
   photos:'<svg viewBox="0 0 100 100"><g transform="translate(50 50)">'+
@@ -430,9 +437,7 @@ let photos=builtinPhotos.map(p=>({src:'photos_web/'+p.file,name:p.name}));functi
 function read(k,f){try{return localStorage.getItem(k)||f}catch{return f}}function save(k,v){try{localStorage.setItem(k,v);return true}catch{return false}}$('#note').value=read('pocket-note','周末的小计划\n\n去看看没见过的风景。\n听一首喜欢的歌。\n把平常的日子，过得有趣一点。');$('#note').oninput=()=>$('#saved').textContent=save('pocket-note',$('#note').value)?'已自动保存到此浏览器':'浏览器暂不支持保存，请自行复制内容';$('#theme').onclick=()=>document.body.classList.toggle('night');
 // ===== 音乐歌单数据 =====
 // 每首歌：name 歌名, artist 歌手, album 专辑, cover 封面图, duration 时长(秒), audio 音频文件(可选)
-const playlist=[
-  {name:'OSAKA', artist:'ELO, ZICO', album:'GRADATION Vol.4', cover:'music/osaka_cover.jpg', duration:30, audio:null}
-];
+const playlist=[{"name":"OSAKA","artist":"ELO, ZICO","album":"GRADATION Vol.4","cover":"music/osaka_cover.jpg","duration":205.179841,"audio":"music/audio-6008aba80408efe8.mp3","audioName":"M500001b4gQP1VXNQh.mp3"},{"name":"Text Me","artist":"DPR LIVE","album":"Her","cover":"music/cover-e6b225369625c38a.jpg","duration":177.359433,"audio":"music/audio-a661f2cb21c87c48.mp3","audioName":"M5000048wvwC3DzTY4.mp3"},{"name":"Too Good","artist":"Christian Kuria","album":"Borderline(Explict)","cover":"music/cover-cfe75416a10ca290.jpg","duration":277.5,"audio":"music/audio-e216549686b33131.mp3","audioName":"M500004b2AdR0rQMV7.mp3"},{"name":"Jasmine","artist":"DPRL IVE","album":"Her","cover":"music/cover-e6b225369625c38a.jpg","duration":201.51068,"audio":"music/audio-8c5f018ea47638ad.mp3","audioName":"M500002mNJw82oS4KR.mp3"},{"name":"Apple","artist":"Charlie xcx","album":"brat","cover":"music/cover-3fe04067eb25f98a.jpg","duration":151.739705,"audio":"music/audio-280c1e285efea261.mp3","audioName":"obj_wo3DlMOGwrbDjj7DisKw_36474329983_9937_2a4b_4491_96d6d39750427fc5de86b943ca0fcd5e.mp3"},{"name":"365(Explict)","artist":"Charlie xcx","album":"brat","cover":"music/cover-3fe04067eb25f98a.jpg","duration":203.618299,"audio":"music/audio-55474ff1de34aa9f.mp3","audioName":"M500002XgVix4ZlEHt.mp3"},{"name":"right here","artist":"keshi","album":"bandaids","cover":"music/cover-769b7b029beb9814.jpg","duration":195.092948,"audio":"music/audio-8c962f66511dc353.mp3","audioName":"M500000tcCmd40FcES.mp3"},{"name":"Sugar On My Tongue","artist":"Tylor, The Creator","album":"DON'T TAP THE GLASS","cover":"music/cover-6d9c2b8b38ba5ca3.jpg","duration":153.332812,"audio":"music/audio-97d7feeca4b12812.mp3","audioName":"M500002dIQf33pSjQQ.mp3"},{"name":"Pink Blush(Explict)","artist":"Dolly Babe","album":"Pink Blush(Explict)","cover":"music/cover-1bc1caf26d0f2dc0.jpg","duration":126.686621,"audio":"music/audio-5ee493df44cd76c4.mp3","audioName":"M500000MLAFa3pMYIT.mp3"},{"name":"Be My Next","artist":"RIIZE","album":"Lucky","cover":"music/cover-a2ea8c6510b01744.jpg","duration":167.219841,"audio":"music/audio-df0849e2f53bffce.mp3","audioName":"M500004Z6mqM2OwrWL.mp3"}];
 let song=0, audio=null, currentAudioUrl=null;
 
 // 合成旋律（当没有真实音频时使用）
@@ -484,14 +489,17 @@ function showPlaylist(){
 function setSong(i,autoplay=false){
   song=(i+playlist.length)%playlist.length;
   const s=playlist[song];
-  if(audio){audio.pause();audio.src=''}
+  if(audio){audio.pause();audio.onended=null;}
+  if(currentAudioUrl?.startsWith('blob:'))URL.revokeObjectURL(currentAudioUrl);
   // 有真实音频用真实音频，否则用合成旋律
   if(s.audio){
     currentAudioUrl=s.audio;
   }else{
     currentAudioUrl=makeAudio(song);
   }
-  audio=new Audio(currentAudioUrl);
+  if(!audio){audio=document.createElement('audio');audio.id='backgroundMusic';audio.preload='auto';audio.setAttribute('playsinline','');document.body.append(audio);}
+  audio.src=currentAudioUrl;
+  audio.loop=false;
   audio.ontimeupdate=()=>{
     $('#seek').value=audio.currentTime;
     $('#elapsed').textContent=formatTime(audio.currentTime);
@@ -502,9 +510,9 @@ function setSong(i,autoplay=false){
       $('#totalTime').textContent=formatTime(audio.duration);
     }
   };
-  audio.onended=()=>setSong(song+1,true);
-  audio.onplay=()=>{$('#play').textContent='Ⅱ';$('#play').setAttribute('aria-label','暂停')};
-  audio.onpause=()=>{$('#play').textContent='▶';$('#play').setAttribute('aria-label','播放')};
+  audio.onended=()=>setSong((song+1)%playlist.length,true);
+  audio.onplay=()=>{$('#play').textContent='Ⅱ';$('#play').setAttribute('aria-label','暂停');if('mediaSession' in navigator)navigator.mediaSession.playbackState='playing'};
+  audio.onpause=()=>{$('#play').textContent='▶';$('#play').setAttribute('aria-label','播放');if('mediaSession' in navigator)navigator.mediaSession.playbackState='paused'};
   // 更新界面
   $('#songTitle').textContent=s.name;
   $('#artist').textContent=s.artist;
@@ -515,6 +523,7 @@ function setSong(i,autoplay=false){
   $('#elapsed').textContent='0:00';
   $('#totalTime').textContent=formatTime(s.duration);
   $('#play').textContent='▶';
+  if('mediaSession' in navigator && 'MediaMetadata' in window){navigator.mediaSession.metadata=new MediaMetadata({title:s.name,artist:s.artist,album:s.album,artwork:s.cover?[{src:new URL(s.cover,location.href).href}]:[]});}
   if(autoplay)playAudio();
 }
 
@@ -534,6 +543,11 @@ $('#prev').onclick=()=>setSong(song-1,true);
 $('#next').onclick=()=>setSong(song+1,true);
 $('#seek').oninput=e=>audio.currentTime=+e.target.value;
 $('#backToPlaylist').onclick=showPlaylist;
+if('mediaSession' in navigator){
+ const controls={play:()=>playAudio(),pause:()=>audio.pause(),previoustrack:()=>setSong(song-1,true),nexttrack:()=>setSong(song+1,true),seekto:e=>{if(Number.isFinite(e.seekTime))audio.currentTime=e.seekTime}};
+ for(const [action,handler] of Object.entries(controls)){try{navigator.mediaSession.setActionHandler(action,handler)}catch{}}
+}
+
 let running=false,elapsed=0,started=0;$('#startTimer').onclick=()=>{if(running)elapsed+=performance.now()-started;else started=performance.now();running=!running;$('#startTimer').textContent=running?'暂停':'继续'};$('#resetTimer').onclick=()=>{elapsed=0;started=performance.now()};setInterval(()=>{let t=elapsed+(running?performance.now()-started:0);$('#stopwatch').textContent=String(Math.floor(t/60000)).padStart(2,'0')+':'+String(Math.floor(t/1000)%60).padStart(2,'0')+'.'+Math.floor(t/100)%10},100);
 
 // ===== KakaoTalk 可编辑数据模型 =====
@@ -742,12 +756,12 @@ function myStories(){ return storiesForAccount(igProfile().id); }
 // ===== 快拍查看器 =====
 let storyList=[], storyIndex=0, storyTimer=null, storyOwner='';
 
-async function openAccountStory(ai){
+async function openAccountStory(ai,startIndex=0){
   const prof=(igData.accounts[ai]||{}).profile||{};
   storyList=storiesForAccount(prof.id);
   storyOwner=prof.id||'动态';
   if(!storyList.length)return;
-  storyIndex=0;
+  storyIndex=Math.max(0,Math.min(startIndex,storyList.length-1));
   const nextAccount=igData.accounts.slice(ai+1).find(a=>storiesForAccount((a.profile||{}).id).length);
   if(nextAccount)prepareIGImage(storiesForAccount(nextAccount.profile.id)[0].src);
   $('#storyViewer').classList.remove('hidden');
@@ -819,22 +833,25 @@ async function showStory(){
 }
 
 let storyTurning=false;
-async function turnStoryAccount(ai){
+async function turnStoryAccount(ai,startIndex=0,direction=1){
  if(storyTurning)return;storyTurning=true;clearTimeout(storyTimer);
  const viewer=$('#storyViewer'),parent=viewer.parentElement;
+ const backdrop=document.createElement('div');backdrop.style.cssText='position:absolute;inset:0;background:#000;z-index:59;pointer-events:none';parent.append(backdrop);
  const old=viewer.cloneNode(true);old.removeAttribute('id');old.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));old.classList.add('story-cube-old');old.setAttribute('aria-hidden','true');old.inert=true;
  parent.append(old);
  try{
-  const target=igData.accounts[ai];await prepareIGImage(storiesForAccount(target.profile.id)[0].src);
+  const target=igData.accounts[ai],stories=storiesForAccount(target.profile.id);
+  await prepareIGImage(stories[startIndex].src);
   if(viewer.classList.contains('hidden'))return;
-  await openAccountStory(ai);clearTimeout(storyTimer);
+  await openAccountStory(ai,startIndex);clearTimeout(storyTimer);
   const half=viewer.clientWidth/2;const options={duration:460,easing:'cubic-bezier(.22,.65,.3,1)',fill:'none'};
+  const face=(angle,scale)=>'perspective(1000px) scale('+scale+') translateZ(-'+half+'px) rotateY('+angle+'deg) translateZ('+half+'px)';
   await Promise.all([
-   old.animate([{transform:'perspective(1000px) translateZ(-'+half+'px) rotateY(0deg) translateZ('+half+'px)',filter:'brightness(1)'},{transform:'perspective(1000px) translateZ(-'+half+'px) rotateY(-90deg) translateZ('+half+'px)',filter:'brightness(.55)'}],options).finished,
-   viewer.animate([{transform:'perspective(1000px) translateZ(-'+half+'px) rotateY(90deg) translateZ('+half+'px)',filter:'brightness(.55)'},{transform:'perspective(1000px) translateZ(-'+half+'px) rotateY(0deg) translateZ('+half+'px)',filter:'brightness(1)'}],options).finished
+   old.animate([{transform:face(0,1),filter:'brightness(1)'},{transform:face(-45*direction,1.12),filter:'brightness(.8)',offset:.5},{transform:face(-90*direction,1.08),filter:'brightness(.55)'}],options).finished,
+   viewer.animate([{transform:face(90*direction,1.08),filter:'brightness(.55)'},{transform:face(45*direction,1.12),filter:'brightness(.8)',offset:.5},{transform:face(0,1),filter:'brightness(1)'}],options).finished
   ]);
   if(!viewer.classList.contains('hidden'))storyTimer=setTimeout(nextStory,(storyList[storyIndex].duration||5)*1000);
- }finally{old.remove();storyTurning=false;}
+ }finally{old.remove();backdrop.remove();storyTurning=false;}
 }
 function nextStory(){
   if(storyTurning)return;
@@ -848,7 +865,13 @@ function nextStory(){
 function prevStory(){
   if(storyTurning)return;
   if(storyIndex>0){ storyIndex--; showStory(); }
-  else showStory(); // 第一条时重播
+  else {
+    const current=igData.accounts.findIndex(a=>(a.profile||{}).id===storyOwner);
+    let previous=current-1;
+    while(previous>=0&&!storiesForAccount(igData.accounts[previous].profile.id).length)previous--;
+    if(previous>=0)turnStoryAccount(previous,storiesForAccount(igData.accounts[previous].profile.id).length-1,-1);
+    else showStory();
+  }
 }
 function closeStory(){
   ++storyLoadToken;
